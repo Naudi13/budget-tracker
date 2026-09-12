@@ -69,7 +69,7 @@ export default [{
 | Stage | Command | What it does |
 |---|---|---|
 | `build` | `npm ci && npx tsc -p tsconfig.build.json` | Installs from the lockfile, type-checks, emits `dist/` |
-| `boundary check` | `npx eslint src --max-warnings 0` | The rule above, over the whole tree, before any test runs |
+| `boundary check` | `npx eslint src --max-warnings 0` | The rule above, over the whole tree, before any test runs. On 7.x the pre-7 rule shape emits deprecation notices: drop `--max-warnings 0`, or silence the notices, until the configuration is migrated |
 | `test` | `npx vitest run tests/unit tests/module-integration --coverage` | The two layers the stage owns. Coverage lands in `coverage/lcov.info`, whose per-file records the stage reads to apply **NFR-07**: 80% on changed files, 90% on the `billing` module |
 | `package` | `docker build -t app:$(git rev-parse --short HEAD) .` | One image from `dist/`, tagged with the commit |
 | `deploy` | `npx vitest run tests/end-to-end` | `end-to-end` against the promoted artifact |

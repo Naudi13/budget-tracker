@@ -73,7 +73,7 @@ deptrac:
 | `test` | `php artisan test --coverage` | The default suite — `Unit` and `ModuleIntegration`, fixed by `defaultTestSuite` in `phpunit.xml` so `EndToEnd` stays out. Its per-file coverage feeds **NFR-07**: 80% on changed files, 90% on the `billing` module |
 | `package` | `docker build -t app:$(git rev-parse --short HEAD) .` | One image, tagged with the commit |
 | `deploy` | `php artisan test --testsuite=EndToEnd` | `end-to-end` against the promoted artifact |
-| local | `php artisan migrate`, then `php artisan serve --port="$APP_PORT"` | Applies pending changes; serves on `APP_PORT` — 3000 in `.env.example`, this framework's default port |
+| local | `php artisan migrate`, then `php artisan serve --port=3000` | Applies pending changes; serves on port 3000 — the value `.env.example` gives `APP_PORT`, this framework's default |
 
 ---
 

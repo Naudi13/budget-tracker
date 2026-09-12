@@ -72,7 +72,7 @@ class ModuleBoundaryTest {
 | `test` | `mvn -q test` | `unit` and `module-integration` — Surefire excludes the `end-to-end` group. JaCoCo writes `target/site/jacoco/jacoco.xml`, whose per-source-file counters the stage reads to apply **NFR-07**: 80% on changed files, 90% on the `billing` module |
 | `package` | `mvn -q package -DskipTests`, then `docker build -t app:$(git rev-parse --short HEAD) .` | One executable jar under `target/`, wrapped in one image tagged with the commit — Maven itself stamps no commit |
 | `deploy` | `mvn -q failsafe:integration-test failsafe:verify -Pe2e` | `end-to-end` against the promoted artifact — the goals run directly, so nothing is rebuilt |
-| local | `mvn spring-boot:run`, then `mvn liquibase:update` | Boot reads `server.port`, not `APP_PORT`: set `SERVER_PORT=3000` in `.env` to serve on the framework's default port. Applies pending changesets to the local database |
+| local | `mvn spring-boot:run`, then `mvn liquibase:update` | Boot reads `server.port`, not `APP_PORT`: set `server.port: 3000` in `application-local.yaml` to serve on the framework's default port. Applies pending changesets to the local database |
 
 ---
 

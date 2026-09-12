@@ -21,7 +21,7 @@ only adds the table name and the module that owns it. Every table here is named
 with its schema, following the schema-per-module default in
 [`database-conventions.md`](./database-conventions.md) — a project on the
 table-prefix fallback writes `catalog_products` instead. The diagram below
-names entities, not tables.
+names the same tables, without their schema prefix.
 
 ## Relationships
 

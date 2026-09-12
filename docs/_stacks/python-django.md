@@ -73,7 +73,7 @@ forbidden_modules =
 | `test` | `pytest -m "unit or module_integration" --cov=app --cov-report=xml` | The two layers the stage owns. **NFR-07** — 80% on changed files, 90% on the `billing` module — is then read off `coverage.xml`, file by file. `diff-cover coverage.xml --compare-branch=origin/dev --fail-under=80` is the closest gate this toolchain ships, and it scores changed *lines*: it approximates the requirement, it does not redefine it |
 | `package` | `docker build -t app:$(git rev-parse --short HEAD) .` | One image, tagged with the commit |
 | `deploy` | `pytest -m end_to_end` | `end-to-end` against the promoted artifact |
-| local | `python manage.py migrate`, then `python manage.py runserver "$APP_PORT"` | Applies pending migrations; serves on `APP_PORT` — 3000 in `.env.example`, this framework's default port |
+| local | `python manage.py migrate`, then `python manage.py runserver 3000` | Applies pending migrations; serves on port 3000 — the value `.env.example` gives `APP_PORT`, this framework's default |
 
 ---
 

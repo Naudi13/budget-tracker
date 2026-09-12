@@ -3,8 +3,8 @@
 > [!NOTE] INSTRUCTIONS
 > An environment with no row below is an environment nobody can reason
 > about — add the row before the first deploy to it, not after. Delete
-> this block once every environment below has taken a real deploy from
-> `ci-cd.md`.
+> this block once every pipeline-deployed environment below has taken a
+> real deploy from `ci-cd.md`.
 
 ## Environments
 
