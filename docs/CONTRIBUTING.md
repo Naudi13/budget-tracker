@@ -23,7 +23,9 @@ section structure is this framework's public interface.
   one release at a time and is meant to pass 80 lines.
 - Content is tables, lists and Mermaid diagrams; prose carries the "why" only.
 - English throughout, relative links only, and no unresolved placeholder markers.
-- Every document closes with a `**Related:**` footer. Section documents also open
+- Every framework document closes with a `**Related:**` footer — templates and the SDD
+  guide included. The three root files carry none; they are not framework documents.
+  Section documents also open
   `# NN — Title Case Name`; records and templates keep their family's id convention
   instead — `ADR-NNN`, `HU-NN`, `TC-NNN`, `INC-NNN` — and the stack guides, the SDD
   guide and the root files carry their own titles.

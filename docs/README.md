@@ -64,7 +64,9 @@ flowchart TD
 
 A solid arrow means the target section cannot be answered honestly until the source
 one is — the order `00-sdd-guide.md` fills them in. A dotted arrow is the weaker
-relationship: an input that informs a section without gating it.
+relationship, and covers two cases: a cross-cutting section, read once and applied
+throughout (`00-governance`, `_stacks`), or an input that informs a section without
+gating its order (`04-requirements` feeding `12-ux-ui`).
 
 ## The fifteen sections
 
