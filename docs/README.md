@@ -5,7 +5,7 @@
 [![jesusarielgb-works](https://img.shields.io/badge/org-jesusarielgb--works-lightgrey.svg)](https://github.com/jesusarielgb-works)
 
 > A Software Design Documentation framework for teams building **one deployable
-> application**: fifteen numbered sections saying what to write down, in what order,
+> application**: fifteen sections saying what to write down, in what order,
 > and when each is finished.
 
 **Author:** [Jesus Ariel Gonzalez Bonilla](https://github.com/jesusarielgb-works)
@@ -55,14 +55,16 @@ flowchart TD
     AR --> DA["06-data"] --> MD["09-modules"]
     AR --> AP["07-api"] --> MD
     AR --> UM["08-uml"] --> MD
-    RQ --> UX["12-ux-ui"] --> MD
+    MD --> UX["12-ux-ui"]
+    RQ -.-> UX
     MD --> DO["10-devops"]
     MD --> QA["11-quality"]
     MD --> OP["13-operations"]
 ```
 
 A solid arrow means the target section cannot be answered honestly until the source
-one is. A dotted arrow marks a cross-cutting section: read once, applied throughout.
+one is — the order `00-sdd-guide.md` fills them in. A dotted arrow is the weaker
+relationship: an input that informs a section without gating it.
 
 ## The fifteen sections
 

@@ -8,7 +8,7 @@
 
 ## Purpose
 
-Eleven numbered sections say what to build and why, in words no language owns.
+Fourteen numbered sections say what to build and why, in words no language owns.
 This folder is the one place that answers *how it looks on disk*: a real folder
 tree, a boundary configuration that runs, the migration library, and commands
 that can be pasted into a terminal.

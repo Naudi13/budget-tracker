@@ -18,10 +18,15 @@ section structure is this framework's public interface.
 
 - One question per document. If it answers two, it should have been two documents.
 - 25-80 lines. Below 25 it is a stub; above 80 it holds two topics. `README.md` and
-  `00-sdd-guide.md` are the only files exempt from the upper bound.
+  `00-sdd-guide.md` are exempt from the upper bound. `CHANGELOG.md` and this file are
+  not framework documents and fall outside the rule entirely — a changelog grows by
+  one release at a time and is meant to pass 80 lines.
 - Content is tables, lists and Mermaid diagrams; prose carries the "why" only.
 - English throughout, relative links only, and no unresolved placeholder markers.
-- Every document opens `# NN — Title Case Name` and closes with a `**Related:**` footer.
+- Every document closes with a `**Related:**` footer. Section documents also open
+  `# NN — Title Case Name`; records and templates keep their family's id convention
+  instead — `ADR-NNN`, `HU-NN`, `TC-NNN`, `INC-NNN` — and the stack guides, the SDD
+  guide and the root files carry their own titles.
 - Files named `_template-*` are copied into place, never edited where they sit.
 - The subject is always one deployable application. Anything that only exists once
   parts are deployed separately belongs to the sibling framework linked from the

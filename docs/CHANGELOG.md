@@ -23,9 +23,9 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) | [SemVer](http
   own their subject: project structure and layered architecture into
   `05-architecture/`, database conventions into `06-data/`, testing standards into
   `11-quality/`, deployment into `10-devops/`
-- Sibling-framework link moved to the `jesusarielgb-works` organisation; it had
-  pointed at an organisation this repository no longer belongs to and resolved
-  only through a redirect
+- Corrected the sibling-framework link: it pointed at the organisation that
+  repository used to live in, and resolved only through a redirect. It now
+  addresses `jesusarielgb-works` directly
 - `README.md` rewritten around explicit scope blocks, a section-dependency diagram
   and a table of all 15 sections
 - `CONTRIBUTING.md` rewritten against the section structure that replaced `docs/`
