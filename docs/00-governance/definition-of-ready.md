@@ -14,7 +14,7 @@ A story does not enter sprint planning until every row below is true.
 | 1 | The story has a single, testable set of acceptance criteria | Written as Given/When/Then in the story description |
 | 2 | The story fits in one sprint | Estimated at most 8 points during planning poker |
 | 3 | Dependencies on other stories are identified | Linked as "blocked by" in the tracker |
-| 4 | The module(s) the story touches are named | Checked against [`../09-modules/module-map.md`](../09-modules/module-map.md) |
+| 4 | The module(s) the story touches are named | Checked against [`../09-modules/module-catalog.md`](../09-modules/module-catalog.md) |
 | 5 | UX is attached when the story changes a screen | Wireframe or design link in the story |
 | 6 | No open question is left for the developer to decide alone | Zero unresolved comments on the story |
 | 7 | The story does not silently widen scope | Product Owner has restated it in one sentence |
