@@ -11,7 +11,7 @@ Checked **2026-09-12**. Re-check every row before adopting this guide.
 | Component | Version | Verify with |
 |---|---|---|
 | PHP and Laravel | 8.3 and 12.x | `php --version`, `php artisan --version` |
-| Deptrac and PHPUnit | 2.x (`qossmic/deptrac`, whose config root key is `deptrac:`) and 11.x, both dev dependencies | `vendor/bin/deptrac --version`, `vendor/bin/phpunit --version` |
+| Deptrac and PHPUnit | 4.x (`deptrac/deptrac` — the older `qossmic/deptrac` is abandoned; root key is still `deptrac:`) and 11.x, both dev dependencies | `vendor/bin/deptrac --version`, `vendor/bin/phpunit --version` |
 
 ## Module layout
 

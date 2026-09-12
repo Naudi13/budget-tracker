@@ -71,7 +71,7 @@ class ModuleBoundaryTest {
 | `boundary check` | `mvn -q test -Dtest=ModuleBoundaryTest` | Runs the boundary test alone, before any other test |
 | `test` | `mvn -q test` | `unit` and `module-integration` — Surefire excludes the `end-to-end` group. JaCoCo writes `target/site/jacoco/jacoco.xml`, to which the stage applies **NFR-07**: 80% of the lines this pull request changed, 90% once it touches `billing` |
 | `package` | `mvn -q package -DskipTests` | One executable jar under `target/`, tagged with the commit |
-| `deploy` | `mvn -q verify -Pe2e` | `end-to-end` against the promoted artifact |
+| `deploy` | `mvn -q failsafe:integration-test failsafe:verify -Pe2e` | `end-to-end` against the promoted artifact — the goals run directly, so nothing is rebuilt |
 | local | `mvn spring-boot:run`, then `mvn liquibase:update` | Serves on `APP_PORT`; applies pending changesets to the local database |
 
 ---

@@ -34,7 +34,7 @@ app/
 ```ini
 # .importlinter — allow_indirect_imports is what keeps billing -> CatalogFacade -> catalog.internal legal.
 [importlinter]
-root_packages = app
+root_package = app
 [importlinter:contract:catalog-internals-are-private]
 name = Only catalog imports catalog's internals
 type = forbidden
