@@ -64,7 +64,7 @@ paths:
               $ref: '#/components/schemas/NewProduct'
             examples:
               default:
-                value: { sku: SKU-1001, name: Notebook, price: 12.50, categoryId: null }
+                value: { sku: SKU-1001, name: Notebook, price: 12.50, categoryId: 550e8400-e29b-41d4-a716-446655440000 }
       responses:
         '201':
           description: Product created
@@ -100,26 +100,26 @@ components:
   schemas:
     Product:
       type: object
-      required: [id, sku, name, price, active]
+      required: [id, sku, name, price, categoryId, active]
       properties:
         id: { type: string, format: uuid }
         sku: { type: string }
         name: { type: string }
         price: { type: number, minimum: 0 }
         categoryId:
-          type: [string, "null"]
+          type: string
           format: uuid
         active: { type: boolean }
 
     NewProduct:
       type: object
-      required: [sku, name, price]
+      required: [sku, name, price, categoryId]
       properties:
         sku: { type: string, minLength: 1 }
         name: { type: string, minLength: 1 }
         price: { type: number, minimum: 0 }
         categoryId:
-          type: [string, "null"]
+          type: string
           format: uuid
 
     PaginationMeta:

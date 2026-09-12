@@ -10,8 +10,8 @@
 
 | Mechanism | How it works | Enforced by | Reviewer check |
 |---|---|---|---|
-| **Schema per module** (recommended) | Each module gets one namespace — `catalog.product`, `billing.invoice` | A database role per module, granted only on its own schema | Query the grant catalog: a module's role has zero grants outside its own schema |
-| Table-prefix per module (fallback) | One namespace, tables prefixed — `catalog_product`, `billing_invoice` | Naming convention, checked by a lint script | The script maps every table's prefix to [`module-boundaries.md`](../02-domain/module-boundaries.md)'s "Owns" column and fails on an unrecognized prefix |
+| **Schema per module** (recommended) | Each module gets one namespace — `catalog.products`, `billing.invoices` | A database role per module, granted only on its own schema | Query the grant catalog: a module's role has zero grants outside its own schema |
+| Table-prefix per module (fallback) | One namespace, tables prefixed — `catalog_products`, `billing_invoices` | Naming convention, checked by a lint script | The script maps every table's prefix to [`module-boundaries.md`](../02-domain/module-boundaries.md)'s "Owns" column and fails on an unrecognized prefix |
 
 Default to schema per module — it is what
 [`modular-monolith.md`](../05-architecture/modular-monolith.md)'s diagram
@@ -22,7 +22,7 @@ Fall back to table-prefix only on an engine with no real schema namespace
 (SQLite, or MySQL without a second database).
 
 **No foreign key crosses a module boundary**, under either mechanism. A
-module storing another module's id — `invoice_line.product_id` — keeps it
+module storing another module's id — `invoice_lines.product_id` — keeps it
 as a plain column, validated by the owning module's public API at write
 time, never by a `REFERENCES` constraint. Reviewer check: no row in the
 foreign-key catalog references a table outside its own schema or prefix

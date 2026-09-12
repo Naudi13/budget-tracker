@@ -9,11 +9,11 @@
 
 | Entity | Table | Owning module | Key attributes |
 |---|---|---|---|
-| Category | `category` | `catalog` | name, parent category (self-referencing, optional) |
-| Product | `product` | `catalog` | sku, name, price, category, active |
-| Invoice | `invoice` | `billing` | total, status, issued date |
-| Invoice line | `invoice_line` | `billing` | invoice, product reference, quantity, unit price |
-| Payment | `payment` | `billing` | invoice reference, amount, method, recorded date |
+| Category | `categories` | `catalog` | name, parent category (self-referencing, optional) |
+| Product | `products` | `catalog` | sku, name, price, category, active |
+| Invoice | `invoices` | `billing` | total, status, issued date |
+| Invoice line | `invoice_lines` | `billing` | invoice, product reference, quantity, unit price |
+| Payment | `payments` | `billing` | invoice reference, amount, method, recorded date |
 
 Invariants for each entity live in
 [`entities-and-rules.md`](../02-domain/entities-and-rules.md); this table
@@ -23,23 +23,23 @@ only adds the table name and the module that owns it.
 
 ```mermaid
 erDiagram
-    CATEGORY ||--o{ PRODUCT : classifies
-    PRODUCT ||--o{ INVOICE_LINE : "appears on"
-    INVOICE ||--|{ INVOICE_LINE : contains
-    INVOICE ||--o{ PAYMENT : "settled by"
-    CATEGORY {
+    CATEGORIES ||--o{ PRODUCTS : classifies
+    PRODUCTS ||--o{ INVOICE_LINES : "appears on"
+    INVOICES ||--|{ INVOICE_LINES : contains
+    INVOICES ||--o{ PAYMENTS : "settled by"
+    CATEGORIES {
         uuid id PK
         string name
         uuid parent_id FK
     }
-    PRODUCT {
+    PRODUCTS {
         uuid id PK
         string sku
         numeric price
         uuid category_id FK
         boolean active
     }
-    INVOICE_LINE {
+    INVOICE_LINES {
         uuid id PK
         uuid invoice_id FK
         uuid product_id FK
@@ -52,10 +52,10 @@ erDiagram
 
 | Table | Column | Points to | Enforced by |
 |---|---|---|---|
-| `invoice_line` | `product_id` | `catalog.product` | `CatalogFacade`, not a database foreign key — see [`database-conventions.md`](./database-conventions.md) |
+| `invoice_lines` | `product_id` | `catalog.products` | `CatalogFacade`, not a database foreign key — see [`database-conventions.md`](./database-conventions.md) |
 
-`invoice_line.unit_price` is copied from `catalog` at issue time through
-`CatalogFacade`, per **BR-02** — it is never read by joining `product` live.
+`invoice_lines.unit_price` is copied from `catalog` at issue time through
+`CatalogFacade`, per **BR-02** — it is never read by joining `products` live.
 
 ---
 
