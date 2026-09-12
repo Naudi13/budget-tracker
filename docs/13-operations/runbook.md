@@ -3,7 +3,7 @@
 > [!NOTE] INSTRUCTIONS
 > This is the global entry point; keep it routing to module runbooks
 > instead of absorbing their diagnosis steps, or the two will drift apart.
-> Delete this block once the recovery drill below has been run for real.
+> Delete this block once the support drill below has been run for real.
 
 ## How this runbook is organized
 
@@ -32,10 +32,11 @@ routes, and it recovers the whole application, never one module alone.
 | Rollback | Redeploy the previous artifact tag through the same [pipeline](../10-devops/ci-cd.md), never a hand-built fix on the running instance; confirm `/health` before declaring it resolved |
 
 There is one process and one release: every action above targets the whole
-application. **NFR-10** is the target this table is measured against — a
-support question or an outage is diagnosed and, where the table above
-provides an action, resolved in under five minutes, using
-[`./observability.md`](./observability.md) to find the cause.
+application, never a single module. **NFR-10** is narrower than this table:
+it measures a support question about one invoice, answered from logs alone
+in under five minutes, via the `correlationId` lookup in
+[`./observability.md`](./observability.md) — not a resolution time for the
+outages recovered above.
 
 ---
 

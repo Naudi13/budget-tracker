@@ -32,7 +32,7 @@ Distributed-system concerns belong to the [microservices governance framework](h
 
 - [ ] Every document in this section has its INSTRUCTIONS block removed
 - [ ] `runbook.md`'s symptom table has at least one row for every module in [`../09-modules/module-catalog.md`](../09-modules/module-catalog.md)
-- [ ] The **NFR-10** recovery drill described in `runbook.md` has been run at least once, timed, and logged
+- [ ] The **NFR-10** support drill described in `runbook.md` has been run at least once, timed, and logged
 
 ---
 
