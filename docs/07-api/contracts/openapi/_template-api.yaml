@@ -1,0 +1,173 @@
+openapi: 3.1.0
+info:
+  title: Monolith API
+  version: 1.0.0
+  description: >
+    The application's single public API. Copy this file once per resource
+    group it exposes (catalog, billing, ...) and replace `products` below
+    with that group's real resources. Naming, versioning, status codes and
+    the error shape here follow ../../rest-conventions.md.
+
+servers:
+  - url: https://{host}/api/v1
+    description: The application, any environment
+    variables:
+      host:
+        default: localhost:3000
+
+security:
+  - bearerAuth: []
+
+paths:
+  /products:
+    get:
+      operationId: listProducts
+      summary: List products
+      description: Paginated list of products, optionally filtered by category.
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+        - name: categoryId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: A page of products
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Product'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalError'
+    post:
+      operationId: createProduct
+      summary: Register a new product
+      description: Implements HU-01.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewProduct'
+            examples:
+              default:
+                value: { sku: SKU-1001, name: Notebook, price: 12.50, categoryId: 550e8400-e29b-41d4-a716-446655440000 }
+      responses:
+        '201':
+          description: Product created
+          headers:
+            Location:
+              description: URL of the new product
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/BadRequest'
+
+components:
+  parameters:
+    PageParam:
+      name: page
+      in: query
+      required: false
+      schema: { type: integer, minimum: 1, default: 1 }
+    LimitParam:
+      name: limit
+      in: query
+      required: false
+      schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+
+  schemas:
+    Product:
+      type: object
+      required: [id, sku, name, price, categoryId, active]
+      properties:
+        id: { type: string, format: uuid }
+        sku: { type: string }
+        name: { type: string }
+        price: { type: number, minimum: 0 }
+        categoryId:
+          type: string
+          format: uuid
+        active: { type: boolean }
+
+    NewProduct:
+      type: object
+      required: [sku, name, price, categoryId]
+      properties:
+        sku: { type: string, minLength: 1 }
+        name: { type: string, minLength: 1 }
+        price: { type: number, minimum: 0 }
+        categoryId:
+          type: string
+          format: uuid
+
+    PaginationMeta:
+      type: object
+      required: [page, limit, total]
+      properties:
+        page: { type: integer, minimum: 1 }
+        limit: { type: integer, minimum: 1, maximum: 100 }
+        total: { type: integer, minimum: 0 }
+
+    Error:
+      type: object
+      required: [error, message]
+      properties:
+        error:
+          type: string
+          description: Stable machine-readable error code.
+          examples: [VALIDATION_ERROR]
+        message:
+          type: string
+          examples: ['price must not be negative']
+        details:
+          type: array
+          items:
+            type: object
+            properties:
+              field: { type: string }
+              message: { type: string }
+
+  responses:
+    BadRequest:
+      description: The request is malformed, or fails a business rule
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Unauthorized:
+      description: No valid credentials were supplied
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    InternalError:
+      description: Unexpected server error
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
