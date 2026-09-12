@@ -44,7 +44,7 @@ belong to the [microservices governance framework](https://github.com/jesusariel
 - [ ] Every document in this section has its INSTRUCTIONS block removed
 - [ ] `ADR-001` is recorded as `Accepted`, or superseded by a numbered ADR in `decisions/records/`
 - [ ] One of modules or flat layers is chosen in writing, and the chosen document lists this project's own modules or layers
-- [ ] Every module name used in this section matches a row of [`module-boundaries.md`](../02-domain/module-boundaries.md) character for character
+- [ ] Every module this project adopts is spelled the same way here and in [`module-boundaries.md`](../02-domain/module-boundaries.md), and the framework's illustrative example names are gone
 - [ ] The `boundary check` stage described in [`boundary-enforcement.md`](./boundary-enforcement.md) runs on every pull request and fails the build on a violation
 
 ---

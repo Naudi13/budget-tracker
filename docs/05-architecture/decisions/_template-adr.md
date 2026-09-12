@@ -2,6 +2,7 @@
 
 > [!NOTE] INSTRUCTIONS
 > Copy this file to `records/ADR-NNN-short-title.md`; never edit it in place.
+> Every relative path below is written from `records/`, where the copy lives.
 > Bracketed placeholders are expected here and are not a violation of the
 > no-placeholder rule the rest of the repository follows. Fill in the
 > alternatives honestly — an ADR with one alternative is a justification
@@ -21,7 +22,7 @@
 
 [What forces the decision now, in three to five sentences. What breaks if it is
 not decided. Name the requirements that constrain it — `HU-NN`, `NFR-NN`, or a
-`BR-NN` rule from `../../02-domain/entities-and-rules.md`.]
+`BR-NN` rule from `../../../02-domain/entities-and-rules.md`.]
 
 | Constraint | Source |
 |---|---|
@@ -60,4 +61,4 @@ observable event. "If it becomes a problem" is not a condition.]
 
 ---
 
-**Related:** [`./README.md`](./README.md) · [`../README.md`](../README.md)
+**Related:** [`../README.md`](../README.md) · [`../../README.md`](../../README.md)

@@ -46,10 +46,14 @@ count the boxes in [`domain-map.md`](../02-domain/domain-map.md).
 | Developers committing in a normal week | up to 3 | 4 or more |
 | Cross-area collisions | rare | two people edit the same application-layer file weekly |
 
-**The line:** move to modules when the first row crosses, **or** when any two
-of the other three rows cross. Below that, stay flat — an eight-entity system
-in one context is faster to change, easier to read, and cheaper to test as
-four layers than as modules, and adding boundaries to it buys nothing.
+**The line:** row 1 is the trigger, and the only one — a module *is* a bounded
+context, so with one box on the map there is no second module to create, and a
+boundary drawn anyway would be technical, which is a layer. Rows 2-4 are
+corroboration: two of them crossing while row 1 has not means the map is
+under-drawn — redraw [`domain-map.md`](../02-domain/domain-map.md) with the team
+and count row 1 again. Below the line stay flat: an eight-entity system in one
+context is faster to change and cheaper to test as four layers than as modules,
+and adding boundaries to it buys nothing.
 
 ## How the move happens
 

@@ -3,9 +3,9 @@
 > [!NOTE] INSTRUCTIONS
 > This is the default architecture of this framework — see
 > [`ADR-001`](./decisions/records/ADR-001-modular-monolith-as-default.md).
-> Replace the example modules with this project's own, copied verbatim from
-> `../02-domain/module-boundaries.md`; the names must match, because the
-> boundary check reads them. Delete this block once the diagram shows the
+> Replace the example modules with this project's own: every module name that
+> reaches code must match a row of `../02-domain/module-boundaries.md`, because
+> the boundary check reads them. Delete this block once the diagram shows the
 > modules this project actually ships.
 
 ## What it is
@@ -27,15 +27,15 @@ flowchart TB
         Identity["identity<br/>IdentityFacade"]
         Billing -->|public API call| Catalog
         Billing -->|public API call| Identity
-        Catalog -->|public API call| Identity
     end
     App --> DB[("One relational database<br/>one schema per module")]
 ```
 
-`catalog` and `billing` come straight from the domain map. `identity` owns staff
-accounts and is the supporting module that answers `NFR-05`; it depends on
-nothing, which is what a well-placed boundary looks like. Arrows cross a
-boundary only through a public API, and never form a cycle.
+`catalog` and `billing` come straight from the domain map, and the arrow between
+them matches `module-boundaries.md`. `identity` is an illustrative third module,
+drawn only to show the shape at three: it is **not on this project's domain
+map**, and would have to be added there before any code carried the name. Arrows
+cross a boundary only through a public API, and never form a cycle.
 
 ## Anatomy of a module
 
@@ -64,7 +64,7 @@ the wrong place — the mechanism is not the problem.
 | Two or more bounded contexts on the domain map | Modular monolith |
 | Two or more people changing unrelated business areas in the same week | Modular monolith |
 | A business area that will outlive the current framework or database choice | Modular monolith |
-| One bounded context, fewer than ten entities, up to three developers | Over-engineering — use [`layered-architecture.md`](./layered-architecture.md) |
+| One bounded context on the domain map | Over-engineering — use [`layered-architecture.md`](./layered-architecture.md) |
 | Boundaries drawn before the domain is understood | Over-engineering — the lines freeze in the wrong place |
 | A folder per technical concern, called a module | Not a module at all; that is a layer |
 

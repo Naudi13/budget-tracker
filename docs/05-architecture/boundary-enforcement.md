@@ -34,10 +34,10 @@ Each tool is configured in full, per language, in [`../_stacks/README.md`](../_s
 ```jsonc
 // eslint-boundaries — .eslintrc
 "settings": { "boundaries/elements": [
-  { "type": "api", "pattern": "src/*/api/**" },
-  { "type": "internal", "pattern": "src/*/internal/**" }] },
-"rules": { "boundaries/element-types": ["error", { "default": "disallow",
-  "rules": [{ "from": "internal", "allow": ["api"] }] }] }
+  { "type": "api", "pattern": "src/*/api/**", "capture": ["module"] },
+  { "type": "internal", "pattern": "src/*/internal/**", "capture": ["module"] }] },
+"rules": { "boundaries/element-types": ["error", { "default": "disallow", "rules": [
+  { "from": ["api", "internal"], "allow": ["api", ["internal", { "module": "${from.module}" }]] }] }] }
 ```
 
 ```ini
@@ -54,8 +54,8 @@ forbidden_modules = app.catalog.internal
 layers:
   - { name: CatalogApi, collectors: [{ type: directory, value: src/catalog/api/.* }] }
   - { name: CatalogInternal, collectors: [{ type: directory, value: src/catalog/internal/.* }] }
-ruleset:
-  Billing: [CatalogApi]   # CatalogInternal is absent, so it is forbidden
+  - { name: Billing, collectors: [{ type: directory, value: src/billing/.* }] }
+ruleset: { CatalogApi: [CatalogInternal], Billing: [CatalogApi] }  # absent means forbidden
 ```
 
 ## Where it runs
@@ -63,10 +63,9 @@ ruleset:
 | Stage | Scope | On failure |
 |---|---|---|
 | Pre-commit hook, optional | Changed files only | The commit is refused locally |
-| `boundary check` | The whole tree, on every pull request | The build fails; the pull request cannot merge |
+| `boundary check`, defined in [`../10-devops/ci-cd.md`](../10-devops/ci-cd.md) | The whole tree, on every pull request | The build fails; the pull request cannot merge |
 
-The stage is defined in [`../10-devops/ci-cd.md`](../10-devops/ci-cd.md) and runs
-before the test stages: a boundary violation makes test results uninteresting.
+It runs before the test stages: a boundary violation makes test results uninteresting.
 
 ## Breaking the rule on purpose
 

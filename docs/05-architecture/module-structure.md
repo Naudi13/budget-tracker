@@ -20,7 +20,7 @@ src/
 │       ├── application/      use cases, transaction boundaries
 │       └── persistence/      queries and mappings for this module's tables
 ├── billing/                  same shape: api/ + internal/
-├── identity/                 same shape: api/ + internal/
+├── identity/                 illustrative only — see ./modular-monolith.md
 └── platform/                 technical code owned by no bounded context
     ├── config/               framework wiring — the only place it may live
     └── errors/               shared error types and the global handler
@@ -56,7 +56,7 @@ tests/
 
 ## If this project is flat, not modular
 
-Replace the three module folders with the four layer folders from
+Replace the module folders with the four layer folders from
 [`layered-architecture.md`](./layered-architecture.md), keep `platform/`,
 `resources/` and `tests/` unchanged, and drop `tests/module-integration/` —
 there are no module boundaries yet to integrate across.
