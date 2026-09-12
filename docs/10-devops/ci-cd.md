@@ -31,7 +31,7 @@ so the pipeline stops before running them.
 |---|---|---|
 | `build` | Compiles the application from source | The code does not compile, or a dependency cannot be resolved |
 | `boundary check` | Runs the stack's tool from [`boundary-enforcement.md`](../05-architecture/boundary-enforcement.md) against the whole tree | Any module reaches another module's `internal/` code |
-| `test` | Runs the `unit` and `module-integration` layers from [`testing-strategy.md`](../11-quality/testing-strategy.md) | A test fails, or coverage drops below **NFR-07** (80% overall, 90% on `billing`) |
+| `test` | Runs the `unit` and `module-integration` layers from [`testing-strategy.md`](../11-quality/testing-strategy.md) | A test fails, or coverage drops below **NFR-07** (80% on changed files, 90% on `billing`) |
 | `package` | Assembles the one deployable artifact — a container image, executable bundle, or package, per `_stacks/` — and tags it with the commit | The artifact cannot be assembled |
 | `deploy` | Promotes the artifact to an environment from [`environments.md`](./environments.md) and runs a smoke test | Staging: the `end-to-end` layer fails. Production: the health check fails, or approval is not granted |
 

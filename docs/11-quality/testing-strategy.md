@@ -27,7 +27,7 @@ code to set up its scenario is not a `module-integration` test — it is a
 
 | Layer | What it covers | What it does NOT cover | Threshold |
 |---|---|---|---|
-| `unit` | One class or function inside one module, collaborators replaced by test doubles | The module's own public API surface, the database, any other module | 80% line coverage overall, 90% on `billing` — **NFR-07** |
+| `unit` | One class or function inside one module, collaborators replaced by test doubles | The module's own public API surface, the database, any other module | 80% line coverage on changed files, 90% on `billing` — **NFR-07** |
 | `module-integration` | A module's public API (`CatalogFacade`, `BillingFacade`), called from outside the module, against a real database | Another module's internal code; two modules exercised through a third's API in one test | Every `BR-NN` reachable through a facade has at least one test |
 | `end-to-end` | The whole deployable, through its one HTTP API, exactly as `ci-cd.md`'s `deploy` stage runs it | Load and concurrency — that is **NFR-01**, measured separately | Every ⭐-priority `HU-NN` has at least one test |
 
