@@ -44,7 +44,7 @@ flowchart TD
     G2(["Gate: architecture review"])
     P3["**DETAILED DESIGN**\n08-uml -> 09-modules -> 12-ux-ui\nHow each module and screen is built"]
     G3(["Gate: sprint-planning kickoff"])
-    P4["**IMPLEMENTATION & OPERATIONS**\n10-devops -> 11-quality -> 13-operations\nCode guided by the design docs, tests written first"]
+    P4["**IMPLEMENTATION AND OPERATIONS**\n10-devops -> 11-quality -> 13-operations\nCode guided by the design docs, tests written first"]
 
     P1 --> G1 --> P2 --> G2 --> P3 --> G3 --> P4
 
@@ -78,6 +78,11 @@ flowchart TD
 | 4 | 10 | `09-modules/` | What does each module contain, own, and expose? |
 | 4 | 11 | `12-ux-ui/` | What does the interface look like, screen by screen? |
 | 5+ | 12 | `10-devops/`, `11-quality/`, `13-operations/` | How is it built, tested, run, and observed? |
+
+`_stacks/` is not part of the week-by-week order above — it is a cross-cutting
+folder you read once, at the very start, to choose the guide matching this
+project's language and adopt its folder layout and command conventions before
+Week 1 begins.
 
 ## Review gates
 
