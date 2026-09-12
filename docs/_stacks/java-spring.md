@@ -11,7 +11,7 @@ Checked **2026-09-12**. Re-check every row before adopting this guide.
 | Component | Version | Verify with |
 |---|---|---|
 | JDK | 21 (LTS) | `java --version` |
-| Spring Boot | 3.5.x — every other version is managed by its BOM | the parent block in `pom.xml` |
+| Spring Boot | 4.1.x — every other version is managed by its BOM; the 3.5 line is the last 3.x and is past OSS support | the parent block in `pom.xml` |
 | ArchUnit | 1.3+, artifact `archunit-junit5`, test scope | `mvn -q dependency:tree -Dincludes=com.tngtech.archunit` |
 
 ## Module layout
@@ -69,10 +69,10 @@ class ModuleBoundaryTest {
 |---|---|---|
 | `build` | `mvn -q compile` | Compiles `src/main/java`; fails on an unresolvable dependency |
 | `boundary check` | `mvn -q test -Dtest=ModuleBoundaryTest` | Runs the boundary test alone, before any other test |
-| `test` | `mvn -q test` | `unit` and `module-integration` — Surefire excludes the `end-to-end` group. JaCoCo writes `target/site/jacoco/jacoco.xml`, to which the stage applies **NFR-07**: 80% of the lines this pull request changed, 90% once it touches `billing` |
-| `package` | `mvn -q package -DskipTests` | One executable jar under `target/`, tagged with the commit |
+| `test` | `mvn -q test` | `unit` and `module-integration` — Surefire excludes the `end-to-end` group. JaCoCo writes `target/site/jacoco/jacoco.xml`, whose per-source-file counters the stage reads to apply **NFR-07**: 80% on changed files, 90% on the `billing` module |
+| `package` | `mvn -q package -DskipTests`, then `docker build -t app:$(git rev-parse --short HEAD) .` | One executable jar under `target/`, wrapped in one image tagged with the commit — Maven itself stamps no commit |
 | `deploy` | `mvn -q failsafe:integration-test failsafe:verify -Pe2e` | `end-to-end` against the promoted artifact — the goals run directly, so nothing is rebuilt |
-| local | `mvn spring-boot:run`, then `mvn liquibase:update` | Serves on `APP_PORT`; applies pending changesets to the local database |
+| local | `mvn spring-boot:run`, then `mvn liquibase:update` | Boot reads `server.port`, not `APP_PORT`: set `SERVER_PORT=3000` in `.env` to serve on the framework's default port. Applies pending changesets to the local database |
 
 ---
 

@@ -34,7 +34,7 @@ Distributed-system concerns belong to the [microservices governance framework](h
 - [ ] Every document in this section has its INSTRUCTIONS block removed
 - [ ] The pipeline in `ci-cd.md` runs on every pull request and blocks the merge on any stage failure
 - [ ] A developer with none of the prerequisites installed reaches a responding application by following `local-setup.md` alone, inside NFR-08's one-hour budget
-- [ ] Every environment in `environments.md` is reachable only through a stage of the one pipeline in `ci-cd.md`
+- [ ] Every deployed environment in `environments.md` — `staging` and `production` — is reachable only through a stage of the one pipeline in `ci-cd.md`; `local` is the one exception, and the developer deploys it by hand
 
 ---
 

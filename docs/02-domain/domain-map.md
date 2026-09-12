@@ -10,18 +10,18 @@
 ```mermaid
 graph TD
     Catalog["Catalog<br/>products, categories"]
-    Billing["Billing<br/>invoices, payments"]
+    Billing["Billing<br/>invoices, invoice_lines, payments"]
 
     Billing -->|reads current price from| Catalog
-    Billing -->|confirms stock before invoicing| Catalog
+    Billing -->|validates product references with| Catalog
 ```
 
 ## Relationship legend
 
 | Arrow | Meaning |
 |---|---|
-| `reads current price from` | Read-only lookup; Billing owns no pricing data |
-| `confirms stock before invoicing` | Read-only check that runs before an invoice is finalized |
+| `reads current price from` | Read-only lookup; Billing owns no pricing data. The price is copied onto the invoice line at issue time, per **BR-02** |
+| `validates product references with` | Read-only check that the product an invoice line names exists and is not retired, per **BR-01** — the stored `product_id` is a plain column, never a foreign key |
 
 ## How this map is used
 

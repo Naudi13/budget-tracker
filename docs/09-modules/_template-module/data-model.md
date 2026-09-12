@@ -26,11 +26,13 @@ Schema-per-module and naming rules live in
 
 | Column | Points to | Validated by |
 |---|---|---|
-| [`[other_module]_id`, or "none"] | [`[OtherModule].[table]`, or "—"] | [`[Other]Facade`, never a foreign key] |
+| [`[other_singular_table]_id`, or "none"] | [`[other_module].[other_table]`, or "—"] | [`[Other]Facade`, never a foreign key] |
 
 No foreign key crosses this module's schema boundary — a reference to
 another module's row is a plain column, checked through that module's public
-API at write time, not by a database constraint.
+API at write time, not by a database constraint. The column is named for the
+table it points at, not the module that owns it: `product_id`, never
+`catalog_id`.
 
 ---
 

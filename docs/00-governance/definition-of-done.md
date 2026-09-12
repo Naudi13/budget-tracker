@@ -16,14 +16,14 @@ A story is done when every item below is true, not when the code compiles.
 | 3 | No new coupling between modules that were not already coupled | Reviewer checks the import graph, not only the diff |
 | 4 | Public module boundaries are unchanged, or the change is documented | Diff against [`../09-modules/module-catalog.md`](../09-modules/module-catalog.md) |
 | 5 | Database migrations run cleanly on a copy of the production schema | CI migration job, not a local run |
-| 6 | Logs and errors follow the project's observability format | Reviewer checks against [`../.env.example`](../.env.example) fields |
+| 6 | Logs and errors follow the project's observability format | Reviewer checks the log line against the fields in [`../13-operations/observability.md`](../13-operations/observability.md) |
 | 7 | Documentation affected by the change is updated in the same pull request | Reviewer confirms in the PR description |
 | 8 | At least one reviewer approved and CI is green | Branch protection rule on `main` |
 
 ## Coverage threshold
 
-- **Line coverage:** 80% minimum on files touched by the pull request.
-- **Critical modules** (auth, payments, data access): 90% minimum.
+- **Line coverage:** 80% minimum on changed files — the files a pull request touches.
+- **The `billing` module:** 90% minimum, on that same changed-file basis — **NFR-07**.
 - Coverage that drops below threshold blocks the merge — it is not a warning.
 
 ---

@@ -24,7 +24,8 @@ other than the author has read it and the instructions block is gone.
 4. **Every claim is falsifiable.** "The system must be fast" is not a requirement;
    "p95 under 300 ms at 50 concurrent users" is.
 5. **Links are relative.** Absolute links break when the repository is forked.
-6. **English.** See `05-architecture/decisions/records/ADR-001`.
+6. **English.** One working language for the whole repository — a term defined
+   once and then translated in a second document quietly becomes two terms.
 
 ## Review checklist
 

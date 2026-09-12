@@ -11,8 +11,8 @@ Checked **2026-09-12**. Re-check every row before adopting this guide.
 | Component | Version | Verify with |
 |---|---|---|
 | Node and TypeScript | 22 (LTS) and 5.x, `"module": "nodenext"` | `node --version`, `npx tsc --version` |
-| ESLint and eslint-plugin-boundaries | 9.x and 5.x, flat config | `npx eslint --version` |
-| Vitest | 2.x | `npx vitest --version` |
+| ESLint and eslint-plugin-boundaries | 10.x and 7.x, flat config — the configuration below is written in the plugin's pre-7 rule shape, which 7.x still enforces under key names it has since renamed | `npx eslint --version` |
+| Vitest | 5.x | `npx vitest --version` |
 
 ## Module layout
 
@@ -70,7 +70,7 @@ export default [{
 |---|---|---|
 | `build` | `npm ci && npx tsc -p tsconfig.build.json` | Installs from the lockfile, type-checks, emits `dist/` |
 | `boundary check` | `npx eslint src --max-warnings 0` | The rule above, over the whole tree, before any test runs |
-| `test` | `npx vitest run tests/unit tests/module-integration --coverage` | The two layers the stage owns. Coverage lands in `coverage/lcov.info`, to which the stage applies **NFR-07**: 80% of the lines this pull request changed, 90% once it touches `billing` |
+| `test` | `npx vitest run tests/unit tests/module-integration --coverage` | The two layers the stage owns. Coverage lands in `coverage/lcov.info`, whose per-file records the stage reads to apply **NFR-07**: 80% on changed files, 90% on the `billing` module |
 | `package` | `docker build -t app:$(git rev-parse --short HEAD) .` | One image from `dist/`, tagged with the commit |
 | `deploy` | `npx vitest run tests/end-to-end` | `end-to-end` against the promoted artifact |
 | local | `npm run dev`, then `npx node-pg-migrate up -m resources/db/migration` | Serves on `APP_PORT`; applies pending migrations to the local database |

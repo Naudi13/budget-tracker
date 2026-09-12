@@ -7,9 +7,10 @@
 ## Purpose
 
 This section keeps the diagrams that explain the shape of the single
-deployable, from system context down to component level. Diagram sources
-live in `diagrams/source/`; only their rendered PNG exports live in
-`diagrams/exports/`.
+deployable, from system context down to component level. Each one is Mermaid
+embedded in the document that needs it — the way every other section draws its
+diagrams — and `diagrams/` holds only what Mermaid cannot express: a tool's own
+source under `source/`, its rendered export under `exports/`.
 
 ## Documents
 
@@ -31,8 +32,8 @@ Distributed-system concerns belong to the [microservices governance framework](h
 ## Ready when
 
 - [ ] `diagram-index.md` has its INSTRUCTIONS block removed
-- [ ] Every row in `diagram-index.md` names a real file under `diagrams/source/` or `diagrams/exports/`
-- [ ] No diagram in this section models anything below C4 component level
+- [ ] Every row in `diagram-index.md` names a diagram that renders — inline Mermaid in a document that exists, or a file committed under `diagrams/`
+- [ ] No diagram indexed here models anything below C4 component level
 
 ---
 

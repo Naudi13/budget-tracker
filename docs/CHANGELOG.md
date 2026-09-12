@@ -3,6 +3,26 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) | [SemVer](http
 
 ## [Unreleased]
 
+### Fixed
+- **NFR-07** now reads the same everywhere: 80% on changed files, 90% on the
+  `billing` module. The stack guides no longer gate on changed lines, and the
+  Definition of Done no longer names modules this framework does not have
+- `02-domain/domain-map.md`: Billing owns three tables, and its second arrow to
+  Catalog is the product-reference check the framework models, not a stock check
+- The English rule in `00-governance/documentation-rules.md` stands on its own
+  authority instead of citing an ADR that does not contain it
+- `_stacks/` version baselines refreshed against what the builds resolve today
+- One default port, 3000, across `.env.example`, `local-setup.md`, the OpenAPI
+  template and the stack guides, with Spring Boot's `server.port` named as the
+  one platform that overrides it
+- `04-requirements/traceability-matrix.md` closes for `NFR-NN` as well as
+  `HU-NN`; `08-uml/` indexes inline Mermaid instead of exports that do not
+  exist; `12-ux-ui/README.md` carries the applicability slot it promised
+- Smaller corrections to the status-code table, the schema-qualified tables, the
+  cross-module foreign-key naming and rationale, the glossary's "component" row,
+  the `local` environment exception, order capture in scope, and the phase
+  diagram, which now shows `00-governance` and `_stacks`
+
 ## [2.0.0] - 2026-09-12
 
 ### Added

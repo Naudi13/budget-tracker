@@ -2,18 +2,20 @@
 
 > [!NOTE] INSTRUCTIONS
 > One row per diagram that earns its keep — an outdated diagram is worse than
-> no diagram. Add a row before adding a source file, and delete a row the
-> same day its source file is deleted. Delete this block once the table
-> matches `diagrams/source/` exactly.
+> no diagram. The four rows below are an example: delete them, then add one row
+> per diagram this project keeps, each row written before its diagram is drawn.
+> Delete this block once the table lists only this project's own diagrams.
 
 ## Diagrams
 
-| Diagram | C4 level | Source file | Last updated |
+Example rows — they show the shape, not this project's inventory.
+
+| Diagram | C4 level | Where it renders | Kept current by |
 |---|---|---|---|
-| System context | Context | `diagrams/source/context.mmd` | 2026-09-12 |
-| Single deployable | Container | `diagrams/source/container.mmd` | 2026-09-12 |
-| `catalog` internals | Component | `diagrams/source/catalog-component.mmd` | 2026-09-12 |
-| `billing` internals | Component | `diagrams/source/billing-component.mmd` | 2026-09-12 |
+| System context | Context | Inline Mermaid, in the document that needs it | The pull request that adds or drops an external system |
+| Single deployable | Container | Inline Mermaid, in [`../05-architecture/modular-monolith.md`](../05-architecture/modular-monolith.md) | The pull request that adds or drops a module |
+| `catalog` internals | Component | Inline Mermaid, in that module's own folder under `09-modules/` | The pull request that moves code across the module's internal folders |
+| `billing` internals | Component | A tool export committed under `diagrams/`, for a diagram Mermaid cannot express | The same pull request, plus a re-export |
 
 ## What each level answers
 

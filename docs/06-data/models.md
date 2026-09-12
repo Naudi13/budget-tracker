@@ -9,15 +9,19 @@
 
 | Entity | Table | Owning module | Key attributes |
 |---|---|---|---|
-| Category | `categories` | `catalog` | name, parent category (self-referencing, optional) |
-| Product | `products` | `catalog` | sku, name, price, category, active |
-| Invoice | `invoices` | `billing` | total, status, issued date |
-| Invoice line | `invoice_lines` | `billing` | invoice, product reference, quantity, unit price |
-| Payment | `payments` | `billing` | invoice reference, amount, method, recorded date |
+| Category | `catalog.categories` | `catalog` | name, parent category (self-referencing, optional) |
+| Product | `catalog.products` | `catalog` | sku, name, price, category, active |
+| Invoice | `billing.invoices` | `billing` | total, status, issued date |
+| Invoice line | `billing.invoice_lines` | `billing` | invoice, product reference, quantity, unit price |
+| Payment | `billing.payments` | `billing` | invoice reference, amount, method, recorded date |
 
 Invariants for each entity live in
 [`entities-and-rules.md`](../02-domain/entities-and-rules.md); this table
-only adds the table name and the module that owns it.
+only adds the table name and the module that owns it. Every table here is named
+with its schema, following the schema-per-module default in
+[`database-conventions.md`](./database-conventions.md) — a project on the
+table-prefix fallback writes `catalog_products` instead. The diagram below
+names entities, not tables.
 
 ## Relationships
 
@@ -52,7 +56,7 @@ erDiagram
 
 | Table | Column | Points to | Enforced by |
 |---|---|---|---|
-| `invoice_lines` | `product_id` | `catalog.products` | `CatalogFacade`, not a database foreign key — see [`database-conventions.md`](./database-conventions.md) |
+| `billing.invoice_lines` | `product_id` | `catalog.products` | `CatalogFacade`, not a database foreign key — see [`database-conventions.md`](./database-conventions.md) |
 
 `invoice_lines.unit_price` is copied from `catalog` at issue time through
 `CatalogFacade`, per **BR-02** — it is never read by joining `products` live.

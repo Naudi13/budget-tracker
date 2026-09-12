@@ -28,10 +28,21 @@ time, never by a `REFERENCES` constraint. Reviewer check: no row in the
 foreign-key catalog references a table outside its own schema or prefix
 group.
 
+The reason is ownership, not a plan to split anything apart. A constraint
+declared by `billing` on `catalog.products` is one module writing a rule into
+another module's table, and it makes every later change to that table
+`billing`'s problem to review. The cost is accepted rather than denied: the
+database no longer refuses an orphaned `product_id`, so the facade check and a
+`module-integration` test standing on it are what replace the constraint. A
+write that spans two modules still commits inside the one transaction on the
+one database [`../01-context/overview.md`](../01-context/overview.md) requires
+— what moves is who checks the reference, not where the commit happens.
+
 ## Naming
 
 | Element | Rule | Example |
 |---|---|---|
+| Entity — the concept, not a table | Singular, in the business's own words; the plural rule below is for tables and never reaches this column | `Product`, `Invoice line` |
 | Table | snake_case, plural | `products`, `invoice_lines` |
 | Column | snake_case | `unit_price`, `issued_date` |
 | Primary key | `id`, UUID | `id UUID PRIMARY KEY` |

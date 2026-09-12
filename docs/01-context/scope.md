@@ -19,6 +19,7 @@
 
 | Capability | Why it is excluded |
 |---|---|
+| Order capture | Orders are taken and confirmed upstream of this application; it receives an order already confirmed and invoices it, and stores no order of its own |
 | Multi-currency pricing | The business trades in one currency only |
 | Customer self-service portal | Customers deal with staff directly, not a login |
 | Marketplace / multi-vendor selling | The catalog belongs to one seller |

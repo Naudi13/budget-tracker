@@ -18,7 +18,10 @@
 
 1. Clone the repository and enter it.
 2. Copy [`.env.example`](../.env.example) to `.env`; the defaults match a
-   fresh local PostgreSQL instance and need no edits to start.
+   fresh local PostgreSQL instance and need no edits to start. `APP_PORT` is
+   3000 — this framework's default port, used by every example URL here and by
+   the API contract template. A stack whose framework names the port something
+   else says so in its own guide under [`_stacks/`](../_stacks/README.md).
 3. Create the local database named in `DATABASE_URL`.
 4. Install dependencies with this project's package manager — see
    [`_stacks/README.md`](../_stacks/README.md).

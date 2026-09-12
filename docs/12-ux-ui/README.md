@@ -13,6 +13,10 @@ screens, this section defines what keeps them consistent with each other —
 shared tokens, a component inventory, and one named accessibility target —
 not general design advice.
 
+**Applies to this system:** yes — the application serves screens. A system with
+no interface of its own replaces this line with "no", plus the one-line reason,
+and leaves every document in this section unfilled.
+
 ## Documents
 
 | Document | Answers | Priority |
@@ -32,7 +36,7 @@ Distributed-system concerns belong to the [microservices governance framework](h
 
 ## Ready when
 
-- [ ] A reviewer has recorded, in this file, whether this section applies to the system or is explicitly skipped
+- [ ] A reviewer has recorded the decision on the **Applies to this system** line above — this section applies, or is explicitly skipped and why
 - [ ] Every document in this section has its INSTRUCTIONS block removed
 - [ ] Every screen copied from `_template-screen.md` cites a real `HU-NN` from [`../04-requirements/user-stories.md`](../04-requirements/user-stories.md), not a placeholder
 

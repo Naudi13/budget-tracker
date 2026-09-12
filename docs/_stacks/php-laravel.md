@@ -10,7 +10,7 @@ Checked **2026-09-12**. Re-check every row before adopting this guide.
 
 | Component | Version | Verify with |
 |---|---|---|
-| PHP and Laravel | 8.3 and 12.x | `php --version`, `php artisan --version` |
+| PHP and Laravel | 8.3 and 13.x | `php --version`, `php artisan --version` |
 | Deptrac and PHPUnit | 4.x (`deptrac/deptrac` — the older `qossmic/deptrac` is abandoned; root key is still `deptrac:`) and 11.x, both dev dependencies | `vendor/bin/deptrac --version`, `vendor/bin/phpunit --version` |
 
 ## Module layout
@@ -70,10 +70,10 @@ deptrac:
 |---|---|---|
 | `build` | `composer install --no-interaction --prefer-dist` | Installs from the lockfile and rebuilds the autoloader; an unresolvable class fails here |
 | `boundary check` | `vendor/bin/deptrac analyse` | The ruleset above over `app/`, before any test runs |
-| `test` | `php artisan test --coverage` | The default suite — `Unit` and `ModuleIntegration`, fixed by `defaultTestSuite` in `phpunit.xml` so `EndToEnd` stays out. Coverage feeds **NFR-07**: 80% of the lines this pull request changed, 90% once it touches `billing` |
+| `test` | `php artisan test --coverage` | The default suite — `Unit` and `ModuleIntegration`, fixed by `defaultTestSuite` in `phpunit.xml` so `EndToEnd` stays out. Its per-file coverage feeds **NFR-07**: 80% on changed files, 90% on the `billing` module |
 | `package` | `docker build -t app:$(git rev-parse --short HEAD) .` | One image, tagged with the commit |
 | `deploy` | `php artisan test --testsuite=EndToEnd` | `end-to-end` against the promoted artifact |
-| local | `php artisan migrate`, then `php artisan serve --port=3000` | Applies pending changes; serves on `APP_PORT` |
+| local | `php artisan migrate`, then `php artisan serve --port="$APP_PORT"` | Applies pending changes; serves on `APP_PORT` — 3000 in `.env.example`, this framework's default port |
 
 ---
 

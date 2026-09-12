@@ -36,6 +36,7 @@ below applies once, to the whole application.
 | 401 / 403 | No credentials, or credentials without permission |
 | 404 | The resource, or its parent in a nested path, does not exist |
 | 409 | The request conflicts with the resource's current state — e.g. `BR-03`, a payment against an already-paid invoice |
+| 500 | The application failed to handle the request at all — an unhandled error, logged with its `correlationId` per **NFR-09** |
 
 ## Error format
 

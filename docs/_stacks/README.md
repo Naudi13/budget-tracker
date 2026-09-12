@@ -3,7 +3,7 @@
 > [!NOTE] INSTRUCTIONS
 > Read this before the first line of code: choose the one guide whose language
 > matches this project, adopt its tree and its commands, and delete the other
-> three from this folder.
+> three from this folder — and their rows from the Documents table below.
 > Delete this block once the chosen guide's tree exists on disk.
 
 ## Purpose
@@ -23,8 +23,9 @@ that can be pasted into a terminal.
 | [php-laravel.md](./php-laravel.md) | What is it in PHP and Laravel, checked by Deptrac? | ⭐ |
 
 Exactly one row is ⭐ for a given project — the one whose language matches. The
-other three are deleted in the same pull request that adopts the tree, so the
-repository never carries advice for a stack it does not run.
+other three guides are deleted in the same pull request that adopts the tree,
+and their rows go from the table above with them, so the repository never
+carries advice — or a link to a deleted file — for a stack it does not run.
 
 All four carry the same six headings in the same order — `Version baseline`,
 `Module layout`, `Boundary enforcement`, `Migrations`, `Test layers`,
@@ -62,7 +63,7 @@ Distributed-system concerns belong to the
 
 ## Ready when
 
-- [ ] One guide is chosen and the other three are deleted from this folder
+- [ ] One guide is chosen, the other three are deleted from this folder, and their rows are removed from the Documents table above
 - [ ] The chosen guide's INSTRUCTIONS block is removed
 - [ ] The tree in the chosen guide exists on disk under this project's own module names, and `catalog` and `billing` appear nowhere in the source
 - [ ] The boundary configuration file the chosen guide names is committed, and has failed once on a deliberate violation
