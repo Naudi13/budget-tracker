@@ -29,7 +29,7 @@ its data, exposes a narrow **public API**, and keeps everything else **internal*
 | Module | Owns | Public API | Depends on |
 |---|---|---|---|
 | `catalog` | products, categories | `CatalogFacade` | — |
-| `billing` | invoices, payments | `BillingFacade` | `catalog` |
+| `billing` | invoices, invoice_lines, payments | `BillingFacade` | `catalog` |
 
 ## Signals the boundary is wrong
 

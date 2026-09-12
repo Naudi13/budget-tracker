@@ -1,4 +1,4 @@
-# Definition of Ready
+# 00 — Definition of Ready
 
 > [!NOTE] INSTRUCTIONS
 > Fill in the "How it is verified" column with something checkable — a reviewer

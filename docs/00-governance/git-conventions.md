@@ -1,4 +1,4 @@
-# Git Conventions
+# 00 — Git Conventions
 
 > [!NOTE] INSTRUCTIONS
 > This document is normative — a pull request that violates it is a request for

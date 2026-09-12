@@ -1,4 +1,4 @@
-# Security Policy
+# 00 — Security Policy
 
 > [!NOTE] INSTRUCTIONS
 > Replace generic tool names with the ones this project actually runs in CI.

@@ -1,4 +1,4 @@
-# Agile Conventions
+# 00 — Agile Conventions
 
 > [!NOTE] INSTRUCTIONS
 > Match the cadence column to what the team's calendar actually says, not to what
