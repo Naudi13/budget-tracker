@@ -31,6 +31,9 @@ still does not exist once `05-architecture`, `09-modules`, and `11-quality`
 are filled in. Until then, every forward link above is a gap by definition —
 recheck this matrix once those sections land.
 
+Once a real test case exists for a row, its Test case column should carry
+that test case's `Id` from [`_template-test-case.md`](../11-quality/_template-test-case.md), in place of the layer name shown above.
+
 ---
 
 **Related:** [`./user-stories.md`](./user-stories.md) · [`./non-functional.md`](./non-functional.md)
