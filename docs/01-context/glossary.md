@@ -1,19 +1,16 @@
 # 01 — Glossary
 
-> [!NOTE] INSTRUCTIONS
-> Add every term a newcomer would have to ask about. A term used differently in
-> two documents is a bug in this glossary, not in those documents. Delete this
-> block once every document in the repository has been checked against it.
-
 ## Terms
 
 | Term | Definition | Forbidden synonyms |
 |---|---|---|
-| Product | An item the business sells, tracked in the catalog | Item, SKU (use only in database contexts) |
-| Category | A named grouping of products used for browsing and reporting | Tag, label |
-| Order | A customer's request for one or more products, before it is invoiced | Cart, ticket |
-| Invoice | The billing document generated from an order, owed by a customer | Bill, receipt |
-| Payment | A recorded amount applied against an invoice's balance | Transaction, charge |
+| Income | Money entering the business, recorded as a transaction | Revenue (use only in reporting-specific context), Earning |
+| Expense | Money leaving the business, recorded as a transaction | Cost, Outflow |
+| Transaction | A single recorded income or expense entry with an amount, a date, a category, and a description | Entry, Movement, Record |
+| Category | A label used to classify a transaction for reporting (e.g. "Sales", "Rent", "Supplies") | Tag, Type |
+| Balance | The net result of total income minus total expenses over a period | Net worth, Profit, Cash flow |
+| Dashboard | The summary view showing KPIs for a fast read of financial health | Report, Home page |
+| KPI | A single metric on the dashboard measuring one aspect of financial health (e.g. total income) | Metric, Indicator (used only when it means KPI) |
 | Module | A bounded context inside the single deployable, defined in [`../02-domain/module-boundaries.md`](../02-domain/module-boundaries.md) | Service; and "component" **when it means a module** — the word keeps its own meanings as a C4 level in [`../08-uml/diagram-index.md`](../08-uml/diagram-index.md) and as a UI part in [`../12-ux-ui/design-system.md`](../12-ux-ui/design-system.md) |
 
 ## Why forbidden synonyms matter
