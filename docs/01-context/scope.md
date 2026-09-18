@@ -4,10 +4,12 @@
 
 | Capability | Note |
 |---|---|
-| Income registration | Record a money-in transaction with amount, date, category, and description |
-| Expense registration | Record a money-out transaction with amount, date, category, and description |
-| Category management | Create custom income/expense categories from Configuration; delete a category only when no transaction references it |
-| Transaction listing | View and delete recorded income and expense transactions |
+| User account | A single account per business signs in to access its own data; no roles or multi-user permissions |
+| Income registration | Record a transaction (date, description) with one or more detail lines, each an amount against an income subcategory |
+| Expense registration | Record a transaction the same way, using an expense subcategory for each detail line |
+| Category & subcategory management | Create custom categories (income or expense) and subcategories from Configuration; delete only when unused, deactivate otherwise |
+| Budgeting | Set an amount limit per category for a defined period |
+| Transaction listing | View and delete recorded transactions (soft delete — the record is hidden, never permanently removed) |
 | Balance calculation | Net balance computed as total income minus total expenses |
 | Dashboard with KPIs | One view showing total income, total expenses, net balance, and the 5 most recent transactions |
 
@@ -16,7 +18,7 @@
 | Capability | Why it is excluded |
 |---|---|
 | Editing a recorded transaction | V1's flow only supports delete-and-recreate; in-place edit is not part of the planned UX yet |
-| Budgeting and spending limits | V1 records what happened; planning what should happen is a later version |
+| Budget vs. actual comparison and alerts | V1 only stores the limit; comparing it against recorded spending is a later version |
 | Invoicing and client billing | This product tracks the business's own income and expenses, not invoices issued to customers |
 | Bank account integration / auto-import | Transactions are entered manually in V1; no bank API integration exists yet |
 | Multi-currency support | The target user operates in a single currency |
