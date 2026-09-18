@@ -1,27 +1,23 @@
 # 03 — Vision
 
-> [!NOTE] INSTRUCTIONS
-> Fill in the one-sentence vision statement first — if it takes two sentences,
-> it is not a vision yet, it is a list. Give each objective a metric a
-> stakeholder can check without asking the team. Delete this block once both
-> are agreed.
-
 ## Vision statement
 
-For **the retail team running one store**, who need to **stop reconciling
-prices and invoices by hand**, **this commerce backend** is a
-**single-deployable application** that **keeps catalog and billing in one
-consistent place**, unlike **spreadsheets and paper invoices**, which
-**drift out of sync silently**.
+For **entrepreneurs and small business owners tracking their own finances**,
+who need to **stop guessing their cash position from scattered notes and
+spreadsheets**, **Budget Tracker** is a **single-deployable web application**
+that **turns every recorded income and expense into an always-current balance
+and a one-glance KPI dashboard**, unlike **spreadsheets and paper notebooks**,
+which **drift out of date and hide the current balance behind manual
+arithmetic**.
 
 ## Objectives
 
 | # | Objective | Metric |
 |---|---|---|
-| 1 | Eliminate price mismatches between catalog and invoice | Zero disputed invoices caused by a stale price, per quarter |
-| 2 | Cut invoice preparation time | Under 2 minutes from confirmed order to issued invoice |
-| 3 | Give the store manager same-day visibility into sales | Daily summary available before 9am local time |
-| 4 | Keep the system usable by a three-person team | Zero dedicated operations hire required in year one |
+| 1 | Keep the balance always current | Dashboard KPIs reflect the latest saved or deleted transaction with no manual recalculation, 100% of the time |
+| 2 | Make recording a transaction fast | Under 30 seconds from opening "New record" to returning to the dashboard |
+| 3 | Never lose a financial record by mistake | Every deleted transaction remains recoverable (soft delete); zero physical deletes in year one |
+| 4 | Keep the system usable without dedicated support staff | Zero dedicated operations hire required in year one |
 
 ## Reviewing the vision
 
