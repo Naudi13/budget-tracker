@@ -1,29 +1,26 @@
 # 01 — Scope
 
-> [!NOTE] INSTRUCTIONS
-> Replace both lists with what this product actually includes and excludes.
-> The "Out of scope" list is mandatory — a product with nothing excluded has not
-> been scoped, it has only been described. Delete this block once a stakeholder
-> has confirmed both lists.
-
 ## In scope
 
 | Capability | Note |
 |---|---|
-| Product catalog management | Create, price, categorize, and retire products |
-| Invoicing | Generate an invoice from an order and track its status |
-| Payment recording | Record a payment against an invoice and reconcile the balance |
-| Daily sales summary | One report, generated at close of business |
+| Income registration | Record a money-in transaction with amount, date, category, and description |
+| Expense registration | Record a money-out transaction with amount, date, category, and description |
+| Transaction listing | View, edit, and delete recorded income and expense transactions |
+| Balance calculation | Net balance computed as total income minus total expenses |
+| Dashboard with KPIs | One view showing total income, total expenses, and net balance for a fast read |
 
 ## Out of scope
 
 | Capability | Why it is excluded |
 |---|---|
-| Order capture | Orders are taken and confirmed upstream of this application; it receives an order already confirmed and invoices it, and stores no order of its own |
-| Multi-currency pricing | The business trades in one currency only |
-| Customer self-service portal | Customers deal with staff directly, not a login |
-| Marketplace / multi-vendor selling | The catalog belongs to one seller |
-| Splitting catalog or billing into a separately deployed application | This product ships and scales as one deployable, by design |
+| Budgeting and spending limits | V1 records what happened; planning what should happen is a later version |
+| Invoicing and client billing | This product tracks the business's own income and expenses, not invoices issued to customers |
+| Bank account integration / auto-import | Transactions are entered manually in V1; no bank API integration exists yet |
+| Multi-currency support | The target user operates in a single currency |
+| Multi-user roles and permissions | V1 serves a single owner/user per business; team collaboration is a later version |
+| Tax reporting and compliance exports | Out of scope until a specific jurisdiction's requirements are defined |
+| Splitting recording and dashboard into a separately deployed application | This product ships and scales as one deployable, by design |
 
 ## Revisiting scope
 
