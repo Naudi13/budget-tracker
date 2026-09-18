@@ -1,27 +1,20 @@
 # 02 — Domain Map
 
-> [!NOTE] INSTRUCTIONS
-> Draw each bounded context as a box and each relationship as a labeled arrow.
-> A context with no relationship to anything else is either wrong or the seed
-> of a good module boundary. Delete this block once the diagram matches reality.
-
 ## Bounded contexts
 
 ```mermaid
 graph TD
-    Catalog["Catalog<br/>products, categories"]
-    Billing["Billing<br/>invoices, invoice_lines, payments"]
+    Transactions["Transactions<br/>transactions, categories"]
+    Dashboard["Dashboard<br/>KPIs, recent transactions"]
 
-    Billing -->|reads current price from| Catalog
-    Billing -->|validates product references with| Catalog
+    Dashboard -->|reads transactions from| Transactions
 ```
 
 ## Relationship legend
 
 | Arrow | Meaning |
 |---|---|
-| `reads current price from` | Read-only lookup; Billing owns no pricing data. The price is copied onto the invoice line at issue time, per **BR-02** |
-| `validates product references with` | Read-only check that the product an invoice line names exists and is not retired, per **BR-01** — the stored `product_id` is a plain column, never a foreign key |
+| `reads transactions from` | Read-only; Dashboard owns no transaction data. Total income, total expenses, and net balance are computed on read from Transactions per **BR-03**, and the 5 most recent transactions are read the same way, unaggregated |
 
 ## How this map is used
 

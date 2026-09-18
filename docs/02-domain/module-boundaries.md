@@ -1,10 +1,5 @@
 # 02 — Module Boundaries
 
-> [!NOTE] INSTRUCTIONS
-> Decide where one module ends and the next begins, before any code exists.
-> Boundaries drawn on paper are cheap to move; boundaries drawn in code are not.
-> Fill the table with your own modules and delete the example rows.
-
 ## What a module is
 
 A **module** is a bounded context that lives inside the single deployable. It owns
@@ -19,7 +14,7 @@ its data, exposes a narrow **public API**, and keeps everything else **internal*
 ## How to draw the boundary
 
 1. Group behaviour by the **language the business uses**, not by technical layer.
-   `Billing` and `Catalog` are modules; `Controllers` and `Repositories` are not.
+   `Transactions` and `Dashboard` are modules; `Controllers` and `Repositories` are not.
 2. A module should own the data it writes. If two modules write the same table,
    the boundary is in the wrong place.
 3. Prefer **fewer, larger** modules at the start. Splitting is cheap; merging is not.
@@ -28,8 +23,8 @@ its data, exposes a narrow **public API**, and keeps everything else **internal*
 
 | Module | Owns | Public API | Depends on |
 |---|---|---|---|
-| `catalog` | products, categories | `CatalogFacade` | — |
-| `billing` | invoices, invoice_lines, payments | `BillingFacade` | `catalog` |
+| `transactions` | transactions, categories | `TransactionsFacade` | — |
+| `dashboard` | — (no owned tables; reads and aggregates on demand) | `DashboardFacade` | `transactions` |
 
 ## Signals the boundary is wrong
 
