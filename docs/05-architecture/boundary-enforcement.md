@@ -1,62 +1,45 @@
 # 05 — Boundary Enforcement
 
-> [!NOTE] INSTRUCTIONS
-> A boundary nobody checks is a comment. Pick the tool for this project's
-> language, commit its rule file before the second module exists, and wire the
-> `boundary check` stage. Delete this block once that stage has failed on purpose.
-
 ## What is being enforced
 
 One rule, in every language: **a module may import another module's `api/`, and
 never its `internal/`.** Names come from [`module-boundaries.md`](../02-domain/module-boundaries.md),
 folders from [`module-structure.md`](./module-structure.md).
 
-## Tool per stack
+## Tool for this stack
 
 | Stack | Tool | The rule you write |
 |---|---|---|
-| Java / Spring | **ArchUnit** | A test asserting no class outside a module depends on its internal packages |
-| Node / TypeScript | **eslint-boundaries** | An element type per folder, then an allow-list of imports between them |
-| Python / Django | **import-linter** | A `forbidden` contract from each module to every other module's internals |
-| PHP / Laravel | **Deptrac** | A layer per module folder, then a ruleset naming the layers each may reach |
+| C# / .NET | The `internal` access modifier, plus **NetArchTest.Rules** | A test asserting no type in a module's `Internal` namespace is public, and none is depended on from another module |
 
-Each tool is configured in full, per language, in [`../_stacks/README.md`](../_stacks/README.md).
+The tools for the other stacks are described in
+[`../_stacks/README.md`](../_stacks/README.md); this project does not run them.
 
-## One rule per tool
+## Two lines of defence
 
-```java
-// ArchUnit — an ordinary test in the build
-@ArchTest static final ArchRule billing_uses_catalog_api_only =
-    noClasses().that().resideInAPackage("..billing..")
-        .should().dependOnClassesThat().resideInAPackage("..catalog.internal..");
+| Line | Catches | When |
+|---|---|---|
+| One project per module, everything but the facade `internal` | A project using another module's non-public type | The compiler refuses the build |
+| A NetArchTest suite | A type made `public` inside `Internal` by mistake, or a dependency by namespace | The `boundary check` stage |
+
+```csharp
+// tests/boundary/ModuleBoundaryTests.cs — an ordinary test in the build
+var dependency = Types.InAssembly(typeof(TransactionsModule).Assembly)
+    .That().ResideInNamespace("BudTack.Transactions")
+    .ShouldNot().HaveDependencyOn("BudTack.Identity.Internal")
+    .GetResult();
+Assert.True(dependency.IsSuccessful);
+
+var visibility = Types.InAssembly(typeof(TransactionsModule).Assembly)
+    .That().ResideInNamespace("BudTack.Transactions.Internal")
+    .ShouldNot().BePublic()
+    .GetResult();
+Assert.True(visibility.IsSuccessful);
 ```
 
-```jsonc
-// eslint-boundaries — .eslintrc
-"settings": { "boundaries/elements": [
-  { "type": "api", "pattern": "src/*/api/**", "capture": ["module"] },
-  { "type": "internal", "pattern": "src/*/internal/**", "capture": ["module"] }] },
-"rules": { "boundaries/element-types": ["error", { "default": "disallow", "rules": [
-  { "from": ["api", "internal"], "allow": ["api", ["internal", { "module": "${from.module}" }]] }] }] }
-```
-
-```ini
-; import-linter — .importlinter
-[importlinter:contract:module-privacy]
-name = billing reaches catalog through its public API only
-type = forbidden
-source_modules = app.billing
-forbidden_modules = app.catalog.internal
-```
-
-```yaml
-# Deptrac — deptrac.yaml
-layers:
-  - { name: CatalogApi, collectors: [{ type: directory, value: src/catalog/api/.* }] }
-  - { name: CatalogInternal, collectors: [{ type: directory, value: src/catalog/internal/.* }] }
-  - { name: Billing, collectors: [{ type: directory, value: src/billing/.* }] }
-ruleset: { CatalogApi: [CatalogInternal], Billing: [CatalogApi] }  # absent means forbidden
-```
+`TransactionsModule` is one empty marker type per module assembly, so a test can
+name the assembly without touching internals. The same two checks are written
+once per module.
 
 ## Where it runs
 
@@ -65,13 +48,16 @@ ruleset: { CatalogApi: [CatalogInternal], Billing: [CatalogApi] }  # absent mean
 | Pre-commit hook, optional | Changed files only | The commit is refused locally |
 | `boundary check`, defined in [`../10-devops/ci-cd.md`](../10-devops/ci-cd.md) | The whole tree, on every pull request | The build fails; the pull request cannot merge |
 
-It runs before the test stages: a boundary violation makes test results uninteresting.
+It runs before the test stages: a boundary violation makes test results
+uninteresting. For example, `dotnet test --filter FullyQualifiedName~ModuleBoundaryTests`.
 
 ## Breaking the rule on purpose
 
-A suppression needs the tool's inline exemption, a comment naming the `HU-NN`
-that forced it, and an ADR recording why — see
-[`decisions/README.md`](./decisions/README.md). One with no ADR is a defect.
+In C# the exemption is an `InternalsVisibleTo` grant, or making a type public.
+Either needs a comment naming the `HU-NN` that forced it, and an ADR recording
+why — see [`decisions/README.md`](./decisions/README.md). A grant to a test
+assembly is not a violation; a grant to another module's assembly, with no ADR,
+is a defect.
 
 ---
 
