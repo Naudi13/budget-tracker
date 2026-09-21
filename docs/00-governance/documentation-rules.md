@@ -24,6 +24,8 @@ other than the author has read it and the instructions block is gone.
 4. **Every claim is falsifiable.** "The system must be fast" is not a requirement;
    "p95 under 300 ms at 50 concurrent users" is.
 5. **Links are relative.** Absolute links break when the repository is forked.
+   The one exception is a link to another repository (`be`, `fe`, `db`), which
+   uses that repository's full URL because a relative path cannot reach it.
 6. **English.** One working language for the whole repository — a term defined
    once and then translated in a second document quietly becomes two terms.
 

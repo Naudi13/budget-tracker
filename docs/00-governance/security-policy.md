@@ -1,36 +1,52 @@
 # 00 — Security Policy
 
-> [!NOTE] INSTRUCTIONS
-> Replace generic tool names with the ones this project actually runs in CI.
-> Delete this block once a second person has reviewed it against the pipeline.
+This project ships one application whose source lives in four repositories
+(`docs`, `be`, `fe`, `db`). Its controls apply to one running application — one
+backend process, one database — and each code repository applies them on its own.
 
-This project ships as a single deployable application. Its security controls
-apply to one process, one database, and one set of environment variables.
+## Owner
+
+The tech lead owns this policy: approves every waiver, receives every incident
+report, and confirms that a rotation happened.
 
 ## Secrets management
 
 | Rule | Detail |
 |---|---|
-| No secret in source control | Enforced by a pre-commit hook and a CI secret scanner |
-| Local development | Copy [`../.env.example`](../.env.example) and fill it with local-only values |
+| No secret in source control | Enforced in every repository by a pre-commit hook and a CI secret scanner |
+| Local development | Copy the `.env.example` at the root of the repository you are running and fill it with local-only values; this repository's own is [`../.env.example`](../.env.example) |
 | Staging and production | Injected by the deployment platform's secret store, never a committed file |
 | Rotation | Every 90 days, or immediately after a suspected leak |
 
 ## Dependency scanning
 
-- A CI job scans every pull request for known-vulnerable dependencies before merge.
+- A CI job in each code repository scans every pull request for known-vulnerable
+  dependencies before merge.
 - A **critical** or **high** severity finding blocks the merge until it is fixed,
   or waived in writing by the tech lead with an expiry date on the waiver.
 - Dependencies are upgraded on a monthly cadence even with no known vulnerability.
 
+## License
+
+The MIT `LICENSE` file, with its copyright notice, stays unchanged at the root
+of every repository. A dependency is adopted only if its license allows
+distribution inside an MIT-licensed application; the reviewer checks it in the
+pull request that adds the dependency.
+
 ## Authentication and authorization
 
-- **Authentication:** one identity provider for the whole application; a session
-  or token is validated once, at the edge of the request, before any handler runs.
-- **Authorization:** role and permission checks live in the domain layer, not in
-  the controller — a handler that skips the check is a bug, not a style choice.
+- **Authentication:** the `identity` module is the only place credentials are
+  checked; a session or token is validated once, at the edge of the request,
+  before any handler runs.
+- **Password storage:** a password is stored only as a salted hash and is never
+  logged — **NFR-06**.
+- **Authorization:** V1 has one account per business and no roles
+  ([`../01-context/scope.md`](../01-context/scope.md)); a write endpoint that
+  accepts an unauthenticated request is a bug — **NFR-05**. Any future permission
+  check lives in the domain layer, not the controller.
 - **Least privilege:** the application's own database user cannot `DROP` or
-  `ALTER` tables; migrations run under a separate, more privileged role.
+  `ALTER` tables; migrations from the `db` repository run under a separate, more
+  privileged role.
 
 ## Incident response
 

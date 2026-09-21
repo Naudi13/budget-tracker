@@ -4,7 +4,9 @@
 
 A single deployable web application that lets a small business or an
 entrepreneur record income and expenses and read the state of their finances
-from one dashboard, from one codebase, one database, and one release pipeline.
+from one dashboard. It is one deployable application with one database,
+released as a single unit, even though its source lives in separate
+documentation, backend, frontend, and database repositories.
 
 | Capability | Description |
 |---|---|
@@ -38,6 +40,7 @@ without manually adding up several sheets.
 |---|---|
 | One deployable application | A single small team or solo founder, no operating budget for running several deployments |
 | One relational database | Income, expenses, and balance must stay consistent within one transaction |
+| Source split across four repositories | `docs`, `be`, `fe`, and `db` are versioned separately but released together; see [`../00-governance/git-conventions.md`](../00-governance/git-conventions.md) |
 | A budget is a stored limit, not a comparison yet | V1 records the limit per category and period; checking actual spend against it comes later |
 
 ---

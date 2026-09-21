@@ -1,11 +1,8 @@
 # 00 — Agile Conventions
 
-> [!NOTE] INSTRUCTIONS
-> Match the cadence column to what the team's calendar actually says, not to what
-> a textbook recommends. Delete this block once a second person has reviewed it.
-
-This project runs two-week sprints, on a single backlog, for a single
-deployable application built by one team.
+This project runs two-week sprints, on a single backlog, for one application
+whose source lives in four repositories (`docs`, `be`, `fe`, `db`), built by one
+team.
 
 ## Ceremonies
 
@@ -28,6 +25,10 @@ deployable application built by one team.
 
 The backlog lives on a single board with columns `Backlog -> Ready -> In progress
 -> In review -> Done`. A story skips no column, even when it looks trivial.
+
+One board covers all four repositories: a story that touches several is one card,
+linked to its pull request in each repository, and it reaches "Done" only when
+every one of those pull requests is merged.
 
 ---
 
