@@ -10,8 +10,9 @@ from one dashboard, from one codebase, one database, and one release pipeline.
 |---|---|
 | Income tracking | Register a money-in transaction with amount, date, category, and description |
 | Expense tracking | Register a money-out transaction with amount, date, category, and description |
+| Category management | Create custom categories per type and remove ones with no transactions attached |
 | Balance | Compute the net balance as total income minus total expenses |
-| Dashboard | A single view with KPIs (total income, total expenses, net balance) for a fast read of financial health |
+| Dashboard | A single view with KPIs (total income, total expenses, net balance) and the 5 most recent transactions, for a fast read of financial health |
 
 ## Who it is for
 

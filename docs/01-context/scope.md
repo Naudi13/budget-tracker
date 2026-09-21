@@ -6,14 +6,16 @@
 |---|---|
 | Income registration | Record a money-in transaction with amount, date, category, and description |
 | Expense registration | Record a money-out transaction with amount, date, category, and description |
-| Transaction listing | View, edit, and delete recorded income and expense transactions |
+| Category management | Create custom income/expense categories from Configuration; delete a category only when no transaction references it |
+| Transaction listing | View and delete recorded income and expense transactions |
 | Balance calculation | Net balance computed as total income minus total expenses |
-| Dashboard with KPIs | One view showing total income, total expenses, and net balance for a fast read |
+| Dashboard with KPIs | One view showing total income, total expenses, net balance, and the 5 most recent transactions |
 
 ## Out of scope
 
 | Capability | Why it is excluded |
 |---|---|
+| Editing a recorded transaction | V1's flow only supports delete-and-recreate; in-place edit is not part of the planned UX yet |
 | Budgeting and spending limits | V1 records what happened; planning what should happen is a later version |
 | Invoicing and client billing | This product tracks the business's own income and expenses, not invoices issued to customers |
 | Bank account integration / auto-import | Transactions are entered manually in V1; no bank API integration exists yet |
