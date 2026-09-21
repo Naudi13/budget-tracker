@@ -1,16 +1,12 @@
 # 00 — Governance
 
-> [!NOTE] INSTRUCTIONS
-> Read this before filling in any document in this section.
-> Delete this block once every document in the section is complete.
-
 ## Purpose
 
 This section holds the rules the whole project commits to before any other
 section is filled in: how work enters a sprint, how it is closed, how branches
-and commits are named, which ceremonies run, how documentation is written, and
-how secrets and dependencies are kept safe inside a single deployable
-application.
+and commits are named across the `bud-tack-docs`, `-api`, `-front`, and `-db` repositories,
+which ceremonies run, how documentation is written, and how secrets and
+dependencies are kept safe inside a single deployable application.
 
 ## Documents
 
@@ -26,15 +22,17 @@ application.
 
 ## Out of scope
 
-This section governs one deployable application built and released by one team.
-It does not cover cross-team coordination or per-module release pipelines, and
+This section governs one deployable application built and released by one team,
+whose source is split across four repositories that ship together as one
+monolith. It does not cover cross-team coordination or per-module release
+pipelines, and
 none of its rules assume service mesh, API gateway, service discovery, saga,
 circuit breaker, or distributed transaction semantics. Distributed-system
 concerns belong to the [microservices governance framework](https://github.com/jesusarielgb-works/microservices-governance-framework).
 
 ## Ready when
 
-- [ ] Every document above has its INSTRUCTIONS block removed, except `documentation-rules.md`
+- [ ] Every document above has its INSTRUCTIONS block removed, except `documentation-rules.md` and `_template-sprint-retro.md`, whose blocks explain how the file itself is used
 - [ ] `definition-of-ready.md` and `definition-of-done.md` are both referenced from `01-context` onward
 - [ ] The security policy names an owner, not just a document
 

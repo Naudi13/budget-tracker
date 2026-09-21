@@ -23,8 +23,9 @@ SDD:          Documentation  ->  Code  ->  Updated documentation
 1. **Design before code.** A reviewed design document is the prerequisite for
    starting implementation. If a decision is not written down, it has not been
    made yet — it has only been discussed out loud.
-2. **Living documentation.** A document is updated in the same pull request as
-   the code it describes. A document that describes old behavior is not merely
+2. **Living documentation.** A document is updated in a pull request linked to
+   the code it describes, merged no later than that code. A document that
+   describes old behavior is not merely
    outdated — it is wrong, in exactly the way that code with a bug is wrong.
 3. **Traceability.** Every module change traces back to a requirement, every
    requirement traces back to a stakeholder need, and every requirement has at
@@ -107,7 +108,9 @@ If the document says X but the code does Y     ->  the document is a lie
 ```
 
 Whoever opens the pull request that changes behavior is responsible for updating
-the document that describes it, in that same pull request — not in a follow-up.
+the document that describes it, in a linked pull request on `bud-tack-docs`
+merged no later than the code — not in a follow-up. The rule is in
+[`00-governance/git-conventions.md`](./00-governance/git-conventions.md).
 
 ---
 
