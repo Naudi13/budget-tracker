@@ -1,11 +1,5 @@
 # 04 — Traceability Matrix
 
-> [!NOTE] INSTRUCTIONS
-> Every `HU-NN` and every `NFR-NN` must appear at least once below, pointing at
-> the module that implements it, the document that designs it, and the test that
-> would fail if it broke. A requirement with no row here is one nobody verifies.
-> Delete this block once every row resolves to a real document and test.
-
 ## How to read these tables
 
 `Requirement -> Module -> Design document -> Test case`. Both tables read that
@@ -17,34 +11,37 @@ a defect.
 
 | HU-NN | Module | Design document | Test case |
 |---|---|---|---|
-| HU-01 | `catalog` | [`module-catalog.md`](../09-modules/module-catalog.md) | [`unit`](../11-quality/testing-strategy.md) — reject a negative price |
-| HU-02 | `catalog` | [`module-catalog.md`](../09-modules/module-catalog.md) | [`module-integration`](../11-quality/testing-strategy.md) — a retired product is blocked from a new invoice (BR-01) |
-| HU-03 | `catalog` | [`module-catalog.md`](../09-modules/module-catalog.md) | [`unit`](../11-quality/testing-strategy.md) — a category with active products cannot be deleted (BR-04) |
-| HU-04 | `billing` | [`module-catalog.md`](../09-modules/module-catalog.md) | [`module-integration`](../11-quality/testing-strategy.md) — a later price change does not alter an issued invoice (BR-02) |
-| HU-05 | `billing` | [`module-catalog.md`](../09-modules/module-catalog.md) | [`unit`](../11-quality/testing-strategy.md) — a payment is rejected once the invoice is `paid` (BR-03) |
-| HU-06 | `billing` | [`module-catalog.md`](../09-modules/module-catalog.md) | [`end-to-end`](../11-quality/testing-strategy.md) — the summary total equals the sum of the day's issued invoices |
+| HU-01 | `identity` | [`module-catalog.md`](../09-modules/module-catalog.md) | [`unit`](../11-quality/testing-strategy.md) — reject sign-up with an email already in use |
+| HU-02 | `transactions` | [`module-catalog.md`](../09-modules/module-catalog.md) | [`unit`](../11-quality/testing-strategy.md) — reject a subcategory name duplicated within its category |
+| HU-03 | `transactions` | [`module-catalog.md`](../09-modules/module-catalog.md) | [`module-integration`](../11-quality/testing-strategy.md) — a category or subcategory still referenced cannot be deleted (BR-05) |
+| HU-04 | `transactions` | [`module-catalog.md`](../09-modules/module-catalog.md) | [`module-integration`](../11-quality/testing-strategy.md) — a transaction cannot mix income and expense details (BR-02) |
+| HU-05 | `transactions` | [`module-catalog.md`](../09-modules/module-catalog.md) | [`unit`](../11-quality/testing-strategy.md) — a soft-deleted transaction is excluded from the history list (BR-04) |
+| HU-06 | `transactions` | [`module-catalog.md`](../09-modules/module-catalog.md) | [`unit`](../11-quality/testing-strategy.md) — deleting a transaction sets `deleted_by`/`deleted_at` instead of removing the row (BR-04) |
+| HU-07 | `transactions` | [`module-catalog.md`](../09-modules/module-catalog.md) | [`unit`](../11-quality/testing-strategy.md) — reject a budget whose `period_end` is not after `period_start` |
+| HU-08 | `dashboard` | [`module-catalog.md`](../09-modules/module-catalog.md) | [`end-to-end`](../11-quality/testing-strategy.md) — the balance shown equals total income details minus total expense details (BR-03) |
 
 Every Design document cell above names the same file because the per-module
 documents it would otherwise point at do not exist yet: `09-modules/` carries no
 module folder, only its catalog and the
 [`_template-module/`](../09-modules/_template-module/README.md) a folder is
-copied from. Once `catalog/` and `billing/` exist there, each story points at its
-own module's folder and the column starts telling the stories apart.
+copied from. Once `identity/`, `transactions/`, and `dashboard/` exist there,
+each story points at its own module's folder and the column starts telling the
+stories apart.
 
 ## Non-functional requirements
 
 | NFR-NN | Module | Design document | Test case |
 |---|---|---|---|
 | NFR-01 | whole artifact | [`observability.md`](../13-operations/observability.md) — the request-duration histogram | Scripted load test against staging, before each release |
-| NFR-02 | `billing` | [`models.md`](../06-data/models.md) — `invoices` and its issued date | Timed run against the staging dataset |
+| NFR-02 | `dashboard` | [`models.md`](../06-data/models.md) — `transactions` and `transaction_details` | Timed run against a seeded staging dataset |
 | NFR-03 | whole artifact | [`observability.md`](../13-operations/observability.md) — `GET /health` | Uptime monitor polling `/health` every 5 minutes |
 | NFR-04 | whole artifact | none yet — see Gaps | Quarterly restore drill, timed and logged |
-| NFR-05 | `catalog`, `billing` | [`rest-conventions.md`](../07-api/rest-conventions.md) — the 401/403 rules | Automated authorization suite, in CI on every pull request |
-| NFR-06 | whole artifact | [`security-policy.md`](../00-governance/security-policy.md) — dependency scanning | CI dependency-scan gate |
+| NFR-05 | `identity`, `transactions` | [`rest-conventions.md`](../07-api/rest-conventions.md) — the 401/403 rules | Automated authorization suite, in CI on every pull request |
+| NFR-06 | `identity` | [`security-policy.md`](../00-governance/security-policy.md) — password storage | Automated test asserting stored vs. plaintext password |
 | NFR-07 | whole artifact | [`definition-of-done.md`](../00-governance/definition-of-done.md) — the coverage threshold | CI coverage gate on every pull request |
 | NFR-08 | whole artifact | [`local-setup.md`](../10-devops/local-setup.md) — the prerequisites and steps | Timed onboarding run, signed off by the tech lead |
 | NFR-09 | whole artifact | [`observability.md`](../13-operations/observability.md) — the structured log fields | Log sample reviewed at every release |
-| NFR-10 | whole artifact | [`observability.md`](../13-operations/observability.md) — the `correlationId` lookup | Quarterly support drill, timed |
+| NFR-10 | `transactions` | [`observability.md`](../13-operations/observability.md) — the audit trail lookup | Quarterly support drill, timed |
 
 Every row above is proved by a gate, a monitor, a timed run or a scheduled drill
 rather than by a story scenario, and some of them run outside the three layers in

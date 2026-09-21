@@ -8,7 +8,7 @@
 
 ## Story
 
-**As** [role — e.g. catalog staff, billing staff, store manager]
+**As** [role — e.g. business owner, entrepreneur, small business staff]
 **I want** [the action they take]
 **so that** [the business benefit, not a restatement of the action]
 
@@ -30,7 +30,7 @@ Scenario: [edge case tied to a business rule, e.g. BR-01]
 
 | Field | Value |
 |---|---|
-| Module | [`catalog` or `billing`; see `../02-domain/module-boundaries.md`] |
+| Module | [`identity`, `transactions`, or `dashboard`; see `../02-domain/module-boundaries.md`] |
 | Applicable NFR(s) | [the `NFR-NN` ids this story must satisfy; see `./non-functional.md`] |
 | Business rule(s) touched | [the `BR-NN` ids, or "none"; see `../02-domain/entities-and-rules.md`] |
 
