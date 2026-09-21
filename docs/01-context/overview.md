@@ -13,6 +13,7 @@ from one dashboard, from one codebase, one database, and one release pipeline.
 | Expense tracking | Register a transaction the same way, using an expense subcategory instead |
 | Category management | Create custom categories and subcategories per type; delete only when unused, deactivate otherwise |
 | Budgeting | Set an amount limit per category for a defined period |
+| Transaction history | View recorded transactions and delete one (soft delete — hidden, never permanently removed) |
 | Balance | Compute the net balance as total income minus total expenses |
 | Dashboard | A single view with KPIs (total income, total expenses, net balance) and the 5 most recent transactions, for a fast read of financial health |
 

@@ -12,7 +12,7 @@
 | Category | A top-level classification, marked income or expense, that groups subcategories | Tag, Type |
 | Subcategory | A named classification under exactly one category, assigned to a transaction detail | Tag, Type |
 | Budget | A stored amount limit for one category over a period; V1 does not compare it against actual spending yet | Limit, Plan |
-| Balance | The net result of total income transaction details minus total expense transaction details, over a period | Net worth, Profit, Cash flow |
+| Balance | The net result of total income transaction details minus total expense transaction details | Net worth, Profit, Cash flow |
 | Dashboard | The summary view showing KPIs for a fast read of financial health | Report, Home page |
 | KPI | A single metric on the dashboard measuring one aspect of financial health (e.g. total income) | Metric, Indicator (used only when it means KPI) |
 | Module | A bounded context inside the single deployable, defined in [`../02-domain/module-boundaries.md`](../02-domain/module-boundaries.md) | Service; and "component" **when it means a module** — the word keeps its own meanings as a C4 level in [`../08-uml/diagram-index.md`](../08-uml/diagram-index.md) and as a UI part in [`../12-ux-ui/design-system.md`](../12-ux-ui/design-system.md) |

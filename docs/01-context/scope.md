@@ -26,6 +26,11 @@
 | Tax reporting and compliance exports | Out of scope until a specific jurisdiction's requirements are defined |
 | Splitting recording and dashboard into a separately deployed application | This product ships and scales as one deployable, by design |
 
+No ADR governs this cut yet. Each exclusion above follows directly from the
+objectives in [`../03-product/vision.md`](../03-product/vision.md): a
+capability stays out until an objective names it, not because a decision
+record ruled it out explicitly.
+
 ## Revisiting scope
 
 An item moves from "Out" to "In" only after `03-product/vision.md` is updated
