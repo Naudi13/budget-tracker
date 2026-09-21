@@ -1,7 +1,7 @@
 # 00 — Security Policy
 
 This project ships one application whose source lives in four repositories
-(`docs`, `be`, `fe`, `db`). Its controls apply to one running application — one
+(`bud-tack-docs`, `-api`, `-front`, `-db`). Its controls apply to one running application — one
 backend process, one database — and each code repository applies them on its own.
 
 ## Owner
@@ -45,7 +45,7 @@ pull request that adds the dependency.
   accepts an unauthenticated request is a bug — **NFR-05**. Any future permission
   check lives in the domain layer, not the controller.
 - **Least privilege:** the application's own database user cannot `DROP` or
-  `ALTER` tables; migrations from the `db` repository run under a separate, more
+  `ALTER` tables; migrations from `bud-tack-db` run under a separate, more
   privileged role.
 
 ## Incident response

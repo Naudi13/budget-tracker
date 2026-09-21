@@ -4,7 +4,7 @@
 
 This section holds the rules the whole project commits to before any other
 section is filled in: how work enters a sprint, how it is closed, how branches
-and commits are named across the `docs`, `be`, `fe`, and `db` repositories,
+and commits are named across the `bud-tack-docs`, `-api`, `-front`, and `-db` repositories,
 which ceremonies run, how documentation is written, and how secrets and
 dependencies are kept safe inside a single deployable application.
 

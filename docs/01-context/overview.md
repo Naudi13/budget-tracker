@@ -40,7 +40,7 @@ without manually adding up several sheets.
 |---|---|
 | One deployable application | A single small team or solo founder, no operating budget for running several deployments |
 | One relational database | Income, expenses, and balance must stay consistent within one transaction |
-| Source split across four repositories | `docs`, `be`, `fe`, and `db` are versioned separately but released together; see [`../00-governance/git-conventions.md`](../00-governance/git-conventions.md) |
+| Source split across four repositories | `bud-tack-docs`, `-api`, `-front`, and `-db` are versioned separately but released together; see [`../00-governance/git-conventions.md`](../00-governance/git-conventions.md) |
 | A budget is a stored limit, not a comparison yet | V1 records the limit per category and period; checking actual spend against it comes later |
 
 ---

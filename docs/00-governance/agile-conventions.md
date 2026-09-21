@@ -1,7 +1,7 @@
 # 00 — Agile Conventions
 
 This project runs two-week sprints, on a single backlog, for one application
-whose source lives in four repositories (`docs`, `be`, `fe`, `db`), built by one
+whose source lives in four repositories (`bud-tack-docs`, `-api`, `-front`, `-db`), built by one
 team.
 
 ## Ceremonies

@@ -5,40 +5,41 @@ changes, not a suggestion.
 
 ## Repositories
 
-The application is one monolith, but its source lives in four repositories.
-Every rule below applies to all four unless a row says otherwise.
+The application is one monolith, but its source lives in four repositories named
+`bud-tack-[piece]`: the project abbreviation, then the piece.
 
 | Repository | Holds | Branch flow |
 |---|---|---|
-| `docs` | This documentation | `docs/[description]` to `main` |
-| `be` | Backend application and its modules | `[type]/[description]` to `dev` to `main` |
-| `fe` | Frontend | `[type]/[description]` to `dev` to `main` |
-| `db` | Schema and migrations | `[type]/[description]` to `dev` to `main` |
+| `bud-tack-docs` | This documentation (cross-cutting) | `docs/[description]` to `main` |
+| `bud-tack-api` | Backend application and its modules | `develop`, `qa`, `main` |
+| `bud-tack-front` | Frontend | `develop`, `qa`, `main` |
+| `bud-tack-db` | Schema and migrations | `develop`, `qa`, `main` |
 
 ## Branch strategy
 
-Code repositories (`be`, `fe`, `db`):
+Code repositories have three permanent branches. One permanent branch is never
+merged into another: a change is promoted only by `git cherry-pick -x`, which
+keeps the `(cherry picked from commit ...)` trailer as the audit trail.
 
-```
-main                    Production. Always deployable. Merges only from dev at release time.
-  |-- dev               Integration branch. Merges from the branches below.
-        |-- feat/[description]    One branch per feature or user story
-        |-- fix/[description]     One branch per bug fix
-        |-- chore/[description]   Tooling and dependencies
-        |-- hotfix/[description]  Urgent fix branched from main
-```
+| Branch | Kind | Cut from | Reaches |
+|---|---|---|---|
+| `develop` | Permanent, integration | — | `qa`, by cherry-pick |
+| `qa` | Permanent, under test | — | `main`, by cherry-pick |
+| `main` | Permanent, production | — | Release |
+| `feat/`, `fix/`, `chore/[description]` | Working | `develop` | `develop`, by pull request |
+| `hotfix/[description]` | Working | `main` | `main` by pull request, then `qa` and `develop` by cherry-pick |
 
-The `docs` repository has no `dev`: `main` is fed only by `docs/[description]`
+`bud-tack-docs` has no `develop` or `qa`: `main` is fed only by `docs/[description]`
 branches, one per section, for example `docs/04-requirements-update`.
 
-- Nobody commits directly to `main` or `dev`.
-- One branch equals one task; in `docs`, one branch equals one section.
-- Branches are deleted right after merge.
+- Nobody authors a commit directly on a permanent branch: only merged pull
+  requests land on `develop`, and only cherry-picks land on `qa` and `main`.
+- One branch equals one task (in `bud-tack-docs`, one section), and is deleted
+  right after merge.
 
 ## Branch naming
 
-`[type]/[short-description-in-kebab-case]` — examples: `feat/transaction-history`
-in a code repository, `docs/03-product-update` in `docs`.
+`[type]/[short-description-in-kebab-case]` — e.g. `feat/transaction-history`, `docs/03-product-update`.
 
 ## Commit format and pull request titles
 
@@ -52,27 +53,27 @@ in a code repository, `docs/03-product-update` in `docs`.
 | `chore` | Tooling, dependencies, CI |
 | `perf` | Performance improvement |
 
-Format: `type(scope): imperative, lowercase, no trailing period`. In the code
-repositories the scope is the module name (`feat(transactions): add soft delete`);
-in `docs` it is the section (`docs(domain): trace business rules to user stories`).
+Format: `type(scope): imperative, lowercase, no trailing period`. In code
+repositories the scope is the module (`feat(transactions): add soft delete`); in
+`bud-tack-docs` it is the section (`docs(domain): trace rules to user stories`).
 A pull request title follows the same format.
 
 ## Merge policy
 
-- **`docs`:** merge commit into `main`, one section per pull request. Merge a
-  pull request before opening the next, so each diff shows only its own section.
-- **Code repositories:** squash and merge into `dev` — one commit per story; merge
-  commit from `dev` into `main` at release time to keep release history.
+- **`bud-tack-docs`:** merge commit into `main`; each pull request stays inside one
+  section, and is merged before the next opens. The one cross-section edit allowed
+  is a sentence in another section that the change would otherwise leave false;
+  the description lists every such file.
+- **Code repositories:** squash and merge into `develop`, one commit per story.
 - **Rebase is not used** on branches more than one person has pulled.
-- A pull request needs one approval; in the code repositories the pipeline must
-  also be green.
+- A pull request needs one approval; in code repositories the pipeline is green too.
 
 ## Changes spanning repositories
 
 A story that touches several repositories opens one branch and one pull request
-per repository, with the same description on each and each linking the others.
-Code merges in the order `db`, `be`, `fe`; the `docs` pull request merges no
-later than the first code pull request.
+per repository, with the same description and links to the others. Code merges in
+the order `bud-tack-db`, `bud-tack-api`, `bud-tack-front`; the documentation pull
+request merges no later than the first code pull request.
 
 ---
 

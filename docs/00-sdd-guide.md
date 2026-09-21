@@ -108,7 +108,7 @@ If the document says X but the code does Y     ->  the document is a lie
 ```
 
 Whoever opens the pull request that changes behavior is responsible for updating
-the document that describes it, in a linked pull request on the `docs` repository
+the document that describes it, in a linked pull request on `bud-tack-docs`
 merged no later than the code — not in a follow-up. The rule is in
 [`00-governance/git-conventions.md`](./00-governance/git-conventions.md).
 
