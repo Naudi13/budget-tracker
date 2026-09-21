@@ -14,7 +14,8 @@ its data, exposes a narrow **public API**, and keeps everything else **internal*
 ## How to draw the boundary
 
 1. Group behaviour by the **language the business uses**, not by technical layer.
-   `Transactions` and `Dashboard` are modules; `Controllers` and `Repositories` are not.
+   `Transactions`, `Dashboard`, and `Identity` are modules; `Controllers` and
+   `Repositories` are not.
 2. A module should own the data it writes. If two modules write the same table,
    the boundary is in the wrong place.
 3. Prefer **fewer, larger** modules at the start. Splitting is cheap; merging is not.
@@ -23,7 +24,8 @@ its data, exposes a narrow **public API**, and keeps everything else **internal*
 
 | Module | Owns | Public API | Depends on |
 |---|---|---|---|
-| `transactions` | transactions, categories | `TransactionsFacade` | — |
+| `identity` | users | `IdentityFacade` | — |
+| `transactions` | transactions, transaction_details, categories, subcategories, budgets | `TransactionsFacade` | `identity` |
 | `dashboard` | — (no owned tables; reads and aggregates on demand) | `DashboardFacade` | `transactions` |
 
 ## Signals the boundary is wrong
