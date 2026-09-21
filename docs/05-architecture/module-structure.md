@@ -1,27 +1,21 @@
 # 05 — Module Structure
 
-> [!NOTE] INSTRUCTIONS
-> This tree is stack-agnostic: it shows which folders exist and what each one
-> is allowed to contain, not what they are called in any one language. Pick the
-> guide for this project's language in `../_stacks/` and adopt its concrete
-> names before the first commit. Delete this block once the repository on disk
-> matches the tree below.
-
 ## The tree
 
 ```
 src/
-├── catalog/                  module — one bounded context
+├── identity/                 module — one bounded context
 │   ├── api/                  public API of the module
-│   │   ├── CatalogFacade     the only entry point other modules may import
+│   │   ├── IdentityFacade    the only entry point other modules may import
 │   │   └── contracts/        immutable request and response objects
 │   └── internal/             everything else; unreachable from outside
 │       ├── domain/           entities, value objects, BR-NN invariants
 │       ├── application/      use cases, transaction boundaries
 │       └── persistence/      queries and mappings for this module's tables
-├── billing/                  same shape: api/ + internal/
-├── identity/                 illustrative only — see ./modular-monolith.md
+├── transactions/             same shape: api/ + internal/
+├── dashboard/                same shape, without persistence/: it owns no tables
 └── platform/                 technical code owned by no bounded context
+    ├── web/                  HTTP endpoints; each maps a request to one facade call
     ├── config/               framework wiring — the only place it may live
     └── errors/               shared error types and the global handler
 resources/
@@ -39,6 +33,7 @@ tests/
 |---|---|---|
 | `<module>/api/` | The facade and the objects that cross the boundary | Business rules, database access |
 | `<module>/internal/` | Domain, application and persistence code | Imports from another module's `internal/` |
+| `platform/web/` | Endpoints: request shape, one facade call, response format | Business rules, an import of any module's `internal/` |
 | `platform/config/` | Framework wiring, dependency registration | Business rules |
 | `platform/errors/` | Error types and the handler that renders them | Module-specific error handling |
 | `resources/db/migration/` | Ordered, versioned changesets for the single database | Data fixes applied by hand |
@@ -54,16 +49,16 @@ tests/
 | Test folders mirror `src/` exactly | A missing test folder is visible without running anything |
 | One migration folder for the whole application | There is one database, so there is one ordered history |
 
-## If this project is flat, not modular
+## Concrete names for this project
 
-Replace the module folders with the four layer folders from
-[`layered-architecture.md`](./layered-architecture.md), keep `platform/`,
-`resources/` and `tests/` unchanged, and drop `tests/module-integration/` —
-there are no module boundaries yet to integrate across.
+The backend is C# on .NET, which none of the guides in
+[`../_stacks/README.md`](../_stacks/README.md) covers. Until one exists, the
+concrete names are fixed by
+[`ADR-003`](./decisions/records/ADR-003-project-per-module-boundary.md): one
+project per module, and the endpoints in the host project's `platform/web/`.
 
-The concrete tree for Java, TypeScript, Python and PHP — real package names,
-build-file layout and commands — lives in
-[`../_stacks/README.md`](../_stacks/README.md).
+This project is modular, not flat. The flat variant, with its four layer folders,
+is described in [`layered-architecture.md`](./layered-architecture.md).
 
 ---
 

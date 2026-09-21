@@ -1,13 +1,5 @@
 # 05 — Modular Monolith
 
-> [!NOTE] INSTRUCTIONS
-> This is the default architecture of this framework — see
-> [`ADR-001`](./decisions/records/ADR-001-modular-monolith-as-default.md).
-> Replace the example modules with this project's own: every module name that
-> reaches code must match a row of `../02-domain/module-boundaries.md`, because
-> the boundary check reads them. Delete this block once the diagram shows the
-> modules this project actually ships.
-
 ## What it is
 
 A **modular monolith** is one deployable, built and released as a unit, divided
@@ -21,21 +13,28 @@ unchanged.
 
 ```mermaid
 flowchart TB
+    Front["Angular client<br/>bud-tack-front"] -->|HTTPS| Web
     subgraph App["Single deployable — one process, one build, one release"]
-        Catalog["catalog<br/>CatalogFacade"]
-        Billing["billing<br/>BillingFacade"]
+        Web["platform/web<br/>HTTP endpoints"]
         Identity["identity<br/>IdentityFacade"]
-        Billing -->|public API call| Catalog
-        Billing -->|public API call| Identity
+        Transactions["transactions<br/>TransactionsFacade"]
+        Dashboard["dashboard<br/>DashboardFacade"]
+        Web -->|public API call| Identity
+        Web -->|public API call| Transactions
+        Web -->|public API call| Dashboard
+        Transactions -->|public API call| Identity
+        Dashboard -->|public API call| Transactions
     end
-    App --> DB[("One relational database<br/>one schema per module")]
+    App --> DB[("PostgreSQL<br/>one schema per module")]
 ```
 
-`catalog` and `billing` come straight from the domain map, and the arrow between
-them matches `module-boundaries.md`. `identity` is an illustrative third module,
-drawn only to show the shape at three: it is **not on this project's domain
-map**, and would have to be added there before any code carried the name. Arrows
-cross a boundary only through a public API, and never form a cycle.
+The three modules come straight from the domain map, and the arrows between
+them match `module-boundaries.md`: `transactions` calls `identity` to attribute a
+change to a user, and `dashboard` calls `transactions` to read totals and recent
+transactions. The Angular client is not a module: it is a separate repository
+that calls the one public API, and how its build reaches production is decided
+in [`../10-devops/README.md`](../10-devops/README.md). Arrows cross a boundary
+only through a public API, and never form a cycle.
 
 ## Anatomy of a module
 
@@ -55,7 +54,8 @@ cross a boundary only through a public API, and never form a cycle.
 
 Both are plain function calls behind a boundary the build enforces. If a call
 between modules starts needing a timeout or a retry policy, the boundary is in
-the wrong place — the mechanism is not the problem.
+the wrong place. Every cross-module call in V1 is a public API call; no
+in-process event is needed yet.
 
 ## When it applies, and when it is over-engineering
 
@@ -63,15 +63,13 @@ the wrong place — the mechanism is not the problem.
 |---|---|
 | Two or more bounded contexts on the domain map | Modular monolith |
 | Two or more people changing unrelated business areas in the same week | Modular monolith |
-| A business area that will outlive the current framework or database choice | Modular monolith |
 | One bounded context on the domain map | Over-engineering — use [`layered-architecture.md`](./layered-architecture.md) |
 | Boundaries drawn before the domain is understood | Over-engineering — the lines freeze in the wrong place |
 | A folder per technical concern, called a module | Not a module at all; that is a layer |
 
-The example in this repository has two bounded contexts, so it is modular. A
-project with eight entities in a single context is not a smaller version of
-this — flat layers are the right answer there, and switching later is a
-documented, expected move, not a failure.
+This project has three bounded contexts on its domain map, so it is modular;
+[`ADR-001`](./decisions/records/ADR-001-modular-monolith-as-default.md) records
+the choice.
 
 ---
 

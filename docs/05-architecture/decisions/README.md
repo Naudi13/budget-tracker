@@ -1,11 +1,9 @@
 # 05 — Architecture Decision Records
 
-> [!NOTE] INSTRUCTIONS
-> An ADR records one decision that is expensive to reverse: what was decided,
-> what else was considered, and what it costs. Copy `_template-adr.md` into
-> `records/`, never edit the template in place, and add a row to the register
-> below in the same pull request. Delete this block once the register has a
-> second row that this team wrote itself.
+An ADR records one decision that is expensive to reverse: what was decided,
+what else was considered, and what it costs. Copy `_template-adr.md` into
+`records/`, never edit the template in place, and add a row to the register
+below in the same pull request.
 
 ## When an ADR is written
 
@@ -36,7 +34,9 @@ that names it, so the history of the reasoning stays readable.
 
 | # | Title | Status | Date |
 |---|---|---|---|
-| [ADR-001](./records/ADR-001-modular-monolith-as-default.md) | Modular monolith as the default architecture | Accepted | 2026-09-12 |
+| [ADR-001](./records/ADR-001-modular-monolith-as-default.md) | Modular monolith as the default architecture | Proposed | 2026-09-21 |
+| [ADR-002](./records/ADR-002-angular-dotnet-postgresql-stack.md) | Angular, .NET and PostgreSQL as the technology stack | Proposed | 2026-09-21 |
+| [ADR-003](./records/ADR-003-project-per-module-boundary.md) | One project per module, checked by the compiler and NetArchTest | Proposed | 2026-09-21 |
 
 ## Naming
 

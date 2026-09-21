@@ -1,11 +1,8 @@
 # 05 — Layered Architecture
 
-> [!NOTE] INSTRUCTIONS
-> This is the documented variant for a project with a single bounded context.
-> It is a correct choice at that size, not a temporary shortcut. Fill in the
-> threshold table with this project's real numbers, and re-read it at every
-> quarterly review. Delete this block once the layer table names the folders
-> this project actually has.
+This is the documented variant for a project with a single bounded context. This
+project has three, so it is modular; the four layers below still apply, inside
+each module.
 
 ## The four layers
 
@@ -14,11 +11,12 @@
 | Presentation | Accept a request, validate its shape, delegate, format the response | Application, transport objects |
 | Application | Business rules, transaction boundaries, orchestration of one use case | Persistence, Domain |
 | Persistence | Read and write stored data; no business decisions | Domain |
-| Domain | Entities, value objects, invariants such as `BR-01`..`BR-04` | Nothing |
+| Domain | Entities, value objects, invariants such as `BR-01`..`BR-05` | Nothing |
 
-Concrete folder and class names per language live in
-[`../_stacks/README.md`](../_stacks/README.md); the responsibilities above do
-not change with the stack.
+In this project Presentation lives once, in `platform/web/`, calling module
+facades only; Application, Persistence and Domain live inside each module's
+`internal/`. Concrete names are in [`module-structure.md`](./module-structure.md);
+the responsibilities above do not change with the stack.
 
 ## Dependency direction
 
@@ -41,7 +39,7 @@ count the boxes in [`domain-map.md`](../02-domain/domain-map.md).
 
 | Signal | Flat layers still fit | Time to move to modules |
 |---|---|---|
-| Bounded contexts on the domain map | exactly 1 | 2 or more |
+| Bounded contexts on the domain map (today: 3) | exactly 1 | 2 or more |
 | Persistent entities | up to ~10 | more than ~10 |
 | Developers committing in a normal week | up to 3 | 4 or more |
 | Cross-area collisions | rare | two people edit the same application-layer file weekly |
