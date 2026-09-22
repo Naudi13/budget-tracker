@@ -18,8 +18,8 @@ first commit. None of the four guides in `_stacks/` is written for C#.
 
 | Constraint | Source |
 |---|---|
-| Source lives in `bud-tack-front`, `bud-tack-api`, `bud-tack-db` and `bud-tack-docs` | [`../../../00-governance/git-conventions.md`](../../../00-governance/git-conventions.md) |
-| One relational database, consistent within one transaction | [`../../../01-context/overview.md`](../../../01-context/overview.md) |
+| Source lives in `bud-tack-front`, `bud-tack-api`, `bud-tack-db` and `bud-tack-docs`, one per piece, an exception recorded in [`ADR-004`](./ADR-004-shared-database-and-per-piece-repositories.md) | [`../../../00-governance/git-conventions.md`](../../../00-governance/git-conventions.md) |
+| One relational database shared by all modules, consistent within one transaction — an exception recorded in `ADR-004` | [`../../../01-context/overview.md`](../../../01-context/overview.md) |
 | A developer reaches a first successful request in under 1 hour | `NFR-08` |
 | The team works in C# and Angular | The team |
 
@@ -38,7 +38,7 @@ had the advantage of a ready guide but not of the team's experience.
 |---|---|---|---|
 | Angular, ASP.NET Core, PostgreSQL | Matches the team's skills; PostgreSQL is the database `.env.example` already assumes | No `_stacks/` guide for C#; the tree, boundary tool and commands are written by this project | Chosen |
 | Angular, Spring Boot, PostgreSQL | A ready `_stacks/java-spring.md` guide with the boundary test written | The team's backend language is C#, not Java | The guide's head start does not offset learning a language |
-| Angular, ASP.NET Core, a document database | Flexible schema | Totals and their detail lines must stay consistent, and `BR-05` relies on restrict-on-delete keys | Ruled out by the relational constraint in `overview.md` |
+| Angular, ASP.NET Core, a document database | Flexible schema | Totals and their detail lines must stay consistent, and [`BR-05`](../../../02-domain/entities-and-rules.md) relies on restrict-on-delete keys | Ruled out by the relational constraint in `overview.md` |
 
 ## Consequences
 
