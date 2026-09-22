@@ -1,24 +1,20 @@
 # 06 — Migrations
 
-> [!NOTE] INSTRUCTIONS
-> One version history for the whole database, even though modules own
-> separate schemas. Fill in the rollback policy before the second migration
-> ships. Delete this block once a rollback has been rehearsed once.
-
 ## One sequence for the whole application
 
 There is one database, so there is one ordered changelog — never a
-changelog per module. A changeset touching `catalog`'s schema and one
-touching `billing`'s schema still apply in the same numbered sequence,
+changelog per module. A changeset touching `identity`'s schema and one
+touching `transactions`'s schema still apply in the same numbered sequence,
 under `resources/db/migration/` (see
-[`module-structure.md`](../05-architecture/module-structure.md)).
+[`module-structure.md`](../05-architecture/module-structure.md)). `dashboard`
+never appears here: it owns no table.
 
 | Rule | Detail |
 |---|---|
 | Tool | Liquibase |
 | Sequence | One changelog, one increasing version number, for the entire database |
 | Changeset scope | One logical change per changeset; never edit a changeset already run anywhere |
-| Module tag | Each changeset id is prefixed with its owning module, e.g. `billing-003`, for traceability only — it does not split the sequence |
+| Module tag | Each changeset id is prefixed with its owning module, e.g. `transactions-003`, for traceability only — it does not split the sequence |
 
 ## Rollback policy
 
