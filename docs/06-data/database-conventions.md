@@ -62,6 +62,8 @@ pointing at `identity.users`, per the cross-module rule above. A business date
 with no time component — `transaction_date`, `period_start` — is `DATE`, never
 `TIMESTAMPTZ`.
 
+A table whose rows are deactivated rather than removed — `categories` and
+`subcategories`, per **BR-05** — adds `is_active` (`BOOLEAN NOT NULL DEFAULT TRUE`).
 A table whose rows are soft-deleted, per its module's own `BR-NN` — in this
 project, only `transactions.transactions`, per **BR-04** — adds `deleted_by`
 (`UUID`, nullable, same cross-module rule) and `deleted_at`

@@ -5,23 +5,23 @@
 | Entity | Table | Owning module | Key attributes |
 |---|---|---|---|
 | User | `identity.users` | `identity` | name, email, password_hash |
-| Category | `transactions.categories` | `transactions` | name, type (income \| expense) |
-| Subcategory | `transactions.subcategories` | `transactions` | category reference, name |
+| Category | `transactions.categories` | `transactions` | name, type (income \| expense), is_active |
+| Subcategory | `transactions.subcategories` | `transactions` | category reference, name, is_active |
 | Transaction | `transactions.transactions` | `transactions` | transaction date, description |
 | Transaction detail | `transactions.transaction_details` | `transactions` | transaction reference, subcategory reference, amount |
 | Budget | `transactions.budgets` | `transactions` | category reference, amount, period start, period end |
 
-`dashboard` owns no table: it reads every figure it shows through
-`TransactionsFacade`, computed at read time per **BR-03**. Invariants live in
-[`entities-and-rules.md`](../02-domain/entities-and-rules.md); this table only
-adds the table name and the owning module, named with its schema per
-[`database-conventions.md`](./database-conventions.md) — the shared instance
-behind that default is the exception [`ADR-004`](../05-architecture/decisions/records/ADR-004-shared-database-and-per-piece-repositories.md) records.
+`dashboard` owns no table; it reads through `TransactionsFacade`, computed per
+**BR-03**. Invariants: [`entities-and-rules.md`](../02-domain/entities-and-rules.md).
+Schema default: [`database-conventions.md`](./database-conventions.md), whose
+shared-instance exception is [`ADR-004`](../05-architecture/decisions/records/ADR-004-shared-database-and-per-piece-repositories.md).
+
+Deactivation, per **BR-05**, is `is_active = false`: new transactions and budgets
+stop offering the row, existing links stay, and `ON DELETE RESTRICT` still refuses a delete.
 
 ## Relationships
 
-Audit columns (`created_by`, `updated_by`) are omitted below for clarity, except
-`transactions`'s soft-delete columns — see the Cross-module references table.
+Audit columns are omitted for clarity, except `transactions`'s soft-delete columns.
 
 ```mermaid
 erDiagram
@@ -33,11 +33,13 @@ erDiagram
         uuid id PK
         string name
         string type
+        boolean is_active
     }
     SUBCATEGORIES {
         uuid id PK
         uuid category_id FK
         string name
+        boolean is_active
     }
     BUDGETS {
         uuid id PK
@@ -61,8 +63,7 @@ erDiagram
     }
 ```
 
-Every foreign key above stays inside the `transactions` schema, declared
-`ON DELETE RESTRICT`, enforcing **BR-05** in the data as well as in the facade.
+Every foreign key above stays inside `transactions`, `ON DELETE RESTRICT` (**BR-05**).
 
 ## Cross-module references
 
@@ -71,8 +72,7 @@ Every foreign key above stays inside the `transactions` schema, declared
 | Every table in `transactions` (`categories`, `subcategories`, `transactions`, `transaction_details`, `budgets`) | `created_by`, `updated_by` | `identity.users` | `IdentityFacade`, not a database foreign key — see [`database-conventions.md`](./database-conventions.md) |
 | `transactions.transactions` | `deleted_by` | `identity.users` | Same as above; set only together with `deleted_at`, never alone (**BR-04**) |
 
-`identity` is a schema no other module writes to. A reference to `identity.users`
-is validated by `IdentityFacade` at write time and stored as a plain column,
+A reference to `identity.users` is a plain column validated by `IdentityFacade`,
 never a `REFERENCES` constraint, because it crosses a module boundary.
 
 ---
