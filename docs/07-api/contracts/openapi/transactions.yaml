@@ -1,0 +1,168 @@
+openapi: 3.1.0
+info:
+  title: Budget Tracker API — transactions
+  version: 1.0.0
+  license:
+    name: MIT
+    identifier: MIT
+  description: >
+    Recording and reading income and expense transactions. Naming, versioning,
+    status codes and the error shape follow ../../rest-conventions.md; shared
+    components come from ./common.yaml.
+
+servers:
+  - url: https://{host}/api/v1
+    description: The application, any environment
+    variables:
+      host:
+        default: localhost:3000
+
+security:
+  - bearerAuth: []
+
+paths:
+  /transactions:
+    get:
+      operationId: listTransactions
+      summary: List recorded transactions
+      description: >
+        Paginated history, newest first. Soft-deleted transactions are excluded
+        (BR-04). Implements HU-05.
+      parameters:
+        - $ref: './common.yaml#/components/parameters/PageParam'
+        - $ref: './common.yaml#/components/parameters/LimitParam'
+      responses:
+        '200':
+          description: A page of transactions
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Transaction'
+                  meta:
+                    $ref: './common.yaml#/components/schemas/PaginationMeta'
+        '401':
+          $ref: './common.yaml#/components/responses/Unauthorized'
+        '500':
+          $ref: './common.yaml#/components/responses/InternalError'
+    post:
+      operationId: createTransaction
+      summary: Record an income or expense transaction
+      description: >
+        Implements HU-04. A transaction carries one or more details; every detail
+        must share one type, income or expense (BR-02).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewTransaction'
+            examples:
+              expense:
+                value:
+                  transactionDate: '2026-10-01'
+                  description: Office supplies
+                  details:
+                    - subcategoryId: 7c9e6679-7425-40de-944b-e07fc1f90ae7
+                      amount: 85.5
+      responses:
+        '201':
+          description: Transaction recorded
+          headers:
+            Location:
+              description: URL of the new transaction
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transaction'
+        '400':
+          $ref: './common.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: './common.yaml#/components/responses/Unauthorized'
+        '422':
+          $ref: './common.yaml#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: './common.yaml#/components/responses/InternalError'
+
+  /transactions/{transactionId}:
+    parameters:
+      - $ref: '#/components/parameters/TransactionId'
+    delete:
+      operationId: deleteTransaction
+      summary: Delete a transaction
+      description: >
+        Implements HU-06. Soft delete: the transaction is hidden from listings and
+        dashboard totals and is never removed from storage (BR-04).
+      responses:
+        '204':
+          description: Transaction hidden
+        '401':
+          $ref: './common.yaml#/components/responses/Unauthorized'
+        '404':
+          $ref: './common.yaml#/components/responses/NotFound'
+        '500':
+          $ref: './common.yaml#/components/responses/InternalError'
+
+components:
+  parameters:
+    TransactionId:
+      name: transactionId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+
+  schemas:
+    Transaction:
+      type: object
+      required: [id, transactionDate, description, details]
+      properties:
+        id: { type: string, format: uuid }
+        transactionDate: { type: string, format: date }
+        description: { type: string }
+        details:
+          type: array
+          items:
+            $ref: '#/components/schemas/TransactionDetail'
+
+    TransactionDetail:
+      type: object
+      required: [id, subcategoryId, amount, type]
+      properties:
+        id: { type: string, format: uuid }
+        subcategoryId: { type: string, format: uuid }
+        amount: { type: number, exclusiveMinimum: 0 }
+        type:
+          type: string
+          enum: [income, expense]
+          readOnly: true
+          description: Derived from the subcategory's category (BR-01); never sent by the client.
+
+    NewTransaction:
+      type: object
+      required: [transactionDate, description, details]
+      properties:
+        transactionDate: { type: string, format: date }
+        description: { type: string, minLength: 1 }
+        details:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/NewTransactionDetail'
+
+    NewTransactionDetail:
+      type: object
+      required: [subcategoryId, amount]
+      properties:
+        subcategoryId: { type: string, format: uuid }
+        amount: { type: number, exclusiveMinimum: 0 }
+
+  securitySchemes:
+    bearerAuth:
+      $ref: './common.yaml#/components/securitySchemes/bearerAuth'

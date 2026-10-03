@@ -1,0 +1,114 @@
+openapi: 3.1.0
+info:
+  title: Budget Tracker API — identity
+  version: 1.0.0
+  license:
+    name: MIT
+    identifier: MIT
+  description: >
+    Sign-up and sign-in for the single account a business uses. These are the only
+    write endpoints that accept an unauthenticated request (NFR-05). Naming,
+    versioning, status codes and the error shape follow ../../rest-conventions.md;
+    shared components come from ./common.yaml.
+
+servers:
+  - url: https://{host}/api/v1
+    description: The application, any environment
+    variables:
+      host:
+        default: localhost:3000
+
+paths:
+  /users:
+    post:
+      operationId: createUser
+      summary: Sign up a business account
+      description: >
+        Implements HU-01. An email already in use is a conflict; the password is
+        stored only as a salted hash (NFR-06).
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewUser'
+      responses:
+        '201':
+          description: Account created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          $ref: './common.yaml#/components/responses/BadRequest'
+        '409':
+          $ref: './common.yaml#/components/responses/Conflict'
+        '500':
+          $ref: './common.yaml#/components/responses/InternalError'
+
+  /sessions:
+    post:
+      operationId: createSession
+      summary: Sign in
+      description: >
+        Implements HU-01. Returns a bearer token that every other endpoint expects.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Credentials'
+      responses:
+        '201':
+          description: Signed in
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
+        '400':
+          $ref: './common.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: './common.yaml#/components/responses/Unauthorized'
+        '500':
+          $ref: './common.yaml#/components/responses/InternalError'
+
+components:
+  schemas:
+    User:
+      type: object
+      required: [id, name, email]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        email: { type: string, format: email }
+
+    NewUser:
+      type: object
+      required: [name, email, password]
+      properties:
+        name: { type: string, minLength: 1 }
+        email: { type: string, format: email }
+        password:
+          type: string
+          writeOnly: true
+          minLength: 8
+
+    Credentials:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string, writeOnly: true }
+
+    Session:
+      type: object
+      required: [token, tokenType, expiresIn]
+      properties:
+        token: { type: string }
+        tokenType: { type: string, enum: [Bearer] }
+        expiresIn:
+          type: integer
+          description: Seconds until the token expires (AUTH_JWT_EXPIRY_SECONDS).
+          examples: [3600]

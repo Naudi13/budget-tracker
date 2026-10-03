@@ -15,6 +15,12 @@ pagination, plus the contract template a new resource group starts from.
 | Document | Answers | Priority |
 |---|---|---|
 | [rest-conventions.md](./rest-conventions.md) | What does the application's public API look like? | ⭐ |
+| [contracts/openapi/identity.yaml](./contracts/openapi/identity.yaml) | What do sign-up and sign-in look like? | ⭐ |
+| [contracts/openapi/transactions.yaml](./contracts/openapi/transactions.yaml) | What do recording, listing and deleting transactions look like? | ⭐ |
+| [contracts/openapi/categories.yaml](./contracts/openapi/categories.yaml) | What do categories and subcategories look like? | ⭐ |
+| [contracts/openapi/budgets.yaml](./contracts/openapi/budgets.yaml) | What do budgets look like? | ⭐ |
+| [contracts/openapi/dashboard.yaml](./contracts/openapi/dashboard.yaml) | What does the dashboard read look like? | ⭐ |
+| [contracts/openapi/common.yaml](./contracts/openapi/common.yaml) | What do the error shape, pagination and security scheme share? | — |
 | [contracts/openapi/_template-api.yaml](./contracts/openapi/_template-api.yaml) | Template — copy it once per resource group this API exposes | — |
 
 ## Out of scope

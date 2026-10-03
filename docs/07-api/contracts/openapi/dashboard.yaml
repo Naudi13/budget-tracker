@@ -1,0 +1,63 @@
+openapi: 3.1.0
+info:
+  title: Budget Tracker API — dashboard
+  version: 1.0.0
+  license:
+    name: MIT
+    identifier: MIT
+  description: >
+    Read-only KPIs and the five most recent transactions. Naming, versioning,
+    status codes and the error shape follow ../../rest-conventions.md; shared
+    components come from ./common.yaml.
+
+servers:
+  - url: https://{host}/api/v1
+    description: The application, any environment
+    variables:
+      host:
+        default: localhost:3000
+
+security:
+  - bearerAuth: []
+
+paths:
+  /dashboard:
+    get:
+      operationId: getDashboard
+      summary: Read the dashboard
+      description: >
+        Implements HU-08. Totals are computed on read from transactions (BR-03), so
+        a saved or deleted transaction is reflected immediately. Soft-deleted
+        transactions are excluded (BR-04).
+      responses:
+        '200':
+          description: KPIs and recent transactions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dashboard'
+        '401':
+          $ref: './common.yaml#/components/responses/Unauthorized'
+        '500':
+          $ref: './common.yaml#/components/responses/InternalError'
+
+components:
+  schemas:
+    Dashboard:
+      type: object
+      required: [totalIncome, totalExpenses, netBalance, recentTransactions]
+      properties:
+        totalIncome: { type: number }
+        totalExpenses: { type: number }
+        netBalance:
+          type: number
+          description: totalIncome minus totalExpenses (BR-03).
+        recentTransactions:
+          type: array
+          maxItems: 5
+          items:
+            $ref: './transactions.yaml#/components/schemas/Transaction'
+
+  securitySchemes:
+    bearerAuth:
+      $ref: './common.yaml#/components/securitySchemes/bearerAuth'
