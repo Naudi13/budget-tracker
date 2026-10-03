@@ -1,0 +1,105 @@
+openapi: 3.1.0
+info:
+  title: Budget Tracker API — budgets
+  version: 1.0.0
+  license:
+    name: MIT
+    identifier: MIT
+  description: >
+    Spending or income limits per category and period. Naming, versioning, status
+    codes and the error shape follow ../../rest-conventions.md; shared components
+    come from ./common.yaml.
+
+servers:
+  - url: https://{host}/api/v1
+    description: The application, any environment
+    variables:
+      host:
+        default: localhost:3000
+
+security:
+  - bearerAuth: []
+
+paths:
+  /budgets:
+    get:
+      operationId: listBudgets
+      summary: List budgets
+      parameters:
+        - $ref: './common.yaml#/components/parameters/PageParam'
+        - $ref: './common.yaml#/components/parameters/LimitParam'
+        - name: categoryId
+          in: query
+          required: false
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: A page of budgets
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Budget'
+                  meta:
+                    $ref: './common.yaml#/components/schemas/PaginationMeta'
+        '401':
+          $ref: './common.yaml#/components/responses/Unauthorized'
+        '500':
+          $ref: './common.yaml#/components/responses/InternalError'
+    post:
+      operationId: createBudget
+      summary: Set a budget for a category
+      description: >
+        Implements HU-07. periodEnd must be after periodStart; a budget that ends
+        before it starts is rejected with 422.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewBudget'
+      responses:
+        '201':
+          description: Budget created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Budget'
+        '400':
+          $ref: './common.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: './common.yaml#/components/responses/Unauthorized'
+        '422':
+          $ref: './common.yaml#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: './common.yaml#/components/responses/InternalError'
+
+components:
+  schemas:
+    Budget:
+      type: object
+      required: [id, categoryId, amount, periodStart, periodEnd]
+      properties:
+        id: { type: string, format: uuid }
+        categoryId: { type: string, format: uuid }
+        amount: { type: number, exclusiveMinimum: 0 }
+        periodStart: { type: string, format: date }
+        periodEnd: { type: string, format: date }
+
+    NewBudget:
+      type: object
+      required: [categoryId, amount, periodStart, periodEnd]
+      properties:
+        categoryId: { type: string, format: uuid }
+        amount: { type: number, exclusiveMinimum: 0 }
+        periodStart: { type: string, format: date }
+        periodEnd: { type: string, format: date }
+
+  securitySchemes:
+    bearerAuth:
+      $ref: './common.yaml#/components/securitySchemes/bearerAuth'

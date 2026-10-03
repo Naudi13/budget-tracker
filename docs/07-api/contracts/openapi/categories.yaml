@@ -1,0 +1,292 @@
+openapi: 3.1.0
+info:
+  title: Budget Tracker API — categories
+  version: 1.0.0
+  license:
+    name: MIT
+    identifier: MIT
+  description: >
+    Custom categories and their subcategories, per income or expense type.
+    Naming, versioning, status codes and the error shape follow
+    ../../rest-conventions.md; shared components come from ./common.yaml.
+
+servers:
+  - url: https://{host}/api/v1
+    description: The application, any environment
+    variables:
+      host:
+        default: localhost:3000
+
+security:
+  - bearerAuth: []
+
+paths:
+  /categories:
+    get:
+      operationId: listCategories
+      summary: List categories
+      parameters:
+        - $ref: './common.yaml#/components/parameters/PageParam'
+        - $ref: './common.yaml#/components/parameters/LimitParam'
+        - name: type
+          in: query
+          required: false
+          schema: { type: string, enum: [income, expense] }
+      responses:
+        '200':
+          description: A page of categories
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Category'
+                  meta:
+                    $ref: './common.yaml#/components/schemas/PaginationMeta'
+        '401':
+          $ref: './common.yaml#/components/responses/Unauthorized'
+        '500':
+          $ref: './common.yaml#/components/responses/InternalError'
+    post:
+      operationId: createCategory
+      summary: Create a category
+      description: >
+        Implements HU-02. The name is unique within its type; a duplicate is a
+        conflict.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewCategory'
+      responses:
+        '201':
+          description: Category created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+        '400':
+          $ref: './common.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: './common.yaml#/components/responses/Unauthorized'
+        '409':
+          $ref: './common.yaml#/components/responses/Conflict'
+        '500':
+          $ref: './common.yaml#/components/responses/InternalError'
+
+  /categories/{categoryId}:
+    parameters:
+      - $ref: '#/components/parameters/CategoryId'
+    delete:
+      operationId: deleteCategory
+      summary: Delete a category
+      description: >
+        Implements HU-03. Refused with 409 while the category still owns a
+        subcategory or a budget (BR-05); deactivate it with PATCH instead.
+      responses:
+        '204':
+          description: Category deleted
+        '401':
+          $ref: './common.yaml#/components/responses/Unauthorized'
+        '404':
+          $ref: './common.yaml#/components/responses/NotFound'
+        '409':
+          $ref: './common.yaml#/components/responses/Conflict'
+        '500':
+          $ref: './common.yaml#/components/responses/InternalError'
+    patch:
+      operationId: updateCategoryStatus
+      summary: Activate or deactivate a category
+      description: >
+        Implements BR-05. Setting isActive to false hides the category from new
+        transactions and budgets; existing links are kept.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ActivationUpdate'
+      responses:
+        '200':
+          description: Category updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+        '400':
+          $ref: './common.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: './common.yaml#/components/responses/Unauthorized'
+        '404':
+          $ref: './common.yaml#/components/responses/NotFound'
+        '500':
+          $ref: './common.yaml#/components/responses/InternalError'
+
+  /categories/{categoryId}/subcategories:
+    parameters:
+      - $ref: '#/components/parameters/CategoryId'
+    get:
+      operationId: listSubcategories
+      summary: List the subcategories of a category
+      parameters:
+        - $ref: './common.yaml#/components/parameters/PageParam'
+        - $ref: './common.yaml#/components/parameters/LimitParam'
+      responses:
+        '200':
+          description: A page of subcategories
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Subcategory'
+                  meta:
+                    $ref: './common.yaml#/components/schemas/PaginationMeta'
+        '401':
+          $ref: './common.yaml#/components/responses/Unauthorized'
+        '404':
+          $ref: './common.yaml#/components/responses/NotFound'
+        '500':
+          $ref: './common.yaml#/components/responses/InternalError'
+    post:
+      operationId: createSubcategory
+      summary: Create a subcategory
+      description: >
+        Implements HU-02. The name is unique within its category; a duplicate is a
+        conflict.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewSubcategory'
+      responses:
+        '201':
+          description: Subcategory created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subcategory'
+        '400':
+          $ref: './common.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: './common.yaml#/components/responses/Unauthorized'
+        '404':
+          $ref: './common.yaml#/components/responses/NotFound'
+        '409':
+          $ref: './common.yaml#/components/responses/Conflict'
+        '500':
+          $ref: './common.yaml#/components/responses/InternalError'
+
+  /categories/{categoryId}/subcategories/{subcategoryId}:
+    parameters:
+      - $ref: '#/components/parameters/CategoryId'
+      - $ref: '#/components/parameters/SubcategoryId'
+    delete:
+      operationId: deleteSubcategory
+      summary: Delete a subcategory
+      description: >
+        Implements HU-03. Refused with 409 while any transaction detail references
+        it (BR-05); deactivate it with PATCH instead.
+      responses:
+        '204':
+          description: Subcategory deleted
+        '401':
+          $ref: './common.yaml#/components/responses/Unauthorized'
+        '404':
+          $ref: './common.yaml#/components/responses/NotFound'
+        '409':
+          $ref: './common.yaml#/components/responses/Conflict'
+        '500':
+          $ref: './common.yaml#/components/responses/InternalError'
+    patch:
+      operationId: updateSubcategoryStatus
+      summary: Activate or deactivate a subcategory
+      description: >
+        Implements BR-05. Setting isActive to false hides the subcategory from new
+        transaction details; existing links are kept.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ActivationUpdate'
+      responses:
+        '200':
+          description: Subcategory updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subcategory'
+        '400':
+          $ref: './common.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: './common.yaml#/components/responses/Unauthorized'
+        '404':
+          $ref: './common.yaml#/components/responses/NotFound'
+        '500':
+          $ref: './common.yaml#/components/responses/InternalError'
+
+components:
+  parameters:
+    CategoryId:
+      name: categoryId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    SubcategoryId:
+      name: subcategoryId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+
+  schemas:
+    Category:
+      type: object
+      required: [id, name, type, isActive]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        type: { type: string, enum: [income, expense] }
+        isActive: { type: boolean }
+
+    ActivationUpdate:
+      type: object
+      required: [isActive]
+      properties:
+        isActive: { type: boolean }
+
+    NewCategory:
+      type: object
+      required: [name, type]
+      properties:
+        name: { type: string, minLength: 1 }
+        type: { type: string, enum: [income, expense] }
+
+    Subcategory:
+      type: object
+      required: [id, categoryId, name, isActive]
+      properties:
+        id: { type: string, format: uuid }
+        categoryId: { type: string, format: uuid }
+        name: { type: string }
+        isActive: { type: boolean }
+
+    NewSubcategory:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string, minLength: 1 }
+
+  securitySchemes:
+    bearerAuth:
+      $ref: './common.yaml#/components/securitySchemes/bearerAuth'
