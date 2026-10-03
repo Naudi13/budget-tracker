@@ -1,20 +1,14 @@
 # 12 — Design System
 
-> [!NOTE] INSTRUCTIONS
-> Replace the values below with this project's real decisions once the
-> first two screens exist — a token nobody has used yet is a guess, not a
-> standard. Delete this block once a second person has reviewed the
-> accessibility target against the actual component library.
-
 ## Tokens
 
 ### Color
 
 | Token | Value | Use |
 |---|---|---|
-| `--color-primary` | `#0B5FFF` | Primary actions: save, confirm, submit |
-| `--color-danger` | `#D1293D` | Destructive actions: retire a product, void an invoice |
-| `--color-success` | `#1E824C` | Confirmation banners: invoice issued, payment recorded |
+| `--color-primary` | `#0B5FFF` | Primary actions: save a transaction, confirm a category, sign in |
+| `--color-danger` | `#D1293D` | Destructive actions: delete a transaction, delete a category or subcategory |
+| `--color-success` | `#1E824C` | Confirmation banners: transaction recorded, budget saved |
 | `--color-text` | `#1A1A1A` | Default body text |
 | `--color-bg-surface` | `#FFFFFF` | Card and form backgrounds |
 
@@ -22,7 +16,7 @@
 
 | Token | Value | Use |
 |---|---|---|
-| `--font-size-h1` | `1.75rem` / 700 weight | Page titles, e.g. "Products" |
+| `--font-size-h1` | `1.75rem` / 700 weight | Page titles, e.g. "Transaction history" |
 | `--font-size-body` | `1rem` / 400 weight | Table rows, labels, body copy |
 | `--font-size-caption` | `0.8125rem` / 400 weight | Field hints, timestamps |
 | `--space-unit` | `4px` | Base of the spacing scale: 4, 8, 16, 24, 32px |
@@ -32,9 +26,12 @@
 | Component | Used by | Notes |
 |---|---|---|
 | Button (primary / secondary / danger) | Every screen | One primary button per screen, at most |
-| Data table | Product list, invoice list | Paginated, sortable by column |
-| Form field with inline validation | Register product, issue invoice | Error message states the fix, not just the failure |
-| Empty state | Product list, invoice list | Message plus the one action that fills it |
+| KPI tile | Dashboard ([`screens/dashboard.md`](./screens/dashboard.md)) | One figure and its label: total income, total expenses, net balance |
+| Data table | Transaction history, category list, subcategory list | Paginated, newest first for transactions |
+| Form field with inline validation | New record, category form, subcategory form, budget form, sign-up | Error message states the fix, not just the failure |
+| Confirm dialog | Delete a transaction, delete a category or subcategory | Danger button for the action, and a cancel that returns to the list |
+| Blocked notice | Delete a category or subcategory that is still in use | Says why the delete is refused and offers deactivation instead (BR-05) |
+| Empty state | Dashboard recent list, transaction history, category list | Message plus the one action that fills it |
 
 ## Accessibility target
 
