@@ -1,12 +1,5 @@
 # 10 — CI/CD Pipeline
 
-> [!NOTE] INSTRUCTIONS
-> Absorbs the v1.0.0 deployment guide. One pipeline definition, kept in
-> this file, is the only path from a commit to any environment — a second
-> pipeline for a second artifact would mean this is not a monolith
-> anymore. Delete this block once the pipeline has failed on purpose at
-> every stage below.
-
 ## One artifact, one pipeline
 
 The application builds once, into one deployable artifact, in the
@@ -31,17 +24,21 @@ so the pipeline stops before running them.
 |---|---|---|
 | `build` | Compiles the application from source | The code does not compile, or a dependency cannot be resolved |
 | `boundary check` | Runs the stack's tool from [`boundary-enforcement.md`](../05-architecture/boundary-enforcement.md) against the whole tree | Any module reaches another module's `internal/` code |
-| `test` | Runs the `unit` and `module-integration` layers from [`testing-strategy.md`](../11-quality/testing-strategy.md) | A test fails, or coverage drops below **NFR-07** (80% on changed files, 90% on the `billing` module) |
-| `package` | Assembles the one deployable artifact — a container image, executable bundle, or package, per `_stacks/` — and tags it with the commit | The artifact cannot be assembled |
-| `deploy` | Promotes the artifact to an environment from [`environments.md`](./environments.md) and runs a smoke test | Staging: the `end-to-end` layer fails. Production: the health check fails, or approval is not granted |
+| `test` | Runs the `unit` and `module-integration` layers from [`testing-strategy.md`](../11-quality/testing-strategy.md) | A test fails, or coverage drops below **NFR-07** (80% on changed files, 90% on the `transactions` module) |
+| `package` | Assembles the one deployable artifact — a container image, per [`_stacks/csharp-aspnet.md`](../_stacks/csharp-aspnet.md) — and tags it with the commit | The artifact cannot be assembled |
+| `deploy` | Promotes the artifact to an environment from [`environments.md`](./environments.md) and runs a smoke test | Staging: the `end-to-end` layer fails. Production: `GET /health` fails, or approval is not granted |
 
 ## When each stage runs
 
+Per [`git-conventions.md`](../00-governance/git-conventions.md), code has three
+permanent branches — `develop`, `qa`, `main` — and a commit reaches `qa` or
+`main` only by `git cherry-pick -x` from the branch below it, never by merge.
+
 | Trigger | Stages that run |
 |---|---|
-| Every pull request | `build` through `package` — the artifact is built and proven, never deployed |
-| Merge to `dev` | All five stages; `deploy` targets `staging` |
-| A release tag on `main` | All five stages; `deploy` targets `production`, gated on manual approval |
+| Every pull request into `develop` | `build` through `package` — the artifact is built and proven, never deployed |
+| A commit is cherry-picked into `qa` | All five stages; `deploy` targets `staging` |
+| A commit is cherry-picked into `main` (including a `hotfix/` branch's pull request) | All five stages; `deploy` targets `production`, gated on manual approval |
 
 ---
 

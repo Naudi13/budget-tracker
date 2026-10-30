@@ -1,18 +1,12 @@
 # 10 — Environments
 
-> [!NOTE] INSTRUCTIONS
-> An environment with no row below is an environment nobody can reason
-> about — add the row before the first deploy to it, not after. Delete
-> this block once every pipeline-deployed environment below has taken a
-> real deploy from `ci-cd.md`.
-
 ## Environments
 
 | Environment | Purpose | Data source | Who deploys |
 |---|---|---|---|
 | `local` | One developer's own machine, per [`local-setup.md`](./local-setup.md) | Seed data created locally | The developer, manually |
-| `staging` | Proves the artifact before real users see it; where the `end-to-end` layer runs | An anonymized copy of production | The pipeline, automatically, on every merge to `dev` |
-| `production` | Serves real users | The live database | The pipeline, on a release tag, after manual approval |
+| `staging` | Proves the artifact before real users see it; where the `end-to-end` layer runs | An anonymized copy of production | The pipeline, automatically, on every cherry-pick into `qa` |
+| `production` | Serves real users | The live database | The pipeline, on every cherry-pick into `main`, after manual approval |
 
 ## Configuration per environment
 
@@ -28,9 +22,12 @@ the application's own defaults, not in per-environment configuration.
 ## Reaching an environment
 
 Nobody reaches `production` directly to fix something. A fix lands on
-`dev`, proves itself in `staging` through the same pipeline every other
-change uses, and only then reaches `production` — the same path, every
-time, with no shortcut for an emergency.
+`develop`, is cherry-picked into `qa` to prove itself in `staging`, and only
+then cherry-picked into `main` to reach `production` — the same pipeline every
+time, with the `(cherry picked from commit ...)` trailer as the audit trail. A
+`hotfix/` branch is the one documented exception: it still goes through the
+full pipeline on `main` before the fix is cherry-picked back down to `qa` and
+`develop`, per [`git-conventions.md`](../00-governance/git-conventions.md).
 
 ---
 
