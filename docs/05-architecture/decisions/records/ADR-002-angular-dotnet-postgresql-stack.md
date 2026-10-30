@@ -37,7 +37,7 @@ had the advantage of a ready guide but not of the team's experience.
 | Alternative | Pros | Cons | Verdict |
 |---|---|---|---|
 | Angular, ASP.NET Core, PostgreSQL | Matches the team's skills; PostgreSQL is the database `.env.example` already assumes | No `_stacks/` guide for C#; the tree, boundary tool and commands are written by this project | Chosen |
-| Angular, Spring Boot, PostgreSQL | A ready `_stacks/java-spring.md` guide with the boundary test written | The team's backend language is C#, not Java | The guide's head start does not offset learning a language |
+| Angular, Spring Boot, PostgreSQL | The framework ships a ready Java/Spring Boot guide, with the boundary test already written | The team's backend language is C#, not Java | The guide's head start does not offset learning a language |
 | Angular, ASP.NET Core, a document database | Flexible schema | Totals and their detail lines must stay consistent, and [`BR-05`](../../../02-domain/entities-and-rules.md) relies on restrict-on-delete keys | Ruled out by the relational constraint in `overview.md` |
 
 ## Consequences
