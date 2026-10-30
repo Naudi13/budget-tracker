@@ -11,7 +11,7 @@ even for a story that gets dropped before it ships.
 |---|---|---|---|
 | HU-01 | Sign in to a business account | `identity` | ⭐ |
 | HU-02 | Create a category or subcategory | `transactions` | ⭐ |
-| HU-03 | Delete a category or subcategory | `transactions` | ⭐ |
+| HU-03 | Delete or deactivate a category or subcategory | `transactions` | ⭐ |
 | HU-04 | Register an income or expense transaction | `transactions` | ⭐ |
 | HU-05 | View transaction history | `transactions` | ⭐ |
 | HU-06 | Delete a transaction | `transactions` | ⭐ |

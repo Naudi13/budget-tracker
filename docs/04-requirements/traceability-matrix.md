@@ -11,22 +11,19 @@ a defect.
 
 | HU-NN | Module | Design document | Test case |
 |---|---|---|---|
-| HU-01 | `identity` | [`module-catalog.md`](../09-modules/module-catalog.md) | [`unit`](../11-quality/testing-strategy.md) — reject sign-up with an email already in use |
-| HU-02 | `transactions` | [`module-catalog.md`](../09-modules/module-catalog.md) | [`unit`](../11-quality/testing-strategy.md) — reject a subcategory name duplicated within its category |
-| HU-03 | `transactions` | [`module-catalog.md`](../09-modules/module-catalog.md) | [`module-integration`](../11-quality/testing-strategy.md) — a category or subcategory still referenced cannot be deleted (BR-05) |
-| HU-04 | `transactions` | [`module-catalog.md`](../09-modules/module-catalog.md) | [`module-integration`](../11-quality/testing-strategy.md) — a transaction cannot mix income and expense details (BR-02) |
-| HU-05 | `transactions` | [`module-catalog.md`](../09-modules/module-catalog.md) | [`unit`](../11-quality/testing-strategy.md) — a soft-deleted transaction is excluded from the history list (BR-04) |
-| HU-06 | `transactions` | [`module-catalog.md`](../09-modules/module-catalog.md) | [`unit`](../11-quality/testing-strategy.md) — deleting a transaction sets `deleted_by`/`deleted_at` instead of removing the row (BR-04) |
-| HU-07 | `transactions` | [`module-catalog.md`](../09-modules/module-catalog.md) | [`unit`](../11-quality/testing-strategy.md) — reject a budget whose `period_end` is not after `period_start` |
-| HU-08 | `dashboard` | [`module-catalog.md`](../09-modules/module-catalog.md) | [`end-to-end`](../11-quality/testing-strategy.md) — the balance shown equals total income details minus total expense details (BR-03) |
+| HU-01 | `identity` | [`identity.yaml`](../07-api/contracts/openapi/identity.yaml) — no screen yet, see Gaps | [`unit`](../11-quality/testing-strategy.md) — reject sign-up with an email already in use |
+| HU-02 | `transactions` | [`categories.yaml`](../07-api/contracts/openapi/categories.yaml) · [`categories-configuration.md`](../12-ux-ui/screens/categories-configuration.md) | [`unit`](../11-quality/testing-strategy.md) — reject a subcategory name duplicated within its category |
+| HU-03 | `transactions` | [`categories.yaml`](../07-api/contracts/openapi/categories.yaml) · [`categories-configuration.md`](../12-ux-ui/screens/categories-configuration.md) | [`module-integration`](../11-quality/testing-strategy.md) — a category or subcategory still referenced cannot be deleted (BR-05) |
+| HU-04 | `transactions` | [`transactions.yaml`](../07-api/contracts/openapi/transactions.yaml) · [`new-record.md`](../12-ux-ui/screens/new-record.md) | [`module-integration`](../11-quality/testing-strategy.md) — a transaction cannot mix income and expense details (BR-02) |
+| HU-05 | `transactions` | [`transactions.yaml`](../07-api/contracts/openapi/transactions.yaml) · [`transaction-history.md`](../12-ux-ui/screens/transaction-history.md) | [`unit`](../11-quality/testing-strategy.md) — a soft-deleted transaction is excluded from the history list (BR-04) |
+| HU-06 | `transactions` | [`transactions.yaml`](../07-api/contracts/openapi/transactions.yaml) · [`transaction-history.md`](../12-ux-ui/screens/transaction-history.md) | [`unit`](../11-quality/testing-strategy.md) — deleting a transaction sets `deleted_by`/`deleted_at` instead of removing the row (BR-04) |
+| HU-07 | `transactions` | [`budgets.yaml`](../07-api/contracts/openapi/budgets.yaml) — no screen yet, see Gaps | [`unit`](../11-quality/testing-strategy.md) — reject a budget whose `period_end` is not after `period_start` |
+| HU-08 | `dashboard` | [`dashboard.yaml`](../07-api/contracts/openapi/dashboard.yaml) · [`dashboard.md`](../12-ux-ui/screens/dashboard.md) | [`end-to-end`](../11-quality/testing-strategy.md) — the balance shown equals total income details minus total expense details (BR-03) |
 
-Every Design document cell above names the same file because the per-module
-documents it would otherwise point at do not exist yet: `09-modules/` carries no
-module folder, only its catalog and the
-[`_template-module/`](../09-modules/_template-module/README.md) a folder is
-copied from. Once `identity/`, `transactions/`, and `dashboard/` exist there,
-each story points at its own module's folder and the column starts telling the
-stories apart.
+Each Design document cell names the API contract that defines the story's
+request and response shape, and the screen that serves it where one exists.
+Once `identity/`, `transactions/`, and `dashboard/` exist under `09-modules/`,
+each story can add its own module folder alongside these.
 
 ## Non-functional requirements
 
@@ -53,8 +50,15 @@ written into its Steps.
 ## Gaps
 
 A gap is an `HU-NN` or `NFR-NN` with no row above, or a row whose design
-document or test case does not exist. One is open: **NFR-04** sets a 30-minute
-restore target that no document in this repository describes a procedure for.
+document or test case does not exist. Three are open:
+
+- **NFR-04** sets a 30-minute restore target that no document in this
+  repository describes a procedure for.
+- **HU-01** and **HU-07** have an API contract but no screen in `12-ux-ui/` —
+  the flow diagrams this project started from do not cover sign-in or
+  budgeting. HU-01 is ⭐-priority; its screen should exist before it is
+  scheduled into a sprint, or the sprint should record that V1 signs in
+  through the API alone.
 
 Once a real test case exists for a row, its Test case column should carry
 that test case's `Id` from [`_template-test-case.md`](../11-quality/_template-test-case.md), in place of the layer or check named above.
