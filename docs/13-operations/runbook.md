@@ -1,10 +1,5 @@
 # 13 — Runbook
 
-> [!NOTE] INSTRUCTIONS
-> This is the global entry point; keep it routing to module runbooks
-> instead of absorbing their diagnosis steps, or the two will drift apart.
-> Delete this block once the support drill below has been run for real.
-
 ## How this runbook is organized
 
 This file routes a symptom to the module most likely responsible, then
@@ -18,8 +13,9 @@ routes, and it recovers the whole application, never one module alone.
 
 | Symptom | Likely cause | Action |
 |---|---|---|
-| Invoices stuck, but products look correct | `billing` | Diagnose in `billing`'s own runbook |
-| Product prices wrong across the catalog | `catalog` | Diagnose in `catalog`'s own runbook |
+| Sign-in or sign-up failing, everything else fine | `identity` | Diagnose in `identity`'s own runbook |
+| Transactions, categories, or budgets not saving | `transactions` | Diagnose in `transactions`'s own runbook |
+| Dashboard KPIs wrong or stuck, but recording works | `dashboard` | Diagnose in `dashboard`'s own runbook |
 | `/health` fails, everything is unreachable | The application process itself | Restart, below |
 | Errors spiked right after a deploy | The last release | Rollback, below |
 
@@ -33,8 +29,8 @@ routes, and it recovers the whole application, never one module alone.
 
 There is one process and one release: every action above targets the whole
 application, never a single module. **NFR-10** is narrower than this table:
-it measures a support question about one invoice, answered from logs alone
-in under five minutes, via the `correlationId` lookup in
+it measures a support question about one transaction, answered from logs
+alone in under five minutes, via the `correlationId` lookup in
 [`./observability.md`](./observability.md) — not a resolution time for the
 outages recovered above.
 

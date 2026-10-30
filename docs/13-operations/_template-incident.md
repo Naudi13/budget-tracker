@@ -13,7 +13,7 @@
 | Id | INC-[NNN] |
 | Severity | [Critical — application down / Major — one module unusable / Minor — degraded, workaround exists] |
 | Detected by | [alert name from `./observability.md`, or "user report"] |
-| Modules involved | [`catalog`, `billing`, or "the whole application"] |
+| Modules involved | [`identity`, `transactions`, `dashboard`, or "the whole application"] |
 
 ## Timeline
 
