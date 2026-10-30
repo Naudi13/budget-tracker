@@ -23,6 +23,20 @@ business enters about its own money lives here.
 Everything not listed above is `internal/` and unreachable from outside this
 module — see [`../../05-architecture/module-structure.md`](../../05-architecture/module-structure.md).
 
+## Component diagram
+
+```mermaid
+flowchart TB
+    subgraph transactions
+        Api["Api/<br/>TransactionsFacade"]
+        App["Internal/Application<br/>RecordTransaction, DeleteTransaction,<br/>category and budget use cases"]
+        Domain["Internal/Domain<br/>Transaction, TransactionDetail,<br/>Category, Subcategory, Budget"]
+        Persistence["Internal/Persistence<br/>one repository per owned table"]
+        Api --> App --> Domain
+        App --> Persistence
+    end
+```
+
 ## Dependencies
 
 | Depends on | Through | Why |

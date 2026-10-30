@@ -19,6 +19,19 @@ documentation, backend, frontend, and database repositories.
 | Balance | Compute the net balance as total income minus total expenses |
 | Dashboard | A single view with KPIs (total income, total expenses, net balance) and the 5 most recent transactions, for a fast read of financial health |
 
+## System context
+
+```mermaid
+flowchart LR
+    Owner["Business owner / entrepreneur"] -->|records transactions, reads the dashboard| App(("Budget Tracker"))
+    Staff["Small business staff"] -->|keeps the transaction log accurate| App
+```
+
+No external system is called yet — V1 has no bank integration or other
+provider; see [`scope.md`](./scope.md). The container inside this one box is
+drawn in
+[`../05-architecture/modular-monolith.md`](../05-architecture/modular-monolith.md).
+
 ## Who it is for
 
 | Audience | Uses it to |

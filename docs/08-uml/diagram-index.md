@@ -1,21 +1,14 @@
 # 08 — Diagram Index
 
-> [!NOTE] INSTRUCTIONS
-> One row per diagram that earns its keep — an outdated diagram is worse than
-> no diagram. The four rows below are an example: delete them, then add one row
-> per diagram this project keeps, each row written before its diagram is drawn.
-> Delete this block once the table lists only this project's own diagrams.
-
 ## Diagrams
-
-Example rows — they show the shape, not this project's inventory.
 
 | Diagram | C4 level | Where it renders | Kept current by |
 |---|---|---|---|
-| System context | Context | Inline Mermaid, in the document that needs it | The pull request that adds or drops an external system |
+| System context | Context | Inline Mermaid, in [`../01-context/overview.md`](../01-context/overview.md) | The pull request that adds or drops an audience or an external system |
 | Single deployable | Container | Inline Mermaid, in [`../05-architecture/modular-monolith.md`](../05-architecture/modular-monolith.md) | The pull request that adds or drops a module |
-| `catalog` internals | Component | Inline Mermaid, in that module's own folder under `09-modules/` | The pull request that moves code across the module's internal folders |
-| `billing` internals | Component | A tool export committed under `diagrams/`, for a diagram Mermaid cannot express | The same pull request, plus a re-export |
+| `identity` internals | Component | Inline Mermaid, in [`../09-modules/identity/README.md`](../09-modules/identity/README.md) | The pull request that moves code across `identity`'s internal folders |
+| `transactions` internals | Component | Inline Mermaid, in [`../09-modules/transactions/README.md`](../09-modules/transactions/README.md) | The pull request that moves code across `transactions`'s internal folders |
+| `dashboard` internals | Component | Inline Mermaid, in [`../09-modules/dashboard/README.md`](../09-modules/dashboard/README.md) | The pull request that moves code across `dashboard`'s internal folders |
 
 ## What each level answers
 
@@ -31,6 +24,10 @@ This project has exactly one container, described in
 [`../05-architecture/modular-monolith.md`](../05-architecture/modular-monolith.md).
 C4 goes no deeper than component: a code-level diagram documents what the
 `boundary check` already enforces, and goes stale on the next refactor.
+
+Nothing under `diagrams/` is used yet: every diagram above is Mermaid, which
+GitHub renders inline. `diagrams/source/` and `diagrams/exports/` stay empty
+until a diagram Mermaid cannot express is needed.
 
 ---
 
