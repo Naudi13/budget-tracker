@@ -13,7 +13,9 @@ business enters about its own money lives here.
 | `TransactionsFacade.ListTransactions` | page, limit | page of `Transaction` | `platform/web`, `DashboardFacade` |
 | `TransactionsFacade.RecordTransaction` | date, description, details[] | `Transaction` | `platform/web` |
 | `TransactionsFacade.DeleteTransaction` | transaction id | — | `platform/web` |
+| `TransactionsFacade.ListCategories` | page, limit, type? | page of `Category` | `platform/web` |
 | `TransactionsFacade.CreateCategory` / `DeleteCategory` / `UpdateCategoryStatus` | name+type / id / id+isActive | `Category` / — / `Category` | `platform/web` |
+| `TransactionsFacade.ListSubcategories` | category id, page, limit | page of `Subcategory` | `platform/web` |
 | `TransactionsFacade.CreateSubcategory` / `DeleteSubcategory` / `UpdateSubcategoryStatus` | category id+name / ids / ids+isActive | `Subcategory` / — / `Subcategory` | `platform/web` |
 | `TransactionsFacade.CreateBudget` / `ListBudgets` | category id, amount, period / page, limit | `Budget` / page of `Budget` | `platform/web` |
 | `TransactionsFacade.GetTotals` | — | income/expense totals | `DashboardFacade` |

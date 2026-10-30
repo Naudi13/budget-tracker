@@ -7,7 +7,7 @@
 | Date | 2026-09-21 |
 | Status | `Active` |
 
-**Context:** A single money movement can classify different amounts under
+**Context:** A single transaction can classify different amounts under
 different subcategories (for example, a receipt split between "Office
 supplies" and "Software"), so one `amount` and one `subcategory_id` on the
 transaction itself cannot represent it.
