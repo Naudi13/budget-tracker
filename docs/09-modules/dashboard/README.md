@@ -24,7 +24,7 @@ flowchart TB
         App["Internal/Application<br/>GetDashboard"]
         Api --> App
     end
-    App -.->|public API call, no persistence here| TransactionsFacade["transactions.Api.TransactionsFacade"]
+    App -.->|public API call, no persistence here| TransactionsFacade["transactions module's<br/>TransactionsFacade"]
 ```
 
 ## Dependencies

@@ -22,7 +22,7 @@
 | Invoicing and client billing | This product tracks the business's own income and expenses, not invoices issued to customers |
 | Bank account integration / auto-import | Transactions are entered manually in V1; no bank API integration exists yet |
 | Multi-currency support | The target user operates in a single currency |
-| Multi-user roles and permissions | V1 serves a single owner/user per business; team collaboration is a later version |
+| Multi-user roles and permissions | V1 serves a single account per business; team collaboration is a later version |
 | Tax reporting and compliance exports | Out of scope until a specific jurisdiction's requirements are defined |
 | Splitting recording and dashboard into a separately deployed application | This product ships and scales as one deployable, by design |
 
