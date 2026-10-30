@@ -30,7 +30,7 @@ documentation, backend, frontend, and database repositories.
 
 Before this system, entrepreneurs and small businesses track income and
 expenses in scattered spreadsheets or notebooks, updated inconsistently.
-Cash-flow problems are noticed only after the fact, because no single view
+Balance problems are noticed only after the fact, because no single view
 answers "how much did we make, how much did we spend, and what is left"
 without manually adding up several sheets.
 
