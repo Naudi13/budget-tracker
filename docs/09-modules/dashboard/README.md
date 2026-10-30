@@ -15,6 +15,18 @@ nothing, only of how those figures are computed.
 Everything not listed above is `internal/` and unreachable from outside this
 module — see [`../../05-architecture/module-structure.md`](../../05-architecture/module-structure.md).
 
+## Component diagram
+
+```mermaid
+flowchart TB
+    subgraph dashboard
+        Api["Api/<br/>DashboardFacade"]
+        App["Internal/Application<br/>GetDashboard"]
+        Api --> App
+    end
+    App -.->|public API call, no persistence here| TransactionsFacade["transactions.Api.TransactionsFacade"]
+```
+
 ## Dependencies
 
 | Depends on | Through | Why |

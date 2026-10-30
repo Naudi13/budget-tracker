@@ -17,6 +17,20 @@ source of `identity.users` — the only table any other module's audit columns
 Everything not listed above is `internal/` and unreachable from outside this
 module — see [`../../05-architecture/module-structure.md`](../../05-architecture/module-structure.md).
 
+## Component diagram
+
+```mermaid
+flowchart TB
+    subgraph identity
+        Api["Api/<br/>IdentityFacade"]
+        App["Internal/Application<br/>SignUp, SignIn, Authenticate"]
+        Domain["Internal/Domain<br/>User"]
+        Persistence["Internal/Persistence<br/>UsersRepository"]
+        Api --> App --> Domain
+        App --> Persistence
+    end
+```
+
 ## Dependencies
 
 | Depends on | Through | Why |
