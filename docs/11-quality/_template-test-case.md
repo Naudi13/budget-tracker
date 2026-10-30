@@ -13,7 +13,7 @@
 | Id | TC-[NNN] |
 | Covers | [`HU-NN` or `NFR-NN` — see `../04-requirements/`] |
 | Layer | [`unit` / `module-integration` / `end-to-end` — see `./testing-strategy.md`] |
-| Module | [`catalog`, `billing`, or "whole artifact" for `end-to-end`] |
+| Module | [`identity`, `transactions`, `dashboard`, or "whole artifact" for `end-to-end`] |
 
 ## Preconditions
 
