@@ -2,6 +2,7 @@
   <Folder Name="/src/">
     <Project Path="src/BudTack.Api/BudTack.Api.csproj" />
     <Project Path="src/BudTack.Identity/BudTack.Identity.csproj" />
+    <Project Path="src/BudTack.Transactions/BudTack.Transactions.csproj" />
   </Folder>
   <Folder Name="/tests/" />
   <Folder Name="/tests/boundary/">

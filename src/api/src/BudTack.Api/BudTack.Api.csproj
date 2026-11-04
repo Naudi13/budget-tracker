@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\BudTack.Identity\BudTack.Identity.csproj" />
+    <ProjectReference Include="..\BudTack.Transactions\BudTack.Transactions.csproj" />
   </ItemGroup>
 
 </Project>
