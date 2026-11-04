@@ -6,7 +6,21 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) | [SemVer](http
 ### Added
 - `ADR-005`: FluentMigrator, in its own .NET project in `bud-tack-db`, versions the schema
 
+- `04-requirements/stories/`: HU-01 to HU-08, each with Gherkin acceptance criteria and its blockers
+- Screens `sign-in.md`, `sign-up.md` and `budgets.md`, closing the HU-01 and HU-07 gaps
+- Pipelines for `bud-tack-portal` and `bud-tack-infra` in `10-devops/ci-cd.md`
+- `ADR-006`: the portal ships as its own nginx image that proxies `/api/` and `/health`
+  to the API, so every environment has one origin and the API sends no CORS headers
+- Budgets can be changed and deleted: `PATCH` and `DELETE /budgets/{budgetId}`, rule `BR-06`,
+  `TC-019`, and HU-07 and its screen extended to match
+
 ### Changed
+- Promotion between permanent branches is a pull request (`develop` → `qa` → `main`),
+  no longer `git cherry-pick -x`, matching every code repository's README and `CODEOWNERS`
+- `ADR-001` to `ADR-005` accepted at the architecture review gate
+- Repositories renamed to the real ones: `bud-tack-front` is `bud-tack-portal`, and
+  `bud-tack-infra` is added — five repositories, not four
+- `10-devops/local-setup.md` runs `bud-tack-infra`, `-db`, `-api` and `-portal` in that order
 - Liquibase replaced by FluentMigrator in `06-data/migrations.md`, `_stacks/csharp-aspnet.md`
   and `10-devops/`, so the toolchain is only Angular, .NET and PostgreSQL — no Java runtime
 - Migrations moved out of the application tree (`resources/db/migration/`) into `bud-tack-db`

@@ -30,6 +30,10 @@ that first required it, until an ADR supersedes that trace.
 5. **BR-05** — A category cannot be deleted while it owns a subcategory or a
    budget; a subcategory cannot be deleted while a transaction detail
    references it. Both are deactivated instead. Traced from `HU-03`.
+6. **BR-06** — A budget can be changed or deleted at any time. Deleting a
+   budget removes it from storage: it is a plan, not a record of money moved,
+   so the soft delete of **BR-04** does not apply. A changed budget still
+   satisfies the Budget invariants above. Traced from `HU-07`.
 
 ## Where a rule is enforced
 

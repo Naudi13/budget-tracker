@@ -13,7 +13,7 @@ unchanged.
 
 ```mermaid
 flowchart TB
-    Front["Angular client<br/>bud-tack-front"] -->|HTTPS| Web
+    Front["Angular client<br/>bud-tack-portal, nginx image"] -->|HTTPS, same origin, /api/ proxied| Web
     subgraph App["Single deployable — one process, one build, one release"]
         Web["platform/web<br/>HTTP endpoints"]
         Identity["identity<br/>IdentityFacade"]
@@ -32,8 +32,8 @@ The three modules come straight from the domain map, and the arrows between
 them match `module-boundaries.md`: `transactions` calls `identity` to attribute a
 change to a user, and `dashboard` calls `transactions` to read totals and recent
 transactions. The Angular client is not a module: it is a separate repository
-that calls the one public API, and how its build reaches production is decided
-in [`../10-devops/README.md`](../10-devops/README.md). Arrows cross a boundary
+that calls the one public API, shipped as its own nginx image that proxies
+`/api/` to it, per [`ADR-006`](./decisions/records/ADR-006-portal-image-behind-reverse-proxy.md). Arrows cross a boundary
 only through a public API, and never form a cycle. The single shared database,
 unlike the course standard's database per domain, is an exception recorded in
 [`ADR-004`](./decisions/records/ADR-004-shared-database-and-per-piece-repositories.md).

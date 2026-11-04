@@ -5,35 +5,36 @@ changes, not a suggestion.
 
 ## Repositories
 
-The application is one monolith, but its source lives in four repositories named
+The application is one monolith, but its source lives in five repositories named
 `bud-tack-[piece]`: the project abbreviation, then the piece.
 
 | Repository | Holds | Branch flow |
 |---|---|---|
 | `bud-tack-docs` | This documentation (cross-cutting) | `docs/[description]` to `main` |
 | `bud-tack-api` | Backend application and its modules | `develop`, `qa`, `main` |
-| `bud-tack-front` | Frontend | `develop`, `qa`, `main` |
-| `bud-tack-db` | Schema and migrations | `develop`, `qa`, `main` |
+| `bud-tack-portal` | Frontend (Angular) | `develop`, `qa`, `main` |
+| `bud-tack-db` | Schema, seeds and migrations (FluentMigrator) | `develop`, `qa`, `main` |
+| `bud-tack-infra` | Docker Compose, environment definitions and secret wiring — no application code | `develop`, `qa`, `main` |
 
 ## Branch strategy
 
-Code repositories have three permanent branches. One permanent branch is never
-merged into another: a change is promoted only by `git cherry-pick -x`, which
-keeps the `(cherry picked from commit ...)` trailer as the audit trail.
+Code repositories have three permanent branches. A change is promoted from one
+to the next only by a **pull request between branches** — `develop` into `qa`,
+then `qa` into `main` — and the merged pull request is the audit trail.
 
 | Branch | Kind | Cut from | Reaches |
 |---|---|---|---|
-| `develop` | Permanent, integration | — | `qa`, by cherry-pick |
-| `qa` | Permanent, under test | — | `main`, by cherry-pick |
-| `main` | Permanent, production | — | Release |
+| `develop` | Permanent, integration, the default branch | — | `qa`, by a promotion pull request |
+| `qa` | Permanent, under test | — | `main`, by a release pull request |
+| `main` | Permanent, production; one approval from the `CODEOWNERS` reviewer | — | Release |
 | `feat/`, `fix/`, `chore/[description]` | Working | `develop` | `develop`, by pull request |
-| `hotfix/[description]` | Working | `main` | `main` by pull request, then `qa` and `develop` by cherry-pick |
+| `hotfix/[description]` | Working | `main` | `main` by pull request, then `develop` by a second pull request from the same branch |
 
 `bud-tack-docs` has no `develop` or `qa`: `main` is fed only by `docs/[description]`
 branches, one per section, for example `docs/04-requirements-update`.
 
 - Nobody authors a commit directly on a permanent branch: only merged pull
-  requests land on `develop`, and only cherry-picks land on `qa` and `main`.
+  requests land on `develop`, `qa` and `main`.
 - One branch equals one task (in `bud-tack-docs`, one section), and is deleted
   right after merge.
 
@@ -64,16 +65,15 @@ A pull request title follows the same format.
   section, and is merged before the next opens. The one cross-section edit allowed
   is a sentence in another section that the change would otherwise leave false;
   the description lists every such file.
-- **Code repositories:** squash and merge into `develop`, one commit per story.
-- **Rebase is not used** on branches more than one person has pulled.
-- A pull request needs one approval; in code repositories the pipeline is green too.
+- **Code repositories:** squash and merge into `develop`, one commit per story;
+  promotion pull requests (`develop` → `qa`, `qa` → `main`) use a merge commit, never squash.
+- **Rebase is not used** on branches more than one person has pulled. A pull request needs one approval; in code repositories the pipeline is green too.
 
 ## Changes spanning repositories
 
-A story that touches several repositories opens one branch and one pull request
-per repository, with the same description and links to the others. Code merges in
-the order `bud-tack-db`, `bud-tack-api`, `bud-tack-front`; the documentation pull
-request merges no later than the first code pull request.
+A story that touches several repositories opens one branch and one pull request per repository, with the same
+description and links to the others. Code merges in the order `bud-tack-infra`, `bud-tack-db`, `bud-tack-api`,
+`bud-tack-portal`; the documentation pull request merges no later than the first code pull request.
 
 ---
 

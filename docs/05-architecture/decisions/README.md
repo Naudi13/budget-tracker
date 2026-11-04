@@ -34,11 +34,12 @@ that names it, so the history of the reasoning stays readable.
 
 | # | Title | Status | Date |
 |---|---|---|---|
-| [ADR-001](./records/ADR-001-modular-monolith-as-default.md) | Modular monolith as the default architecture | Proposed | 2026-09-21 |
-| [ADR-002](./records/ADR-002-angular-dotnet-postgresql-stack.md) | Angular, .NET and PostgreSQL as the technology stack | Proposed | 2026-09-21 |
-| [ADR-003](./records/ADR-003-project-per-module-boundary.md) | One project per module, checked by the compiler and NetArchTest | Proposed | 2026-09-21 |
-| [ADR-004](./records/ADR-004-shared-database-and-per-piece-repositories.md) | One shared database and one repository per piece | Proposed | 2026-09-21 |
-| [ADR-005](./records/ADR-005-fluentmigrator-for-schema-migrations.md) | FluentMigrator for schema migrations, in `bud-tack-db` | Proposed | 2026-11-04 |
+| [ADR-001](./records/ADR-001-modular-monolith-as-default.md) | Modular monolith as the default architecture | Accepted | 2026-11-04 |
+| [ADR-002](./records/ADR-002-angular-dotnet-postgresql-stack.md) | Angular, .NET and PostgreSQL as the technology stack | Accepted | 2026-11-04 |
+| [ADR-003](./records/ADR-003-project-per-module-boundary.md) | One project per module, checked by the compiler and NetArchTest | Accepted | 2026-11-04 |
+| [ADR-004](./records/ADR-004-shared-database-and-per-piece-repositories.md) | One shared database and one repository per piece | Accepted | 2026-11-04 |
+| [ADR-005](./records/ADR-005-fluentmigrator-for-schema-migrations.md) | FluentMigrator for schema migrations, in `bud-tack-db` | Accepted | 2026-11-04 |
+| [ADR-006](./records/ADR-006-portal-image-behind-reverse-proxy.md) | The portal ships as its own image, behind a reverse proxy | Accepted | 2026-11-04 |
 
 ## Naming
 

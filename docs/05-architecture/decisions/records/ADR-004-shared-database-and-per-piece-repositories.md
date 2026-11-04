@@ -5,8 +5,8 @@
 | Field | Value |
 |---|---|
 | Id | ADR-004 |
-| Date | 2026-09-21 |
-| Status | Proposed |
+| Date | 2026-11-04 |
+| Status | Accepted |
 | Authors | Tech lead and team, at the architecture review gate |
 | Supersedes | none |
 
@@ -32,7 +32,7 @@ instead of leaving it implicit in a diagram.
 **We decided:** treat this project as a documented exception to the per-domain
 database and per-domain repository rules: one PostgreSQL instance with one schema
 per table-owning module (`identity`, `transactions`), and repositories named per
-piece — `bud-tack-api`, `bud-tack-front`, `bud-tack-db` — with no domain segment.
+piece — `bud-tack-api`, `bud-tack-portal`, `bud-tack-db`, `bud-tack-infra` — with no domain segment.
 
 The tiebreaker was that the modules are not deployed apart: `dashboard` reads
 `transactions` inside one process, and a database per domain would turn that read

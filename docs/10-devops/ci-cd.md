@@ -31,14 +31,14 @@ so the pipeline stops before running them.
 ## When each stage runs
 
 Per [`git-conventions.md`](../00-governance/git-conventions.md), code has three
-permanent branches — `develop`, `qa`, `main` — and a commit reaches `qa` or
-`main` only by `git cherry-pick -x` from the branch below it, never by merge.
+permanent branches — `develop`, `qa`, `main` — and a change reaches `qa` or
+`main` only by a pull request from the branch below it.
 
 | Trigger | Stages that run |
 |---|---|
-| Every pull request into `develop` | `build` through `package` — the artifact is built and proven, never deployed |
-| A commit is cherry-picked into `qa` | All five stages; `deploy` targets `staging` |
-| A commit is cherry-picked into `main` (including a `hotfix/` branch's pull request) | All five stages; `deploy` targets `production`, gated on manual approval |
+| Every pull request into `develop`, `qa` or `main` | `build` through `package` — the artifact is built and proven before the merge, never deployed |
+| A pull request merged into `qa` | All five stages; `deploy` targets `staging` |
+| A pull request merged into `main` (a release from `qa`, or a `hotfix/` branch) | All five stages; `deploy` targets `production`, gated on manual approval |
 
 ## The migration job in `bud-tack-db`
 
@@ -49,6 +49,24 @@ runs `up`, `down`, `up` against an empty PostgreSQL service container — the
 round trip in [`migrations.md`](../06-data/migrations.md). On `qa` and `main`
 it runs `up` against that environment's database, as the migrator role, before
 the application's `deploy` stage. Only the `dotnet` SDK runs; no Java runtime.
+
+## The other repositories
+
+Each repository's pipeline runs on every pull request into `develop` and blocks
+the merge on failure, the same as the application's.
+
+| Repository | Jobs, in order | What makes it fail |
+|---|---|---|
+| `bud-tack-portal` | `npm ci` → `ng lint` → `ng test --watch=false --code-coverage` → `ng build` → `docker build` (nginx image, tagged with the commit) | A lint error, a failing test, coverage under 80% on changed files (**NFR-07**), or a build or image error |
+| `bud-tack-infra` | `docker compose config` → `docker compose up -d --wait` → `GET /health` and `GET /` through the portal's proxy | An invalid Compose file, or a service that never reports healthy |
+| `bud-tack-docs` | The release job on a `v*.*.*` tag only | — |
+
+Per [`ADR-006`](../05-architecture/decisions/records/ADR-006-portal-image-behind-reverse-proxy.md),
+the portal ships as its own nginx image that serves the Angular files and
+forwards `/api/` and `/health` to the API. A release tags both images with the
+same version, and `bud-tack-infra`'s Compose file for each environment pins that
+one tag for both. The portal image is a client, not a second backend: "the one
+artifact" above is still the API's image.
 
 ---
 

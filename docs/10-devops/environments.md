@@ -5,8 +5,8 @@
 | Environment | Purpose | Data source | Who deploys |
 |---|---|---|---|
 | `local` | One developer's own machine, per [`local-setup.md`](./local-setup.md) | Seed data created locally | The developer, manually |
-| `staging` | Proves the artifact before real users see it; where the `end-to-end` layer runs | An anonymized copy of production | The pipeline, automatically, on every cherry-pick into `qa` |
-| `production` | Serves real users | The live database | The pipeline, on every cherry-pick into `main`, after manual approval |
+| `staging` | Proves the artifact before real users see it; where the `end-to-end` layer runs | An anonymized copy of production | The pipeline, automatically, on every merged pull request into `qa` |
+| `production` | Serves real users | The live database | The pipeline, on every merged pull request into `main`, after manual approval |
 
 ## Configuration per environment
 
@@ -19,15 +19,28 @@ No environment hardcodes a value that another environment sets
 differently — a value that never changes across the row above belongs in
 the application's own defaults, not in per-environment configuration.
 
+## One origin in every environment
+
+The browser reaches one origin only, per
+[`ADR-006`](../05-architecture/decisions/records/ADR-006-portal-image-behind-reverse-proxy.md):
+
+| Environment | Serves the Angular files | Forwards `/api/` and `/health` to the API |
+|---|---|---|
+| `local` | `ng serve` on port 4200 | The Angular dev server's `proxy.conf.json`, to `localhost:3000` |
+| `staging`, `production` | The `bud-tack-portal` nginx image | The same nginx, to the API container, on `bud-tack-infra`'s Compose network |
+
+The API exposes no port of its own outside that network and sends no CORS headers.
+
 ## Reaching an environment
 
 Nobody reaches `production` directly to fix something. A fix lands on
-`develop`, is cherry-picked into `qa` to prove itself in `staging`, and only
-then cherry-picked into `main` to reach `production` — the same pipeline every
-time, with the `(cherry picked from commit ...)` trailer as the audit trail. A
-`hotfix/` branch is the one documented exception: it still goes through the
-full pipeline on `main` before the fix is cherry-picked back down to `qa` and
-`develop`, per [`git-conventions.md`](../00-governance/git-conventions.md).
+`develop`, reaches `qa` by a promotion pull request to prove itself in
+`staging`, and only then reaches `main` by a release pull request to get to
+`production` — the same pipeline every time, with the merged pull requests as
+the audit trail. A `hotfix/` branch is the one documented exception: its pull
+request into `main` still runs the full pipeline, and a second pull request from
+the same branch brings the fix back to `develop`, per
+[`git-conventions.md`](../00-governance/git-conventions.md).
 
 ---
 

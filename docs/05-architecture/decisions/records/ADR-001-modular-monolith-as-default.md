@@ -5,8 +5,8 @@
 | Field | Value |
 |---|---|
 | Id | ADR-001 |
-| Date | 2026-09-21 |
-| Status | Proposed |
+| Date | 2026-11-04 |
+| Status | Accepted |
 | Authors | Tech lead and team, at the architecture review gate |
 | Supersedes | none |
 
@@ -20,7 +20,7 @@ people are editing at once.
 
 | Constraint | Source |
 |---|---|
-| One deployable, one shared database; source in four repositories released as a unit — an exception to the course standard, recorded in [`ADR-004`](./ADR-004-shared-database-and-per-piece-repositories.md) | [`../../../01-context/overview.md`](../../../01-context/overview.md) |
+| One deployable, one shared database; source in five repositories released as a unit — an exception to the course standard, recorded in [`ADR-004`](./ADR-004-shared-database-and-per-piece-repositories.md) | [`../../../01-context/overview.md`](../../../01-context/overview.md) |
 | Three bounded contexts already exist: identity, transactions and dashboard | [`../../../02-domain/domain-map.md`](../../../02-domain/domain-map.md) |
 | A small team, no dedicated operations hire | [`../../../03-product/vision.md`](../../../03-product/vision.md) |
 | A developer reaches a first successful request in under 1 hour | `NFR-08` |

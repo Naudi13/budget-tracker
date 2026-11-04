@@ -6,7 +6,7 @@
 |---|---|
 | Id | ADR-005 |
 | Date | 2026-11-04 |
-| Status | Proposed |
+| Status | Accepted |
 | Authors | Tech lead and team, at the architecture review gate |
 | Supersedes | none |
 

@@ -5,8 +5,8 @@
 | Field | Value |
 |---|---|
 | Id | ADR-002 |
-| Date | 2026-09-21 |
-| Status | Proposed |
+| Date | 2026-11-04 |
+| Status | Accepted |
 | Authors | Tech lead and team, at the architecture review gate |
 | Supersedes | none |
 
@@ -18,7 +18,7 @@ first commit. None of the four guides in `_stacks/` is written for C#.
 
 | Constraint | Source |
 |---|---|
-| Source lives in `bud-tack-front`, `bud-tack-api`, `bud-tack-db` and `bud-tack-docs`, one per piece, an exception recorded in [`ADR-004`](./ADR-004-shared-database-and-per-piece-repositories.md) | [`../../../00-governance/git-conventions.md`](../../../00-governance/git-conventions.md) |
+| Source lives in `bud-tack-portal`, `bud-tack-api`, `bud-tack-db`, `bud-tack-infra` and `bud-tack-docs`, one per piece, an exception recorded in [`ADR-004`](./ADR-004-shared-database-and-per-piece-repositories.md) | [`../../../00-governance/git-conventions.md`](../../../00-governance/git-conventions.md) |
 | One relational database shared by all modules, consistent within one transaction — an exception recorded in `ADR-004` | [`../../../01-context/overview.md`](../../../01-context/overview.md) |
 | A developer reaches a first successful request in under 1 hour | `NFR-08` |
 | The team works in C# and Angular | The team |

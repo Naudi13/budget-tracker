@@ -17,7 +17,8 @@ business enters about its own money lives here.
 | `TransactionsFacade.CreateCategory` / `DeleteCategory` / `UpdateCategoryStatus` | name+type / id / id+isActive | `Category` / — / `Category` | `platform/web` |
 | `TransactionsFacade.ListSubcategories` | category id, page, limit | page of `Subcategory` | `platform/web` |
 | `TransactionsFacade.CreateSubcategory` / `DeleteSubcategory` / `UpdateSubcategoryStatus` | category id+name / ids / ids+isActive | `Subcategory` / — / `Subcategory` | `platform/web` |
-| `TransactionsFacade.CreateBudget` / `ListBudgets` | category id, amount, period / page, limit | `Budget` / page of `Budget` | `platform/web` |
+| `TransactionsFacade.CreateBudget` / `ListBudgets` | category id, amount, period / page, limit, category id? | `Budget` / page of `Budget` | `platform/web` |
+| `TransactionsFacade.UpdateBudget` / `DeleteBudget` | budget id + changed fields / budget id | `Budget` / — | `platform/web` |
 | `TransactionsFacade.GetTotals` | — | income/expense totals | `DashboardFacade` |
 
 Everything not listed above is `internal/` and unreachable from outside this
