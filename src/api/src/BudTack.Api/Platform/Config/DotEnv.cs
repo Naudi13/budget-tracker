@@ -7,9 +7,30 @@ namespace BudTack.Api.Platform.Config;
 /// </summary>
 internal static class DotEnv
 {
-    public static void LoadIfPresent(string path)
+    public const string FileName = ".env";
+
+    /// <summary>
+    /// The nearest <c>.env</c> at or above <paramref name="startDirectory"/>, or
+    /// null. <c>dotnet run --project</c> and the IDE start the host in
+    /// <c>src/BudTack.Api</c>, while the file lives at the repository root.
+    /// </summary>
+    public static string? Find(string startDirectory)
     {
-        if (!File.Exists(path))
+        for (var directory = new DirectoryInfo(startDirectory); directory is not null; directory = directory.Parent)
+        {
+            var candidate = Path.Combine(directory.FullName, FileName);
+            if (File.Exists(candidate))
+            {
+                return candidate;
+            }
+        }
+
+        return null;
+    }
+
+    public static void LoadIfPresent(string? path)
+    {
+        if (path is null || !File.Exists(path))
         {
             return;
         }

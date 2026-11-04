@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging.Console;
 
 // Local development reads .env; staging and production inject the same
 // variables from the platform's secret store, which always wins.
-DotEnv.LoadIfPresent(Path.Combine(Directory.GetCurrentDirectory(), ".env"));
+DotEnv.LoadIfPresent(DotEnv.Find(Directory.GetCurrentDirectory()));
 
 var builder = WebApplication.CreateBuilder(args);
 
