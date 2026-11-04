@@ -1,0 +1,15 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/BudTack.Api/BudTack.Api.csproj" />
+  </Folder>
+  <Folder Name="/tests/" />
+  <Folder Name="/tests/boundary/">
+    <Project Path="tests/boundary/BudTack.Boundary.Tests.csproj" />
+  </Folder>
+  <Folder Name="/tests/end-to-end/">
+    <Project Path="tests/end-to-end/BudTack.EndToEnd.Tests.csproj" />
+  </Folder>
+  <Folder Name="/tests/unit/">
+    <Project Path="tests/unit/BudTack.Unit.Tests.csproj" />
+  </Folder>
+</Solution>
