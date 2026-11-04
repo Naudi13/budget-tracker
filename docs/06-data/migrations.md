@@ -2,37 +2,55 @@
 
 ## One sequence for the whole application
 
-There is one database, so there is one ordered changelog — never a
-changelog per module. A changeset touching `identity`'s schema and one
-touching `transactions`'s schema still apply in the same numbered sequence,
-under `resources/db/migration/` (see
-[`module-structure.md`](../05-architecture/module-structure.md)). `dashboard`
-never appears here: it owns no table.
+There is one database, so there is one ordered sequence of migrations — never
+one per module. A migration touching `identity`'s schema and one touching
+`transactions`'s schema still apply in the same numbered sequence, from the one
+project `BudTack.Db.Migrations` in the `bud-tack-db` repository, per
+[`ADR-005`](../05-architecture/decisions/records/ADR-005-fluentmigrator-for-schema-migrations.md).
+`bud-tack-api` holds no migrations, and `dashboard` never appears here: it owns
+no table.
 
 | Rule | Detail |
 |---|---|
-| Tool | Liquibase |
-| Sequence | One changelog, one increasing version number, for the entire database |
-| Changeset scope | One logical change per changeset; never edit a changeset already run anywhere |
-| Module tag | Each changeset id is prefixed with its owning module, e.g. `transactions-003`, for traceability only — it does not split the sequence |
+| Tool | FluentMigrator, a .NET library — no Java runtime is involved |
+| Sequence | One version table, `public.schema_version`, one increasing version number for the entire database |
+| Version number | `[Migration(yyyyMMddHHmm)]` — the UTC time the migration was written, so two branches never collide on a number |
+| Migration scope | One logical change per migration class; never edit a migration already run anywhere |
+| Module tag | The class name starts with its owning module and number, e.g. `Transactions003_CreateTransactions`, for traceability only — it does not split the sequence |
+| Schema | Every table is created with `.InSchema("identity")` or `.InSchema("transactions")`, per [`database-conventions.md`](./database-conventions.md) |
+| Role | The runner connects as the migrator role, never as the application's role — see [`security-policy.md`](../00-governance/security-policy.md) |
 
 ## Rollback policy
 
 | Change type | Rule |
 |---|---|
-| Additive (new nullable column, new table, new index) | Ships with an automatic or trivial rollback |
+| Additive (new nullable column, new table, new index) | Inherits `AutoReversingMigration`, so `Down()` is generated |
 | Destructive (drop column, drop table, rename) | Two phases: deploy N adds the replacement and stops using the old shape in code; deploy N+1 drops it |
-| Any changeset | Must define a working `rollback`, verified in CI before merge — a changeset with no rollback is incomplete |
+| Any migration | Has a working `Down()`, verified in CI before merge — a migration with no `Down()` is incomplete |
 
-## Mechanics
+CI proves the rollback with a round trip against an empty PostgreSQL: migrate
+up to the latest version, down to version `0`, and up again. The second `up`
+must succeed and leave the same schema as the first.
 
-Changeset syntax, file layout and rollback authoring for Liquibase are not
-repeated here — see
-[liquibase-migration-standards](https://github.com/jesusarielgb-works/liquibase-migration-standards)
-for the full standard. This document is the monolith-level policy that
-standard's changesets must satisfy: one sequence, additive by default,
-two-phase for anything destructive.
+## Example
+
+```csharp
+[Migration(202611050900)]
+public sealed class Transactions001_CreateCategories : AutoReversingMigration
+{
+    public override void Up() =>
+        Create.Table("categories").InSchema("transactions")
+            .WithColumn("id").AsGuid().PrimaryKey()
+            .WithColumn("name").AsString(100).NotNullable()
+            .WithColumn("type").AsString(10).NotNullable()
+            .WithColumn("is_active").AsBoolean().NotNullable().WithDefaultValue(true);
+}
+```
+
+Audit columns are omitted above for brevity; every real table carries them,
+per [`database-conventions.md`](./database-conventions.md). Project layout and
+commands are in [`../_stacks/csharp-aspnet.md`](../_stacks/csharp-aspnet.md).
 
 ---
 
-**Related:** [`./database-conventions.md`](./database-conventions.md) · [`../05-architecture/module-structure.md`](../05-architecture/module-structure.md)
+**Related:** [`./database-conventions.md`](./database-conventions.md) · [`../05-architecture/decisions/records/ADR-005-fluentmigrator-for-schema-migrations.md`](../05-architecture/decisions/records/ADR-005-fluentmigrator-for-schema-migrations.md)

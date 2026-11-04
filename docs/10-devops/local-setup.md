@@ -4,25 +4,28 @@
 
 | Tool | Why | Verify with |
 |---|---|---|
-| Git | Clone `bud-tack-api` | `git --version` |
+| Git | Clone `bud-tack-db` and `bud-tack-api` | `git --version` |
 | PostgreSQL (local instance, or run in a container) | The one database this application uses — see [`database-conventions.md`](../06-data/database-conventions.md) | `psql --version` |
-| .NET SDK | Build and run the application — see [`_stacks/csharp-aspnet.md`](../_stacks/csharp-aspnet.md) for the exact version | `dotnet --version` |
+| .NET SDK | Build and run the application and its migrations — see [`_stacks/csharp-aspnet.md`](../_stacks/csharp-aspnet.md) for the exact version | `dotnet --version` |
+
+No Java runtime is needed: the migrations are a .NET project
+([`ADR-005`](../05-architecture/decisions/records/ADR-005-fluentmigrator-for-schema-migrations.md)).
 
 ## Steps
 
-1. Clone `bud-tack-api` and enter it.
-2. Copy [`.env.example`](../.env.example) to `.env`; the defaults match a
+1. Clone `bud-tack-db` and `bud-tack-api` side by side.
+2. In each, copy [`.env.example`](../.env.example) to `.env`; the defaults match a
    fresh local PostgreSQL instance and need no edits to start. `APP_PORT` is
    3000 — this framework's default port, used by every example URL here and by
    the API contracts. ASP.NET Core's Kestrel reads `ASPNETCORE_URLS`, not
    `APP_PORT`, directly — see the `local` command in
    [`csharp-aspnet.md`](../_stacks/csharp-aspnet.md).
 3. Create the local database named in `DATABASE_URL`.
-4. Restore dependencies with `dotnet restore` — see
-   [`csharp-aspnet.md`](../_stacks/csharp-aspnet.md).
-5. Run the pending migrations — see
+4. In `bud-tack-db`, run the pending migrations with
+   `dotnet run --project src/BudTack.Db.Migrations -- up` — see
    [`migrations.md`](../06-data/migrations.md).
-6. Start the application with the `local` command in
+5. In `bud-tack-api`, restore dependencies with `dotnet restore` and start the
+   application with the `local` command in
    [`csharp-aspnet.md`](../_stacks/csharp-aspnet.md).
 
 ## Verifying it worked

@@ -16,7 +16,7 @@
 - Module boundaries drawn in the business language and enforced by the build
 - One relational database, with exactly one owning module per table
 - One public API surface, one pipeline, one process to observe and operate
-- Stack guides for Java/Spring, Node/TypeScript, Python/Django and PHP/Laravel
+- One stack: Angular, C# on ASP.NET Core and PostgreSQL — no Java runtime anywhere in the toolchain
 
 The growth path this framework supports is **toward the modular monolith**: firmer
 boundaries inside the same deployable, not more deployables.

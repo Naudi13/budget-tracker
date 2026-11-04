@@ -19,8 +19,7 @@ src/
     ├── config/               framework wiring — the only place it may live
     └── errors/               shared error types and the global handler
 resources/
-├── app-config                one configuration file per environment
-└── db/migration/             versioned changesets for the one database
+└── app-config                one configuration file per environment
 tests/
 ├── unit/                     mirrors src/, one folder per module
 ├── module-integration/       one folder per module; imports api/ only
@@ -36,7 +35,6 @@ tests/
 | `platform/web/` | Endpoints: request shape, one facade call, response format | Business rules, an import of any module's `internal/` |
 | `platform/config/` | Framework wiring, dependency registration | Business rules |
 | `platform/errors/` | Error types and the handler that renders them | Module-specific error handling |
-| `resources/db/migration/` | Ordered, versioned changesets for the single database | Data fixes applied by hand |
 | `tests/module-integration/` | Tests that call a module through its public API | Assertions about another module's internals |
 
 ## Rules that survive any stack
@@ -47,15 +45,15 @@ tests/
 | Objects crossing a boundary are immutable | A shared mutable object is a boundary hole |
 | `internal/` is never named in an import outside its own module | This is the line the `boundary check` reads |
 | Test folders mirror `src/` exactly | A missing test folder is visible without running anything |
-| One migration folder for the whole application | There is one database, so there is one ordered history |
+| One migration project for the whole application, in `bud-tack-db`, never in the application tree | There is one database, so there is one ordered history — [`ADR-005`](./decisions/records/ADR-005-fluentmigrator-for-schema-migrations.md) |
 
 ## Concrete names for this project
 
-The backend is C# on .NET, which none of the guides in
-[`../_stacks/README.md`](../_stacks/README.md) covers. Until one exists, the
-concrete names are fixed by
+The backend is C# on .NET; the concrete tree is in
+[`../_stacks/csharp-aspnet.md`](../_stacks/csharp-aspnet.md), fixed by
 [`ADR-003`](./decisions/records/ADR-003-project-per-module-boundary.md): one
 project per module, and the endpoints in the host project's `platform/web/`.
+Migrations live in `bud-tack-db`, not in this tree, per `ADR-005`.
 
 This project is modular, not flat. The flat variant, with its four layer folders,
 is described in [`layered-architecture.md`](./layered-architecture.md).
