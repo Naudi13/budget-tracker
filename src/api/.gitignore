@@ -9,3 +9,7 @@ publish/
 .vs/
 TestResults/
 coverage/
+
+# IDE launch profiles — each developer's own; the API listens on
+# http://localhost:3000 from .env (ASPNETCORE_URLS), not from a profile
+**/Properties/launchSettings.json
