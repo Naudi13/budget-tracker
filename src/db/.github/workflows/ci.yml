@@ -1,0 +1,66 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [develop, qa, main]
+  push:
+    branches: [develop, qa, main]
+
+permissions:
+  contents: read
+
+jobs:
+  migrations:
+    name: Build and migration round trip
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres-ci-only
+          POSTGRES_DB: app_dev
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d app_dev"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      PG_CONTAINER: ${{ job.services.postgres.id }}
+      MIGRATOR_DATABASE_URL: postgresql://bud_tack_migrator:ci@localhost:5432/app_dev
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      # Same roles as bud-tack-infra's init/01-roles.sh, the source of truth.
+      # A service container cannot mount that script, so CI recreates them.
+      - name: Create the migrator and app roles
+        run: |
+          docker exec -i "$PG_CONTAINER" psql -v ON_ERROR_STOP=1 -U postgres -d app_dev <<'EOSQL'
+          CREATE ROLE bud_tack_migrator LOGIN PASSWORD 'ci' NOSUPERUSER NOCREATEDB NOCREATEROLE;
+          CREATE ROLE bud_tack_app LOGIN PASSWORD 'ci' NOSUPERUSER NOCREATEDB NOCREATEROLE;
+          ALTER DATABASE app_dev OWNER TO bud_tack_migrator;
+          REVOKE ALL ON DATABASE app_dev FROM PUBLIC;
+          GRANT CONNECT ON DATABASE app_dev TO bud_tack_app;
+          REVOKE CREATE ON SCHEMA public FROM PUBLIC;
+          EOSQL
+
+      - name: Build
+        run: dotnet build -c Release
+
+      - name: Vulnerable dependencies
+        run: |
+          dotnet list package --vulnerable --include-transitive | tee vulnerable.txt
+          ! grep -q -E "Critical|High" vulnerable.txt
+
+      - name: Migrate up, down to zero, and up again
+        run: sh scripts/round-trip.sh

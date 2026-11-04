@@ -1,0 +1,17 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+indent_style = space
+indent_size = 4
+
+[*.{json,yml,yaml,props,csproj,slnx}]
+indent_size = 2
+
+# Migration classes are named <Module><NNN>_<Change>, e.g.
+# Transactions003_CreateTransactions (06-data/migrations.md): the underscore
+# is the convention, not a style slip.
+[src/BudTack.Db.Migrations/Migrations/*.cs]
+dotnet_diagnostic.CA1707.severity = none
