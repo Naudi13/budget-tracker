@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- The dashboard module (09-modules/dashboard). Only DashboardModule and Api/
+       are public; everything under Internal/ is `internal` (ADR-003). It owns
+       no table, so it has no Internal/Persistence/ and no database driver. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>BudTack.Dashboard</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="BudTack.Unit.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.3" />
+  </ItemGroup>
+
+  <!-- dashboard -> transactions, through TransactionsFacade only (module-catalog.md). -->
+  <ItemGroup>
+    <ProjectReference Include="..\BudTack.Transactions\BudTack.Transactions.csproj" />
+  </ItemGroup>
+
+</Project>

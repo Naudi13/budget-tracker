@@ -7,6 +7,7 @@ COPY global.json Directory.Build.props .editorconfig ./
 COPY src/BudTack.Api/BudTack.Api.csproj src/BudTack.Api/
 COPY src/BudTack.Identity/BudTack.Identity.csproj src/BudTack.Identity/
 COPY src/BudTack.Transactions/BudTack.Transactions.csproj src/BudTack.Transactions/
+COPY src/BudTack.Dashboard/BudTack.Dashboard.csproj src/BudTack.Dashboard/
 RUN dotnet restore src/BudTack.Api/BudTack.Api.csproj
 COPY src/ src/
 RUN dotnet publish src/BudTack.Api/BudTack.Api.csproj -c Release -o /app --no-restore
