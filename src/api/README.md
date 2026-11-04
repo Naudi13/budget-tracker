@@ -28,11 +28,14 @@ sends no CORS headers: the portal reaches it through a same-origin proxy (ADR-00
 | `src/BudTack.Api/Platform/Logging` | JSON log lines: `timestamp`, `level`, `correlationId`, `module`, `message` |
 | `src/BudTack.Api/Platform/Web` | Correlation id middleware, `GET /health` |
 | `src/BudTack.Api/Platform/Errors` | `{ error, message, details }` for every non-2xx response |
+| `src/BudTack.Identity` | The identity module: `IdentityModule` (marker + registration), `Api/IdentityFacade`; the rest is `Internal/` |
 | `tests/boundary` | NetArchTest: no module `Internal` reachable from outside |
 | `tests/unit` | One class at a time, no database |
 | `tests/end-to-end` | The whole host over HTTP, against a throwaway PostgreSQL (Docker) |
 
-Modules (`identity`, `transactions`, `dashboard`) arrive one pull request each.
+A module is a project (ADR-003): only its marker and `Api/` are public, and
+`tests/boundary` checks that nothing reaches into its `Internal/`. `transactions`
+and `dashboard` arrive one pull request each.
 
 ## Pipeline
 

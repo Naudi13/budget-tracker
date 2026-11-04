@@ -5,6 +5,7 @@ FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /source
 COPY global.json Directory.Build.props .editorconfig ./
 COPY src/BudTack.Api/BudTack.Api.csproj src/BudTack.Api/
+COPY src/BudTack.Identity/BudTack.Identity.csproj src/BudTack.Identity/
 RUN dotnet restore src/BudTack.Api/BudTack.Api.csproj
 COPY src/ src/
 RUN dotnet publish src/BudTack.Api/BudTack.Api.csproj -c Release -o /app --no-restore
