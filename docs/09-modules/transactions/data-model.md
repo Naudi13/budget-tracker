@@ -22,6 +22,7 @@ Schema-per-module and naming rules live in
 | The net balance is income details minus expense details (BR-03) | Computed by `GetTotals`, never persisted |
 | Deleting a transaction is a soft delete (BR-04) | `internal/application`; `transactions.transactions.deleted_at`/`deleted_by` |
 | A category or subcategory in use cannot be deleted, only deactivated (BR-05) | `internal/application`, and `ON DELETE RESTRICT` on every intra-schema key above |
+| A budget can be changed or deleted at any time; its delete is physical (BR-06) | `internal/application`; a changed budget is re-checked against the Budget invariants in `internal/domain` |
 
 ## Cross-module references
 

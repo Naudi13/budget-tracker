@@ -1,7 +1,7 @@
 # 00 — Agile Conventions
 
 This project runs two-week sprints, on a single backlog, for one application
-whose source lives in four repositories (`bud-tack-docs`, `-api`, `-front`, `-db`), built by one
+whose source lives in five repositories (`bud-tack-docs`, `-api`, `-portal`, `-db`, `-infra`), built by one
 team.
 
 ## Ceremonies
@@ -26,7 +26,7 @@ team.
 The backlog lives on a single board with columns `Backlog -> Ready -> In progress
 -> In review -> Done`. A story skips no column, even when it looks trivial.
 
-One board covers all four repositories: a story that touches several is one card,
+One board covers all five repositories: a story that touches several is one card,
 linked to its pull request in each repository, and it reaches "Done" only when
 every one of those pull requests is merged.
 

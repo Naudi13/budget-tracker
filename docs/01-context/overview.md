@@ -14,7 +14,7 @@ documentation, backend, frontend, and database repositories.
 | Income tracking | Register a transaction with a date and description, and one or more detail lines (subcategory and amount) |
 | Expense tracking | Register a transaction the same way, using an expense subcategory instead |
 | Category management | Create custom categories and subcategories per type; delete only when unused, deactivate otherwise |
-| Budgeting | Set an amount limit per category for a defined period |
+| Budgeting | Set, change or delete an amount limit per category for a defined period |
 | Transaction history | View recorded transactions and delete one (soft delete — hidden, never permanently removed) |
 | Balance | Compute the net balance as total income minus total expenses |
 | Dashboard | A single view with KPIs (total income, total expenses, net balance) and the 5 most recent transactions, for a fast read of financial health |
@@ -53,7 +53,7 @@ without manually adding up several sheets.
 |---|---|
 | One deployable application | A single small team or solo founder, no operating budget for running several deployments |
 | One relational database | Income, expenses, and balance must stay consistent within one transaction |
-| Source split across four repositories | `bud-tack-docs`, `-api`, `-front`, and `-db` are versioned separately but released together; see [`../00-governance/git-conventions.md`](../00-governance/git-conventions.md) |
+| Source split across five repositories | `bud-tack-docs`, `-api`, `-portal`, `-db`, and `-infra` are versioned separately but released together; see [`../00-governance/git-conventions.md`](../00-governance/git-conventions.md) |
 | A budget is a stored limit, not a comparison yet | V1 records the limit per category and period; checking actual spend against it comes later |
 
 ---

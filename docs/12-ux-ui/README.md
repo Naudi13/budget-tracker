@@ -13,7 +13,7 @@ screens, this section defines what keeps them consistent with each other —
 shared tokens, a component inventory, and one named accessibility target —
 not general design advice.
 
-**Applies to this system:** yes — the Angular frontend in `bud-tack-front` serves
+**Applies to this system:** yes — the Angular frontend in `bud-tack-portal` serves
 the screens, and each one calls the single backend API directly.
 
 ## Documents
@@ -21,10 +21,13 @@ the screens, and each one calls the single backend API directly.
 | Document | Answers | Priority |
 |---|---|---|
 | [design-system.md](./design-system.md) | What visual and interaction rules do screens share? | ⭐ |
+| [screens/sign-in.md](./screens/sign-in.md) | How does the owner sign in, and what does a failure say? | ⭐ |
+| [screens/sign-up.md](./screens/sign-up.md) | How is the business account created? | ⭐ |
 | [screens/dashboard.md](./screens/dashboard.md) | What does the dashboard show, and in which states? | ⭐ |
 | [screens/new-record.md](./screens/new-record.md) | How is a transaction recorded, and what does validation say? | ⭐ |
 | [screens/transaction-history.md](./screens/transaction-history.md) | How are transactions listed and deleted? | ⭐ |
 | [screens/categories-configuration.md](./screens/categories-configuration.md) | How are categories and subcategories created, deactivated and deleted? | ⭐ |
+| [screens/budgets.md](./screens/budgets.md) | How is a budget set and listed? | — |
 | [_template-screen.md](./_template-screen.md) | Template — copy it once per screen | — |
 
 ## Out of scope

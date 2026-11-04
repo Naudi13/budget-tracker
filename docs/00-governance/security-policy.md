@@ -1,7 +1,7 @@
 # 00 — Security Policy
 
-This project ships one application whose source lives in four repositories
-(`bud-tack-docs`, `-api`, `-front`, `-db`). Its controls apply to one running application — one
+This project ships one application whose source lives in five repositories
+(`bud-tack-docs`, `-api`, `-portal`, `-db`, `-infra`). Its controls apply to one running application — one
 backend process, one database — and each code repository applies them on its own.
 
 ## Owner

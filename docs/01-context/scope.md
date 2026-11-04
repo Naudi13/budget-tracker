@@ -8,7 +8,7 @@
 | Income registration | Record a transaction (date, description) with one or more detail lines, each an amount against an income subcategory |
 | Expense registration | Record a transaction the same way, using an expense subcategory for each detail line |
 | Category & subcategory management | Create custom categories (income or expense) and subcategories from Configuration; delete only when unused, deactivate otherwise |
-| Budgeting | Set an amount limit per category for a defined period |
+| Budgeting | Set, change or delete an amount limit per category for a defined period |
 | Transaction listing | View and delete recorded transactions (soft delete — the record is hidden, never permanently removed) |
 | Balance calculation | Net balance computed as total income minus total expenses |
 | Dashboard with KPIs | One view showing total income, total expenses, net balance, and the 5 most recent transactions |

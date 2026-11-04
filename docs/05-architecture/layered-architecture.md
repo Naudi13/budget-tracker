@@ -11,7 +11,7 @@ each module.
 | Presentation | Accept a request, validate its shape, delegate, format the response | Application, transport objects |
 | Application | Business rules, transaction boundaries, orchestration of one use case | Persistence, Domain |
 | Persistence | Read and write stored data; no business decisions | Domain |
-| Domain | Entities, value objects, invariants such as `BR-01`..`BR-05`, defined in [`entities-and-rules.md`](../02-domain/entities-and-rules.md) | Nothing |
+| Domain | Entities, value objects, invariants such as `BR-01`..`BR-06`, defined in [`entities-and-rules.md`](../02-domain/entities-and-rules.md) | Nothing |
 
 In this project Presentation lives once, in `platform/web/`, calling module
 facades only; Application, Persistence and Domain live inside each module's

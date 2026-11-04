@@ -4,7 +4,7 @@
 
 This section holds the rules the whole project commits to before any other
 section is filled in: how work enters a sprint, how it is closed, how branches
-and commits are named across the `bud-tack-docs`, `-api`, `-front`, and `-db` repositories,
+and commits are named across the `bud-tack-docs`, `-api`, `-portal`, `-db`, and `-infra` repositories,
 which ceremonies run, how documentation is written, and how secrets and
 dependencies are kept safe inside a single deployable application.
 
@@ -23,7 +23,7 @@ dependencies are kept safe inside a single deployable application.
 ## Out of scope
 
 This section governs one deployable application built and released by one team,
-whose source is split across four repositories that ship together as one
+whose source is split across five repositories that ship together as one
 monolith. It does not cover cross-team coordination or per-module release
 pipelines, and
 none of its rules assume service mesh, API gateway, service discovery, saga,

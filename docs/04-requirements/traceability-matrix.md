@@ -11,13 +11,13 @@ a defect.
 
 | HU-NN | Module | Design document | Test case |
 |---|---|---|---|
-| HU-01 | `identity` | [`identity.yaml`](../07-api/contracts/openapi/identity.yaml) — no screen yet, see Gaps | [`TC-001`](../11-quality/test-cases/TC-001-reject-duplicate-signup-email.md) |
+| HU-01 | `identity` | [`identity.yaml`](../07-api/contracts/openapi/identity.yaml) · [`sign-in.md`](../12-ux-ui/screens/sign-in.md) · [`sign-up.md`](../12-ux-ui/screens/sign-up.md) | [`TC-001`](../11-quality/test-cases/TC-001-reject-duplicate-signup-email.md) |
 | HU-02 | `transactions` | [`categories.yaml`](../07-api/contracts/openapi/categories.yaml) · [`categories-configuration.md`](../12-ux-ui/screens/categories-configuration.md) | [`TC-002`](../11-quality/test-cases/TC-002-reject-duplicate-subcategory-name.md) |
 | HU-03 | `transactions` | [`categories.yaml`](../07-api/contracts/openapi/categories.yaml) · [`categories-configuration.md`](../12-ux-ui/screens/categories-configuration.md) | [`TC-003`](../11-quality/test-cases/TC-003-block-delete-category-with-subcategory.md) |
 | HU-04 | `transactions` | [`transactions.yaml`](../07-api/contracts/openapi/transactions.yaml) · [`new-record.md`](../12-ux-ui/screens/new-record.md) | [`TC-004`](../11-quality/test-cases/TC-004-reject-mixed-type-transaction.md) |
 | HU-05 | `transactions` | [`transactions.yaml`](../07-api/contracts/openapi/transactions.yaml) · [`transaction-history.md`](../12-ux-ui/screens/transaction-history.md) | [`TC-005`](../11-quality/test-cases/TC-005-exclude-soft-deleted-from-history.md) |
 | HU-06 | `transactions` | [`transactions.yaml`](../07-api/contracts/openapi/transactions.yaml) · [`transaction-history.md`](../12-ux-ui/screens/transaction-history.md) | [`TC-006`](../11-quality/test-cases/TC-006-soft-delete-sets-audit-columns.md) |
-| HU-07 | `transactions` | [`budgets.yaml`](../07-api/contracts/openapi/budgets.yaml) — no screen yet, see Gaps | [`TC-007`](../11-quality/test-cases/TC-007-reject-invalid-budget-period.md) |
+| HU-07 | `transactions` | [`budgets.yaml`](../07-api/contracts/openapi/budgets.yaml) · [`budgets.md`](../12-ux-ui/screens/budgets.md) | [`TC-007`](../11-quality/test-cases/TC-007-reject-invalid-budget-period.md) · [`TC-019`](../11-quality/test-cases/TC-019-change-and-delete-budget.md) |
 | HU-08 | `dashboard` | [`dashboard.yaml`](../07-api/contracts/openapi/dashboard.yaml) · [`dashboard.md`](../12-ux-ui/screens/dashboard.md) | [`TC-008`](../11-quality/test-cases/TC-008-dashboard-balance-matches-totals.md) |
 
 Each Design document cell names the API contract that defines the story's
@@ -49,15 +49,15 @@ of the three code layers.
 ## Gaps
 
 A gap is an `HU-NN` or `NFR-NN` with no row above, or a row whose design
-document or test case does not exist. Three are open:
+document or test case does not exist. One is open:
 
 - **NFR-04** sets a 30-minute restore target that no document in this
-  repository describes a procedure for.
-- **HU-01** and **HU-07** have an API contract but no screen in `12-ux-ui/` —
-  the flow diagrams this project started from do not cover sign-in or
-  budgeting. HU-01 is ⭐-priority; its screen should exist before it is
-  scheduled into a sprint, or the sprint should record that V1 signs in
-  through the API alone.
+  repository describes a procedure for; it is written once `bud-tack-infra`
+  defines the staging and production databases.
+
+Each story's acceptance criteria are in its own file under
+[`stories/`](./stories/HU-01-sign-in.md), linked from
+[`user-stories.md`](./user-stories.md).
 
 Every row above now carries a real `TC-NNN` from
 [`11-quality/test-cases/`](../11-quality/_template-test-case.md). `TC-012` is

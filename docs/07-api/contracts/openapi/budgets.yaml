@@ -79,7 +79,64 @@ paths:
         '500':
           $ref: './common.yaml#/components/responses/InternalError'
 
+  /budgets/{budgetId}:
+    parameters:
+      - $ref: '#/components/parameters/BudgetId'
+    patch:
+      operationId: updateBudget
+      summary: Change a budget
+      description: >
+        Implements HU-07. Changes any of the budget's fields; the result must still
+        satisfy the budget invariants — amount above zero, periodEnd after
+        periodStart, and an active category — or the change is rejected with 422.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BudgetChanges'
+      responses:
+        '200':
+          description: Budget changed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Budget'
+        '400':
+          $ref: './common.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: './common.yaml#/components/responses/Unauthorized'
+        '404':
+          $ref: './common.yaml#/components/responses/NotFound'
+        '422':
+          $ref: './common.yaml#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: './common.yaml#/components/responses/InternalError'
+    delete:
+      operationId: deleteBudget
+      summary: Delete a budget
+      description: >
+        Implements HU-07. A budget is a plan, not a record of money moved, so it is
+        removed from storage (BR-06); its category may then be deleted if nothing
+        else blocks it (BR-05).
+      responses:
+        '204':
+          description: Budget deleted
+        '401':
+          $ref: './common.yaml#/components/responses/Unauthorized'
+        '404':
+          $ref: './common.yaml#/components/responses/NotFound'
+        '500':
+          $ref: './common.yaml#/components/responses/InternalError'
+
 components:
+  parameters:
+    BudgetId:
+      name: budgetId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+
   schemas:
     Budget:
       type: object
@@ -94,6 +151,16 @@ components:
     NewBudget:
       type: object
       required: [categoryId, amount, periodStart, periodEnd]
+      properties:
+        categoryId: { type: string, format: uuid }
+        amount: { type: number, exclusiveMinimum: 0 }
+        periodStart: { type: string, format: date }
+        periodEnd: { type: string, format: date }
+
+    BudgetChanges:
+      type: object
+      minProperties: 1
+      description: Only the fields sent are changed.
       properties:
         categoryId: { type: string, format: uuid }
         amount: { type: number, exclusiveMinimum: 0 }

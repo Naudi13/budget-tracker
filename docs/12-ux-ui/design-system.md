@@ -7,7 +7,7 @@
 | Token | Value | Use |
 |---|---|---|
 | `--color-primary` | `#0B5FFF` | Primary actions: save a transaction, confirm a category, sign in |
-| `--color-danger` | `#D1293D` | Destructive actions: delete a transaction, delete a category or subcategory |
+| `--color-danger` | `#D1293D` | Destructive actions: delete a transaction, a category or subcategory, or a budget |
 | `--color-success` | `#1E824C` | Confirmation banners: transaction recorded, budget saved |
 | `--color-text` | `#1A1A1A` | Default body text |
 | `--color-bg-surface` | `#FFFFFF` | Card and form backgrounds |
@@ -29,7 +29,7 @@
 | KPI tile | Dashboard ([`screens/dashboard.md`](./screens/dashboard.md)) | One figure and its label: total income, total expenses, net balance |
 | Data table | Transaction history, category list, subcategory list | Paginated, newest first for transactions |
 | Form field with inline validation | New record, category form, subcategory form, budget form, sign-up | Error message states the fix, not just the failure |
-| Confirm dialog | Delete a transaction, delete a category or subcategory | Danger button for the action, and a cancel that returns to the list |
+| Confirm dialog | Delete a transaction, a category or subcategory, or a budget | Danger button for the action, and a cancel that returns to the list |
 | Blocked notice | Delete a category or subcategory that is still in use | Says why the delete is refused and offers deactivation instead (BR-05) |
 | Empty state | Dashboard recent list, transaction history, category list | Message plus the one action that fills it |
 

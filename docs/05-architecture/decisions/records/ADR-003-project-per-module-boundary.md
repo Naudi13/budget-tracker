@@ -5,8 +5,8 @@
 | Field | Value |
 |---|---|
 | Id | ADR-003 |
-| Date | 2026-09-21 |
-| Status | Proposed |
+| Date | 2026-11-04 |
+| Status | Accepted |
 | Authors | Tech lead and team, at the architecture review gate |
 | Supersedes | none |
 
