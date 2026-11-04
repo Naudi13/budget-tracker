@@ -6,8 +6,7 @@ namespace BudTack.Boundary.Tests;
 /// <summary>
 /// The host (<c>BudTack.Api</c>) reaches a module only through its public
 /// <c>Api</c> namespace, never its <c>Internal</c> one
-/// (05-architecture/boundary-enforcement.md, ADR-003). Each module adds its own
-/// boundary tests in its pull request.
+/// (05-architecture/boundary-enforcement.md, ADR-003).
 /// </summary>
 public sealed class HostBoundaryTests
 {
@@ -25,7 +24,7 @@ public sealed class HostBoundaryTests
             .ShouldNot().HaveDependencyOnAny(ModuleInternals)
             .GetResult();
 
-        Assert.True(result.IsSuccessful, Failing(result));
+        Assert.True(result.IsSuccessful, Violations.Of(result));
     }
 
     [Fact]
@@ -36,9 +35,6 @@ public sealed class HostBoundaryTests
             .ShouldNot().BePublic()
             .GetResult();
 
-        Assert.True(result.IsSuccessful, Failing(result));
+        Assert.True(result.IsSuccessful, Violations.Of(result));
     }
-
-    private static string Failing(NetArchTest.Rules.TestResult result) =>
-        "Violations: " + string.Join(", ", result.FailingTypeNames ?? []);
 }
