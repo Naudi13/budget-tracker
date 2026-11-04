@@ -1,0 +1,30 @@
+# bud-tack-infra — local environment.
+# Step 1 of the Sprint 0 roadmap: the one PostgreSQL database and its two roles.
+# The API and portal services join this file in a later step (ADR-006).
+name: bud-tack
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_SUPERUSER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_SUPERUSER_PASSWORD:?copy .env.example to .env}
+      POSTGRES_DB: ${POSTGRES_DB:-app_dev}
+      # Read by init/01-roles.sh on the first start only.
+      BUD_TACK_MIGRATOR_PASSWORD: ${BUD_TACK_MIGRATOR_PASSWORD:?copy .env.example to .env}
+      BUD_TACK_APP_PASSWORD: ${BUD_TACK_APP_PASSWORD:?copy .env.example to .env}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+volumes:
+  pgdata:
