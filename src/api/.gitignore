@@ -1,0 +1,11 @@
+# Local values only — never committed (00-governance/security-policy.md)
+.env
+
+# .NET build output
+bin/
+obj/
+publish/
+*.user
+.vs/
+TestResults/
+coverage/
