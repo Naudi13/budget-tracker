@@ -3,6 +3,15 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) | [SemVer](http
 
 ## [Unreleased]
 
+### Added
+- `ADR-005`: FluentMigrator, in its own .NET project in `bud-tack-db`, versions the schema
+
+### Changed
+- Liquibase replaced by FluentMigrator in `06-data/migrations.md`, `_stacks/csharp-aspnet.md`
+  and `10-devops/`, so the toolchain is only Angular, .NET and PostgreSQL — no Java runtime
+- Migrations moved out of the application tree (`resources/db/migration/`) into `bud-tack-db`
+- `10-devops/local-setup.md` clones and runs `bud-tack-db` before `bud-tack-api`
+
 ## [2.0.0] - 2026-09-12
 
 ### Added

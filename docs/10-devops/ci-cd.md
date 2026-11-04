@@ -40,6 +40,16 @@ permanent branches — `develop`, `qa`, `main` — and a commit reaches `qa` or
 | A commit is cherry-picked into `qa` | All five stages; `deploy` targets `staging` |
 | A commit is cherry-picked into `main` (including a `hotfix/` branch's pull request) | All five stages; `deploy` targets `production`, gated on manual approval |
 
+## The migration job in `bud-tack-db`
+
+The schema is not part of the artifact: it lives in `bud-tack-db`, per
+[`ADR-005`](../05-architecture/decisions/records/ADR-005-fluentmigrator-for-schema-migrations.md).
+Every pull request there builds `BudTack.Db.Migrations` with `dotnet build` and
+runs `up`, `down`, `up` against an empty PostgreSQL service container — the
+round trip in [`migrations.md`](../06-data/migrations.md). On `qa` and `main`
+it runs `up` against that environment's database, as the migrator role, before
+the application's `deploy` stage. Only the `dotnet` SDK runs; no Java runtime.
+
 ---
 
 **Related:** [`../05-architecture/boundary-enforcement.md`](../05-architecture/boundary-enforcement.md) · [`../11-quality/testing-strategy.md`](../11-quality/testing-strategy.md)

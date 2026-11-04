@@ -32,7 +32,7 @@ Distributed-system concerns belong to the [microservices governance framework](h
 
 - [ ] Every document in this section has its INSTRUCTIONS block removed
 - [ ] Every row in `models.md` lists an owning module that also appears in [`module-boundaries.md`](../02-domain/module-boundaries.md)
-- [ ] Every migration under `resources/db/migration/` follows the naming and rollback rules in `migrations.md`
+- [ ] Every migration in `bud-tack-db`'s `BudTack.Db.Migrations` project follows the naming and rollback rules in `migrations.md`
 
 ---
 

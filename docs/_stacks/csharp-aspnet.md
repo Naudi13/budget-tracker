@@ -11,6 +11,7 @@ Checked **2026-10-30**. Re-check every row before adopting this guide.
 | NetArchTest.Rules | 1.3+, NuGet, targets .NET Standard 2.0 | `dotnet list package \| grep NetArchTest` |
 | xUnit.v3 | 4.0+ (the legacy `xunit` package is deprecated) | `dotnet list package \| grep xunit` |
 | Testcontainers.PostgreSql | 4.x | `dotnet list package \| grep Testcontainers` |
+| FluentMigrator.Runner | 8.0.x, NuGet, PostgreSQL processor included — `bud-tack-db` only | `dotnet list package \| grep FluentMigrator` |
 
 ## Module layout
 
@@ -26,7 +27,7 @@ src/
 │   └── Internal/Domain/, Internal/Application/, Internal/Persistence/
 ├── BudTack.Transactions/            same shape — TransactionsFacade, owns transactions, categories, subcategories, budgets
 └── BudTack.Dashboard/               same shape, no Internal/Persistence/ — owns no table
-resources/ appsettings.{Environment}.json, db/migration/ · tests/ unit/, module-integration/, end-to-end/, boundary/
+resources/ appsettings.{Environment}.json · tests/ unit/, module-integration/, end-to-end/, boundary/
 ```
 
 `Internal/` is the C# `internal` modifier: `BudTack.Api` cannot reference
@@ -50,11 +51,10 @@ assembly without importing `Internal/`.
 
 ## Migrations
 
-Liquibase, as [`migrations.md`](../06-data/migrations.md) fixes it: one
-changelog under `resources/db/migration/`, run by the standalone Liquibase CLI
-against PostgreSQL — there is no .NET-native Liquibase package. `DATABASE_URL`
-is a `postgresql://` URI; `Platform/Config/` parses it into a
-`NpgsqlConnectionStringBuilder` once at startup, since Npgsql takes key-value pairs.
+FluentMigrator, per [`ADR-005`](../05-architecture/decisions/records/ADR-005-fluentmigrator-for-schema-migrations.md) — no Java runtime. The console project `src/BudTack.Db.Migrations/` lives in `bud-tack-db`,
+never in `BudTack.sln`: one class per migration under `Migrations/`, and `Program.cs` calling `IMigrationRunner.MigrateUp()`
+for `up` or `MigrateDown(0)` for `down`. It reads `MIGRATOR_DATABASE_URL`, the API reads `DATABASE_URL`; both are `postgresql://`
+URIs parsed once at startup into an `NpgsqlConnectionStringBuilder`, since Npgsql takes key-value pairs.
 
 ## Test layers
 
@@ -73,7 +73,7 @@ is a `postgresql://` URI; `Platform/Config/` parses it into a
 | `test` | `dotnet test tests/unit tests/module-integration --collect:"XPlat Code Coverage"` | `unit` and `module-integration`. Coverage lands in `coverage.cobertura.xml`, whose per-file counters apply **NFR-07**: 80% on changed files, 90% on `BudTack.Transactions` |
 | `package` | `dotnet publish src/BudTack.Api -c Release -o publish`, then `docker build -t app:$(git rev-parse --short HEAD) .` | One published output, wrapped in one image tagged with the commit |
 | `deploy` | `dotnet test tests/end-to-end` | `end-to-end` against the promoted artifact |
-| local | `ASPNETCORE_URLS=http://localhost:3000 dotnet run --project src/BudTack.Api`, then `liquibase update` | Kestrel reads `ASPNETCORE_URLS`, not `APP_PORT`, so it is set explicitly to the framework's default port. Applies pending changesets to the local database |
+| local | In `bud-tack-db`: `dotnet run --project src/BudTack.Db.Migrations -- up`; then in `bud-tack-api`: `ASPNETCORE_URLS=http://localhost:3000 dotnet run --project src/BudTack.Api` | Applies pending migrations, then starts the API. Kestrel reads `ASPNETCORE_URLS`, not `APP_PORT`, so it is set explicitly to the framework's default port. CI in `bud-tack-db` runs `up`, `down`, `up` — see [`migrations.md`](../06-data/migrations.md) |
 
 ---
 

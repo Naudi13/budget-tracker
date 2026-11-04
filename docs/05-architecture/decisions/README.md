@@ -38,6 +38,7 @@ that names it, so the history of the reasoning stays readable.
 | [ADR-002](./records/ADR-002-angular-dotnet-postgresql-stack.md) | Angular, .NET and PostgreSQL as the technology stack | Proposed | 2026-09-21 |
 | [ADR-003](./records/ADR-003-project-per-module-boundary.md) | One project per module, checked by the compiler and NetArchTest | Proposed | 2026-09-21 |
 | [ADR-004](./records/ADR-004-shared-database-and-per-piece-repositories.md) | One shared database and one repository per piece | Proposed | 2026-09-21 |
+| [ADR-005](./records/ADR-005-fluentmigrator-for-schema-migrations.md) | FluentMigrator for schema migrations, in `bud-tack-db` | Proposed | 2026-11-04 |
 
 ## Naming
 
