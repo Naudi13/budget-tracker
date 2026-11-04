@@ -1,0 +1,5 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/BudTack.Db.Migrations/BudTack.Db.Migrations.csproj" />
+  </Folder>
+</Solution>
