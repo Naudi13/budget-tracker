@@ -42,6 +42,8 @@ export class SignInPage {
   private readonly first = viewChild.required<ElementRef<HTMLInputElement>>('first');
 
   protected readonly submitting = signal(false);
+  /** Errors show once a field is typed in or the form is submitted, not on blur (see SignUpPage). */
+  protected readonly attempted = signal(false);
   protected readonly failure = signal<Failure>(null);
   protected readonly created: boolean;
 
@@ -57,12 +59,12 @@ export class SignInPage {
 
   protected showError(field: 'email' | 'password'): boolean {
     const control = this.form.controls[field];
-    return control.invalid && (control.touched || control.dirty);
+    return control.invalid && (control.dirty || this.attempted());
   }
 
   protected submit(): void {
+    this.attempted.set(true);
     if (this.form.invalid) {
-      this.form.markAllAsTouched();
       return;
     }
 

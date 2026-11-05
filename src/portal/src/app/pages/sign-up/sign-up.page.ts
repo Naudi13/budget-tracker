@@ -42,6 +42,12 @@ export class SignUpPage {
   private readonly first = viewChild.required<ElementRef<HTMLInputElement>>('first');
 
   protected readonly submitting = signal(false);
+  /**
+   * Errors show once a field is typed in or the form is submitted, not on
+   * blur: a message appearing on blur pushes the button down under the
+   * pointer, and the click that caused the blur misses it.
+   */
+  protected readonly attempted = signal(false);
   /** 409: shown inline under Email (sign-up.md, Error state). */
   protected readonly emailInUse = signal(false);
   protected readonly unavailable = signal(false);
@@ -57,7 +63,7 @@ export class SignUpPage {
 
   protected showError(field: Field): boolean {
     const control = this.form.controls[field];
-    const visited = control.touched || control.dirty;
+    const visited = control.dirty || this.attempted();
     if (field === 'repeatPassword') {
       return visited && this.form.hasError('mismatch');
     }
@@ -65,8 +71,8 @@ export class SignUpPage {
   }
 
   protected submit(): void {
+    this.attempted.set(true);
     if (this.form.invalid) {
-      this.form.markAllAsTouched();
       return;
     }
 
