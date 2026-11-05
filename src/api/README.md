@@ -18,6 +18,21 @@ curl -i http://localhost:3000/health     # 200 {"status":"Healthy",...}
 
 The API connects as `bud_tack_app` (`DATABASE_URL`), never as the migrator. It
 sends no CORS headers: the portal reaches it through a same-origin proxy (ADR-006).
+It refuses to start without `AUTH_JWT_SECRET` (at least 32 bytes), the key that
+signs the bearer tokens.
+
+## Endpoints
+
+| Method and path | Auth | Does |
+|---|---|---|
+| `GET /health` | none | `200` / `503` with the database's state |
+| `POST /api/v1/users` | none | Sign-up (HU-01): `201` + `Location`, `400` per field, `409` email in use |
+| `POST /api/v1/sessions` | none | Sign-in (HU-01): `201` with `{ token, tokenType, expiresIn }`, `401` wrong email or password |
+| Every other controller action | `Authorization: Bearer <token>` | `401 UNAUTHORIZED` without a valid token (NFR-05) |
+
+Contracts: `07-api/contracts/openapi/` in `bud-tack-docs`. Passwords are stored as
+salted PBKDF2-HMAC-SHA256 (600 000 iterations) and never logged (NFR-06). A new
+controller is protected by default; only `[AllowAnonymous]` opens it.
 
 ## Layout
 
@@ -26,14 +41,16 @@ sends no CORS headers: the portal reaches it through a same-origin proxy (ADR-00
 | `src/BudTack.Api/Program.cs` | The host: wiring only |
 | `src/BudTack.Api/Platform/Config` | `.env` loading, `DATABASE_URL` → one `NpgsqlDataSource` |
 | `src/BudTack.Api/Platform/Logging` | JSON log lines: `timestamp`, `level`, `correlationId`, `module`, `message` |
-| `src/BudTack.Api/Platform/Web` | Correlation id middleware, `GET /health` |
-| `src/BudTack.Api/Platform/Errors` | `{ error, message, details }` for every non-2xx response |
-| `src/BudTack.Identity` | The identity module: `IdentityModule` (marker + registration), `Api/IdentityFacade`; the rest is `Internal/` |
+| `src/BudTack.Api/Platform/Web` | Controllers (internal), bearer authentication, correlation id middleware, `GET /health` |
+| `src/BudTack.Api/Platform/Errors` | `{ error, message, details }` for every non-2xx response, including the errors a facade declares |
+| `src/BudTack.Identity` | The identity module: `IdentityModule` (marker + registration), `Api/IdentityFacade` and `Api/Contracts`; `Internal/` holds the domain, the use cases (`SignUp`, `SignIn`, `TokenService`, `PasswordHasher`) and `UsersRepository` |
 | `src/BudTack.Transactions` | The transactions module: `TransactionsModule`, `Api/TransactionsFacade`; calls identity through `IdentityFacade` only |
 | `src/BudTack.Dashboard` | The dashboard module: `DashboardModule`, `Api/DashboardFacade`; reads through `TransactionsFacade` only and owns no table |
 | `tests/boundary` | NetArchTest: no module `Internal` reachable from outside |
 | `tests/unit` | One class at a time, no database |
+| `tests/module-integration` | Each module through its facade only, against a throwaway PostgreSQL (Docker) |
 | `tests/end-to-end` | The whole host over HTTP, against a throwaway PostgreSQL (Docker) |
+| `tests/schema/budtack.sql` | The migrated schema both Docker layers start from; regenerated with `pg_dump` when `bud-tack-db` adds a migration |
 
 A module is a project (ADR-003): only its marker and `Api/` are public, and
 `tests/boundary` checks that nothing reaches into its `Internal/` and that the
@@ -45,7 +62,9 @@ modules depend on each other only as `09-modules/module-catalog.md` draws:
 ```bash
 dotnet build -c Release
 dotnet test --project tests/boundary -c Release --no-build      # boundary check
-dotnet test --project tests/unit -c Release --no-build --coverage --coverage-output-format cobertura
+dotnet test --project tests/unit -c Release --no-build --results-directory TestResults   --coverage --coverage-output-format cobertura --coverage-output unit.cobertura.xml
+sh scripts/coverage-gate.sh TestResults/unit.cobertura.xml       # NFR-07: 80 % per module, 90 % transactions
+dotnet test --project tests/module-integration -c Release --no-build   # needs Docker
 dotnet test --project tests/end-to-end -c Release --no-build    # needs Docker
 docker build -t bud-tack-api:local .                             # package
 ```
