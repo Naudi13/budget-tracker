@@ -1,0 +1,87 @@
+<section class="auth-card" aria-labelledby="sign-up-title">
+  <h1 id="sign-up-title">Create your business account</h1>
+
+  @if (unavailable()) {
+    <div class="banner banner-error" role="alert">
+      <span>The account could not be created. Try again.</span>
+      <button type="button" class="btn-secondary" (click)="submit()">Retry</button>
+    </div>
+  }
+
+  <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    <div class="field">
+      <label for="sign-up-name">Name</label>
+      <input
+        id="sign-up-name"
+        type="text"
+        formControlName="name"
+        autocomplete="organization"
+        #first
+        [attr.aria-invalid]="showError('name')"
+        [attr.aria-describedby]="showError('name') ? 'sign-up-name-error' : null"
+      />
+      @if (showError('name')) {
+        <p id="sign-up-name-error" class="field-error">Enter your name or your business's name.</p>
+      }
+    </div>
+
+    <div class="field">
+      <label for="sign-up-email">Email</label>
+      <input
+        id="sign-up-email"
+        type="email"
+        formControlName="email"
+        autocomplete="email"
+        [attr.aria-invalid]="showError('email') || emailInUse()"
+        [attr.aria-describedby]="showError('email') || emailInUse() ? 'sign-up-email-error' : null"
+      />
+      @if (emailInUse()) {
+        <p id="sign-up-email-error" class="field-error" role="alert">
+          An account already uses this email. <a routerLink="/sign-in">Sign in instead.</a>
+        </p>
+      } @else if (showError('email')) {
+        <p id="sign-up-email-error" class="field-error">Enter an email, for example owner&#64;example.com.</p>
+      }
+    </div>
+
+    <div class="field">
+      <label for="sign-up-password">Password</label>
+      <input
+        id="sign-up-password"
+        type="password"
+        formControlName="password"
+        autocomplete="new-password"
+        [attr.aria-invalid]="showError('password')"
+        [attr.aria-describedby]="showError('password') ? 'sign-up-password-error' : 'sign-up-password-hint'"
+      />
+      @if (showError('password')) {
+        <p id="sign-up-password-error" class="field-error">
+          {{ serverErrors().password ?? 'Use at least 8 characters.' }}
+        </p>
+      } @else {
+        <p id="sign-up-password-hint" class="field-hint">At least 8 characters.</p>
+      }
+    </div>
+
+    <div class="field">
+      <label for="sign-up-repeat">Repeat password</label>
+      <input
+        id="sign-up-repeat"
+        type="password"
+        formControlName="repeatPassword"
+        autocomplete="new-password"
+        [attr.aria-invalid]="showError('repeatPassword')"
+        [attr.aria-describedby]="showError('repeatPassword') ? 'sign-up-repeat-error' : null"
+      />
+      @if (showError('repeatPassword')) {
+        <p id="sign-up-repeat-error" class="field-error">The two passwords do not match.</p>
+      }
+    </div>
+
+    <button type="submit" class="btn-primary" [disabled]="submitting()">
+      {{ submitting() ? 'Creating…' : 'Create account' }}
+    </button>
+  </form>
+
+  <p class="switch">Already have an account? <a routerLink="/sign-in">Sign in</a></p>
+</section>
