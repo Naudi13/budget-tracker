@@ -33,7 +33,14 @@ does. The versions live in `public.schema_version`.
 The API's role gets `SELECT, INSERT, UPDATE, DELETE` on every table the migrator
 creates in those schemas automatically (default privileges, `Platform001`).
 
-**Round trip**, the check CI runs on every pull request — build first:
+| Version | Migration | Story | Creates |
+|---|---|---|---|
+| `202611041500` | `Platform001_CreateSchemas` | Sprint 0 | Schemas `identity` and `transactions`, and the app role's rights on them |
+| `202611052230` | `Identity001_CreateUsers` | HU-01 | `identity.users`: unique email (`idx_users_email`), stored lowercase (`ck_users_email_lowercase`), a non-blank name, the password only as a hash |
+
+**Round trip**, the check CI runs on every pull request: up, down to 0, up
+again with the same schema, plus the rules of each table tried as the app role
+— build first:
 
 ```bash
 dotnet build -c Release
