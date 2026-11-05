@@ -49,7 +49,7 @@ once per module.
 | `boundary check`, defined in [`../10-devops/ci-cd.md`](../10-devops/ci-cd.md) | The whole tree, on every pull request | The build fails; the pull request cannot merge |
 
 It runs before the test stages: a boundary violation makes test results
-uninteresting. For example, `dotnet test --filter FullyQualifiedName~ModuleBoundaryTests`.
+uninteresting. The suite is its own project: `dotnet test --project tests/boundary`.
 
 ## Breaking the rule on purpose
 
