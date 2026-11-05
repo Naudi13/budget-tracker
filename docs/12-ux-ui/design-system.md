@@ -1,16 +1,44 @@
 # 12 — Design System
 
+## Brand
+
+The logo and the palette come from the team's identity manual
+(*BudgetTrack — Manual básico de identidad v1*, proposal C): an icon of three
+rising bars in a rounded navy square, beside the word BUDGETTRACK.
+
+| Rule (manual, section 5) | In the portal |
+|---|---|
+| Use the provided files; never redraw, stretch, skew or recolour | `public/brand/logo.png` (colour), `logo-reverse.png` (white on navy), `icon.png`, extracted from the manual and only trimmed |
+| Colour logo on light backgrounds, reverse logo on navy or dark ones | The header is navy and carries the reverse logo |
+| At least 24 px high on screen | 32 px in the header |
+| The icon alone only at very small sizes | `favicon.png` and `apple-touch-icon.png` only |
+| Clear space around the logo at least the icon's height | No text or control within that distance of the logo |
+
+### Palette
+
+| Token | Value | Role (manual, section 3) |
+|---|---|---|
+| `--brand-navy` | `#1B2A4A` | Principal — trust and stability |
+| `--brand-mint` | `#2EC4B6` | Secundario — growth and clarity |
+| `--brand-coral` | `#FF6B35` | Apoyo / acento — energy, used sparingly on actions and details |
+
 ## Tokens
 
 ### Color
 
-| Token | Value | Use |
-|---|---|---|
-| `--color-primary` | `#0B5FFF` | Primary actions: save a transaction, confirm a category, sign in |
-| `--color-danger` | `#D1293D` | Destructive actions: delete a transaction, a category or subcategory, or a budget |
-| `--color-success` | `#1E824C` | Confirmation banners: transaction recorded, budget saved |
-| `--color-text` | `#1A1A1A` | Default body text |
-| `--color-bg-surface` | `#FFFFFF` | Card and form backgrounds |
+Every pair below meets the WCAG 2.1 AA contrast of the accessibility target.
+Mint and coral are light: they never carry white text (2.2:1 and 2.8:1) and
+never serve as text on white; they sit on navy, or carry navy text.
+
+| Token | Value | Use | Contrast |
+|---|---|---|---|
+| `--color-primary` | `#1B2A4A` (navy) | Links, focus outline, secondary buttons, the header band | 14:1 on white |
+| `--color-action` | `#FF6B35` (coral) with navy text | The one primary button of a screen: save a transaction, confirm a category, sign in | 5:1 |
+| `--color-accent` | `#2EC4B6` (mint) | Decorative bands, the header's bottom line; focus and outlines on navy | 6.6:1 on navy |
+| `--color-danger` | `#D1293D` | Destructive actions: delete a transaction, a category or subcategory, or a budget. Not coral, which reads as the action colour | 5.1:1 on white |
+| `--color-success` | `#127A70` (mint, darkened) | Confirmation banners: transaction recorded, budget saved | 5.2:1 on white |
+| `--color-text` | `#1A1A1A` | Default body text | 17:1 on white |
+| `--color-bg-surface` | `#FFFFFF` | Card and form backgrounds | — |
 
 ### Typography and spacing
 
