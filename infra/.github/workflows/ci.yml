@@ -21,7 +21,7 @@ jobs:
         run: cp .env.example .env
 
       - name: Validate the Compose file
-        run: docker compose config --quiet
+        run: docker compose --profile app config --quiet
 
       - name: Start PostgreSQL and wait until healthy
         run: docker compose up -d --wait --wait-timeout 120
@@ -36,3 +36,63 @@ jobs:
       - name: Stop and remove the stack
         if: always()
         run: docker compose down --volumes
+
+  # The bud-tack-infra row of 10-devops/ci-cd.md: the whole application from
+  # the develop branch of every repository, reached only through the portal.
+  full-stack:
+    name: Whole application through the portal
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      # The other repositories are private: reading them needs a token with
+      # Contents: read on bud-tack-db, bud-tack-api and bud-tack-portal,
+      # stored as the repository secret BUD_TACK_REPOS_TOKEN (see README).
+      - name: Check out bud-tack-db
+        uses: actions/checkout@v4
+        with:
+          repository: code-corhuila/bud-tack-db
+          ref: develop
+          path: repos/bud-tack-db
+          token: ${{ secrets.BUD_TACK_REPOS_TOKEN }}
+
+      - name: Check out bud-tack-api
+        uses: actions/checkout@v4
+        with:
+          repository: code-corhuila/bud-tack-api
+          ref: develop
+          path: repos/bud-tack-api
+          token: ${{ secrets.BUD_TACK_REPOS_TOKEN }}
+
+      - name: Check out bud-tack-portal
+        uses: actions/checkout@v4
+        with:
+          repository: code-corhuila/bud-tack-portal
+          ref: develop
+          path: repos/bud-tack-portal
+          token: ${{ secrets.BUD_TACK_REPOS_TOKEN }}
+
+      - name: Use the example environment, the clones above and one tag for both images
+        run: |
+          cp .env.example .env
+          sed -i \
+            -e "s/^APP_TAG=.*/APP_TAG=${GITHUB_SHA::7}/" \
+            -e "s#^DB_SOURCE=.*#DB_SOURCE=./repos/bud-tack-db#" \
+            -e "s#^API_SOURCE=.*#API_SOURCE=./repos/bud-tack-api#" \
+            -e "s#^PORTAL_SOURCE=.*#PORTAL_SOURCE=./repos/bud-tack-portal#" \
+            .env
+
+      - name: Build and start the whole application
+        run: docker compose --profile app up -d --build --wait --wait-timeout 600
+
+      - name: GET / and GET /health through the portal
+        run: sh scripts/verify-stack.sh
+
+      - name: Show logs on failure
+        if: failure()
+        run: docker compose --profile app logs
+
+      - name: Stop and remove the stack
+        if: always()
+        run: docker compose --profile app down --volumes
