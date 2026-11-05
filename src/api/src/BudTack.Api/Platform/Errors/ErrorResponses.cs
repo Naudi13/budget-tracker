@@ -22,7 +22,13 @@ internal static partial class ErrorResponses
         // though UnhandledExceptionHandler always writes the ApiError body itself.
         services.AddProblemDetails();
         services.AddExceptionHandler<UnhandledExceptionHandler>();
-        services.Configure<ApiBehaviorOptions>(options =>
+        // PostConfigure: AddControllers() sets its own factory after this
+        // method runs, and a plain Configure would lose to it.
+        services.PostConfigure<ApiBehaviorOptions>(options =>
+        {
+            // 415 and the like reach UseStatusCodePages with no body, so they
+            // get our format too, instead of ASP.NET's ProblemDetails.
+            options.SuppressMapClientErrors = true;
             options.InvalidModelStateResponseFactory = context =>
             {
                 var details = context.ModelState
@@ -33,7 +39,8 @@ internal static partial class ErrorResponses
                     .ToList();
                 return new BadRequestObjectResult(
                     new ApiError(ErrorCodes.ValidationError, "The request is malformed.", details));
-            });
+            };
+        });
         return services;
     }
 

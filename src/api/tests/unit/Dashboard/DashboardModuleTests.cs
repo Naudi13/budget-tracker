@@ -11,8 +11,8 @@ namespace BudTack.Unit.Tests.Dashboard;
 public sealed class DashboardModuleTests
 {
     private static ServiceProvider AllModules() =>
-        new ServiceCollection()
-            .AddIdentityModule()
+        TestModules.HostServices()
+            .AddIdentityModule(TestModules.Identity)
             .AddTransactionsModule()
             .AddDashboardModule()
             .BuildServiceProvider();

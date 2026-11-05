@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BudTack.EndToEnd.Tests.Support;
@@ -5,6 +6,7 @@ namespace BudTack.EndToEnd.Tests.Support;
 /// <summary>Test-only endpoint that fails, to prove the unhandled-error path.</summary>
 [ApiController]
 [Route("__test/throw")]
+[AllowAnonymous]
 public sealed class ThrowingController : ControllerBase
 {
     [HttpGet]

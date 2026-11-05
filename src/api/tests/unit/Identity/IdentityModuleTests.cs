@@ -10,7 +10,7 @@ public sealed class IdentityModuleTests
     [Fact]
     public void AddIdentityModule_registered_resolvesOneFacadePerScope()
     {
-        using var provider = new ServiceCollection().AddIdentityModule().BuildServiceProvider();
+        using var provider = TestModules.HostServices().AddIdentityModule(TestModules.Identity).BuildServiceProvider();
 
         using var first = provider.CreateScope();
         using var second = provider.CreateScope();

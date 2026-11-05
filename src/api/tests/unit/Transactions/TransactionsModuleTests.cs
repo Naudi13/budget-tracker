@@ -12,8 +12,8 @@ public sealed class TransactionsModuleTests
     [Fact]
     public void AddTransactionsModule_afterIdentity_resolvesOneFacadePerScope()
     {
-        using var provider = new ServiceCollection()
-            .AddIdentityModule()
+        using var provider = TestModules.HostServices()
+            .AddIdentityModule(TestModules.Identity)
             .AddTransactionsModule()
             .BuildServiceProvider();
 
@@ -28,8 +28,8 @@ public sealed class TransactionsModuleTests
     [Fact]
     public void AddTransactionsModule_resolved_usesTheIdentityFacadeOfItsScope()
     {
-        using var provider = new ServiceCollection()
-            .AddIdentityModule()
+        using var provider = TestModules.HostServices()
+            .AddIdentityModule(TestModules.Identity)
             .AddTransactionsModule()
             .BuildServiceProvider();
         using var scope = provider.CreateScope();
