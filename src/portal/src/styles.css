@@ -1,0 +1,84 @@
+/* Tokens of bud-tack-docs 12-ux-ui/design-system.md. Change a value there first. */
+:root {
+  --color-primary: #0b5fff;
+  --color-danger: #d1293d;
+  --color-success: #1e824c;
+  --color-text: #1a1a1a;
+  --color-bg-surface: #ffffff;
+
+  /* Not in the design system yet: the page background and hairlines. */
+  --color-bg-page: #f4f6fa;
+  --color-border: #d9dee7;
+
+  --font-size-h1: 1.75rem;
+  --font-size-body: 1rem;
+  --font-size-caption: 0.8125rem;
+  --space-unit: 4px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+}
+
+body {
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  font-size: var(--font-size-body);
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--color-text);
+  background: var(--color-bg-page);
+}
+
+h1 {
+  margin: 0 0 calc(var(--space-unit) * 6);
+  font-size: var(--font-size-h1);
+  font-weight: 700;
+}
+
+a {
+  color: var(--color-primary);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Buttons of the component inventory: one primary per screen, at most. */
+.btn-primary,
+.btn-secondary,
+.btn-danger {
+  padding: calc(var(--space-unit) * 2) calc(var(--space-unit) * 4);
+  border: 1px solid transparent;
+  border-radius: var(--space-unit);
+  font: inherit;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.btn-secondary {
+  background: var(--color-bg-surface);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.btn-danger {
+  background: var(--color-danger);
+  color: #fff;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [develop, qa, main]
+  push:
+    branches: [develop, qa, main]
+
+permissions:
+  contents: read
+
+# The bud-tack-portal row of 10-devops/ci-cd.md, in order:
+# npm ci → ng lint → ng test (coverage) → ng build → docker build.
+jobs:
+  pipeline:
+    name: Lint, test, build and package
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: npm ci
+        run: npm ci --no-audit --no-fund
+
+      - name: Vulnerable dependencies
+        run: npm audit --omit=dev --audit-level=high
+
+      - name: ng lint
+        run: npx ng lint
+
+      - name: ng test (with coverage, 80 % minimum — NFR-07)
+        run: npx ng test --watch=false --coverage
+
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage/bud-tack-portal/cobertura-coverage.xml
+          if-no-files-found: ignore
+
+      - name: ng build
+        run: npx ng build --configuration production
+
+      - name: docker build
+        run: docker build -t "bud-tack-portal:${GITHUB_SHA::7}" .
