@@ -47,8 +47,12 @@ Then open `http://localhost:8080`.
 |---|---|---|---|
 | `postgres` | `postgres:17-alpine` | `127.0.0.1:5432` | The one database and its two roles |
 | `migrate` | `dotnet/sdk:10.0`, running `bud-tack-db`'s source | — | `up` as `bud_tack_migrator`, then exits |
-| `api` | `bud-tack-api:${APP_TAG}`, built from `API_SOURCE` | — | Starts once `migrate` exited with 0; connects as `bud_tack_app` |
+| `api` | `bud-tack-api:${APP_TAG}`, built from `API_SOURCE` | — | Starts once `migrate` exited with 0; connects as `bud_tack_app`; signs tokens with `AUTH_JWT_SECRET` |
 | `portal` | `bud-tack-portal:${APP_TAG}`, built from `PORTAL_SOURCE` | `${PORTAL_PORT}` → 8080 | Serves Angular; forwards `/api/` and `/health` to `api:3000` |
+
+`AUTH_JWT_SECRET` (at least 32 bytes) must be in `.env` for the API to start;
+a `.env` copied before HU-01 needs the two `AUTH_JWT_*` lines of `.env.example`.
+PostgreSQL alone does not need them.
 
 Both images carry the same `APP_TAG` (`10-devops/ci-cd.md`). `verify-stack.sh`
 checks `/`, a deep link, `/health` and `/api/` through the portal, that the API
