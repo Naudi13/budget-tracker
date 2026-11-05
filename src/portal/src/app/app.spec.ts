@@ -30,6 +30,9 @@ describe('App', () => {
 
     expect(TestBed.inject(Router).url).toBe('/sign-in');
     expect(page.querySelector('main h1')?.textContent).toBe('Budget Tracker');
+    const logo = page.querySelector('header a img') as HTMLImageElement;
+    expect(logo.getAttribute('src')).toBe('brand/logo-reverse.png');
+    expect(logo.alt).toBe('BudgetTrack');
     expect(page.querySelector('header button')).toBeNull();
   });
 
