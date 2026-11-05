@@ -1,0 +1,22 @@
+<h1>System status</h1>
+
+<section class="card" aria-live="polite">
+  @switch (state().kind) {
+    @case ('loading') {
+      <p>Checking the API…</p>
+    }
+    @case ('healthy') {
+      <p class="ok">The API and its database are up.</p>
+    }
+    @case ('database-down') {
+      <p class="bad">The API answered, but it cannot reach its database.</p>
+    }
+    @case ('unreachable') {
+      <p class="bad">The API did not answer. Is it running on port 3000?</p>
+    }
+  }
+
+  <button type="button" class="btn-secondary" (click)="refresh()" [disabled]="state().kind === 'loading'">
+    Check again
+  </button>
+</section>

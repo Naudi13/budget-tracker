@@ -1,0 +1,17 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: calc(var(--space-unit) * 4);
+  padding: calc(var(--space-unit) * 6);
+  background: var(--color-bg-surface);
+  border-radius: calc(var(--space-unit) * 2);
+}
+
+.ok {
+  color: var(--color-success);
+}
+
+.bad {
+  color: var(--color-danger);
+}
