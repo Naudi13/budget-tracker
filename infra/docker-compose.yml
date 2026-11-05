@@ -64,6 +64,11 @@ services:
     restart: unless-stopped
     environment:
       DATABASE_URL: postgresql://bud_tack_app:${BUD_TACK_APP_PASSWORD}@postgres:5432/${POSTGRES_DB:-app_dev}
+      # Signs the bearer tokens of POST /api/v1/sessions (HU-01); the API
+      # refuses to start without it, or with fewer than 32 bytes, and says so
+      # in its log; PostgreSQL alone does not need it.
+      AUTH_JWT_SECRET: ${AUTH_JWT_SECRET:-}
+      AUTH_JWT_EXPIRY_SECONDS: ${AUTH_JWT_EXPIRY_SECONDS:-3600}
     # No `ports:` — the portal is the only way in (ADR-006).
     healthcheck:
       # The aspnet image has no curl or wget: ask /health over bash's /dev/tcp.
