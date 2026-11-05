@@ -57,8 +57,8 @@ the merge on failure, the same as the application's.
 
 | Repository | Jobs, in order | What makes it fail |
 |---|---|---|
-| `bud-tack-portal` | `npm ci` → `ng lint` → `ng test --watch=false --code-coverage` → `ng build` → `docker build` (nginx image, tagged with the commit) | A lint error, a failing test, coverage under 80% on changed files (**NFR-07**), or a build or image error |
-| `bud-tack-infra` | `docker compose config` → `docker compose up -d --wait` → `GET /health` and `GET /` through the portal's proxy | An invalid Compose file, or a service that never reports healthy |
+| `bud-tack-portal` | `npm ci` → `ng lint` → `ng test --watch=false --coverage` → `ng build` → `docker build` (nginx image, tagged with the commit) | A lint error, a failing test, coverage under 80% on changed files (**NFR-07**), or a build or image error |
+| `bud-tack-infra` | `docker compose config` → PostgreSQL and its roles → `docker compose --profile app up -d --build --wait` from the `develop` branch of `bud-tack-db`, `-api` and `-portal` → `GET /`, `GET /health` and `/api/` through the portal's proxy (`scripts/verify-stack.sh`) | An invalid Compose file, a role with more rights than `security-policy.md` allows, or a service that never reports healthy |
 | `bud-tack-docs` | The release job on a `v*.*.*` tag only | — |
 
 Per [`ADR-006`](../05-architecture/decisions/records/ADR-006-portal-image-behind-reverse-proxy.md),
