@@ -15,6 +15,13 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) | [SemVer](http
   `TC-019`, and HU-07 and its screen extended to match
 
 ### Changed
+- Aligned with the code of Sprint 0: `_stacks/csharp-aspnet.md` names
+  `FluentMigrator.Runner.Postgres`, `BudTack.slnx`, Microsoft.Testing.Platform and
+  `dotnet test --project`, the `AddXxxModule()` registration on each module marker,
+  and the IDEs that can open .NET 10; `ci-cd.md` uses `ng test --coverage` and the
+  real `bud-tack-infra` pipeline; `local-setup.md` and `environments.md` add the
+  whole application on port 8080 (`docker compose --profile app`); `.env.example`
+  sets `ASPNETCORE_URLS` instead of `APP_PORT`
 - Promotion between permanent branches is a pull request (`develop` → `qa` → `main`),
   no longer `git cherry-pick -x`, matching every code repository's README and `CODEOWNERS`
 - `ADR-001` to `ADR-005` accepted at the architecture review gate
