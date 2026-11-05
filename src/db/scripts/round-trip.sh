@@ -57,7 +57,50 @@ EOSQL
 if grep -qx t "$WORK/probe.out"; then echo "PASS  tables created by the migrator are writable by the app role"
 else echo "FAIL  tables created by the migrator are writable by the app role" >&2; exit 1; fi
 
+# Identity001_CreateUsers (HU-01).
+check "identity.users exists" \
+  "SELECT to_regclass('identity.users') IS NOT NULL"
+check "app role may read and write identity.users, and nothing more" \
+  "SELECT has_table_privilege('bud_tack_app', 'identity.users', 'SELECT, INSERT, UPDATE, DELETE')
+      AND NOT has_table_privilege('bud_tack_app', 'identity.users', 'TRUNCATE')"
+# Each rule is tried as the app role inside a transaction that is rolled back:
+# the second statement of each block must be refused.
+refused() {
+  if docker exec -i "$PG_CONTAINER" psql -v ON_ERROR_STOP=1 -X -q -U "$PG_SUPERUSER" -d "$PG_DB" > "$WORK/refused.out" 2>&1 <<EOSQL
+BEGIN;
+SET LOCAL ROLE bud_tack_app;
+$2
+ROLLBACK;
+EOSQL
+  then echo "FAIL  $1: it was allowed" >&2; exit 1
+  else echo "PASS  $1"; fi
+}
+ok_user="INSERT INTO identity.users (id, name, email, password_hash) VALUES (gen_random_uuid(), 'Ana Owner', 'owner@example.com', 'hash');"
+if docker exec -i "$PG_CONTAINER" psql -v ON_ERROR_STOP=1 -X -q -t -A -U "$PG_SUPERUSER" -d "$PG_DB" > "$WORK/allowed.out" 2>&1 <<EOSQL
+BEGIN;
+SET LOCAL ROLE bud_tack_app;
+$ok_user
+SELECT created_at IS NOT NULL AND updated_at IS NOT NULL FROM identity.users WHERE email = 'owner@example.com';
+ROLLBACK;
+EOSQL
+then
+  if grep -qx t "$WORK/allowed.out"; then echo "PASS  the app role signs up a valid user, with created_at and updated_at filled in"
+  else echo "FAIL  the timestamps were not filled in" >&2; cat "$WORK/allowed.out"; exit 1; fi
+else echo "FAIL  the app role could not sign up a valid user" >&2; cat "$WORK/allowed.out"; exit 1; fi
+refused "a second account with the same email is refused" \
+  "$ok_user INSERT INTO identity.users (id, name, email, password_hash) VALUES (gen_random_uuid(), 'Other', 'owner@example.com', 'hash');"
+refused "an email that is not lowercase is refused" \
+  "INSERT INTO identity.users (id, name, email, password_hash) VALUES (gen_random_uuid(), 'Ana', 'Owner@Example.com', 'hash');"
+refused "a blank name is refused" \
+  "INSERT INTO identity.users (id, name, email, password_hash) VALUES (gen_random_uuid(), '   ', 'blank@example.com', 'hash');"
+refused "a user without a password hash is refused" \
+  "INSERT INTO identity.users (id, name, email) VALUES (gen_random_uuid(), 'Ana', 'nohash@example.com');"
+refused "the app role cannot drop identity.users" \
+  "DROP TABLE identity.users;"
+
 migrate down
+check "down removes identity.users" \
+  "SELECT to_regclass('identity.users') IS NULL"
 check "down removes both schemas" \
   "SELECT count(*) = 0 FROM pg_namespace WHERE nspname IN ('identity', 'transactions')"
 
