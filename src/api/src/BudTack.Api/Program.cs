@@ -21,10 +21,12 @@ builder.Logging
 builder.Services.AddDatabase(builder.Configuration);
 builder.Services.AddApiErrors();
 builder.Services.AddHealth();
-builder.Services.AddControllers();
+builder.Services.AddBearerAuthentication();
+InternalControllers.FindInternalControllers(
+    builder.Services.AddControllers(options => options.Filters.Add<ModuleErrorFilter>()));
 
 // Modules, in the order of 09-modules/module-catalog.md.
-builder.Services.AddIdentityModule();
+builder.Services.AddIdentityModule(IdentityConfiguration.Read(builder.Configuration));
 builder.Services.AddTransactionsModule();
 builder.Services.AddDashboardModule();
 
@@ -35,8 +37,10 @@ var app = builder.Build();
 
 app.UseMiddleware<CorrelationIdMiddleware>();
 app.UseApiErrors();
+app.UseAuthentication();
+app.UseAuthorization();
 app.MapHealth();
-app.MapControllers();
+app.MapProtectedControllers();
 
 app.Run();
 
