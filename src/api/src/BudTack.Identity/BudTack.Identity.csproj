@@ -1,7 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <!-- The identity module (09-modules/identity). Only IdentityModule and Api/
-       are public; everything under Internal/ is `internal` (ADR-003). -->
+  <!-- The identity module (09-modules/identity). Only IdentityModule,
+       IdentitySettings and Api/ are public; everything under Internal/ is
+       `internal` (ADR-003). -->
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <RootNamespace>BudTack.Identity</RootNamespace>
@@ -13,6 +14,11 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.3" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.3" />
+    <!-- Issues and validates the bearer token (HS256); no ASP.NET dependency. -->
+    <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="8.22.0" />
+    <!-- identity.users, through the NpgsqlDataSource the host registers. -->
+    <PackageReference Include="Npgsql" Version="10.0.3" />
   </ItemGroup>
 
 </Project>
