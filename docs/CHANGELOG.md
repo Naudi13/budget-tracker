@@ -15,6 +15,10 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) | [SemVer](http
   `TC-019`, and HU-07 and its screen extended to match
 
 ### Changed
+- `12-ux-ui/design-system.md` takes the BudgetTrack identity manual: the logo and
+  its usage rules, and the navy / mint / coral palette, mapped to tokens that
+  meet WCAG 2.1 AA (coral action buttons with navy text, navy primary, darkened
+  mint for success)
 - Aligned with the code of Sprint 0: `_stacks/csharp-aspnet.md` names
   `FluentMigrator.Runner.Postgres`, `BudTack.slnx`, Microsoft.Testing.Platform and
   `dotnet test --project`, the `AddXxxModule()` registration on each module marker,
