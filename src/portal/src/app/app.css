@@ -9,15 +9,32 @@
   align-items: center;
   justify-content: space-between;
   padding: calc(var(--space-unit) * 4) calc(var(--space-unit) * 6);
-  background: var(--color-bg-surface);
-  border-bottom: 1px solid var(--color-border);
+  background: var(--brand-navy);
+  /* A thin mint line, the secondary colour, under the navy band. */
+  border-bottom: 3px solid var(--brand-mint);
 }
 
+/* The reverse logo (white on navy), at its 24 px minimum or more (manual, section 5). */
 .brand {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--color-text);
-  text-decoration: none;
+  display: inline-flex;
+  border-radius: var(--space-unit);
+}
+
+.brand img {
+  display: block;
+  height: 32px;
+  width: auto;
+}
+
+/* On navy, focus is shown in mint (6.6:1). */
+.header :focus-visible {
+  outline-color: var(--brand-mint);
+}
+
+.header .btn-secondary {
+  background: transparent;
+  border-color: var(--brand-mint);
+  color: #fff;
 }
 
 .main {
@@ -34,8 +51,8 @@
   left: calc(var(--space-unit) * 2);
   top: calc(var(--space-unit) * -12);
   padding: calc(var(--space-unit) * 2) calc(var(--space-unit) * 4);
-  background: var(--color-primary);
-  color: #fff;
+  background: var(--color-action);
+  color: var(--color-on-action);
   z-index: 1;
 }
 

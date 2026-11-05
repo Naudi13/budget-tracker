@@ -1,8 +1,22 @@
 /* Tokens of bud-tack-docs 12-ux-ui/design-system.md. Change a value there first. */
 :root {
-  --color-primary: #0b5fff;
+  /* The BudgetTrack palette (identity manual v1, section 3). */
+  --brand-navy: #1b2a4a; /* principal */
+  --brand-mint: #2ec4b6; /* secundario */
+  --brand-coral: #ff6b35; /* apoyo / acento */
+
+  /*
+   * How the palette is used, within WCAG 2.1 AA (contrast against the
+   * background each one sits on): navy text and controls on white 14:1; coral
+   * and mint never carry white text (2.8:1 and 2.2:1), only navy (5:1, 6.6:1)
+   * or sit on navy; success text is mint darkened to 5.2:1.
+   */
+  --color-primary: var(--brand-navy);
+  --color-action: var(--brand-coral);
+  --color-on-action: var(--brand-navy);
+  --color-accent: var(--brand-mint);
   --color-danger: #d1293d;
-  --color-success: #1e824c;
+  --color-success: #127a70;
   --color-text: #1a1a1a;
   --color-bg-surface: #ffffff;
 
@@ -65,9 +79,15 @@ a {
   cursor: pointer;
 }
 
+/* The one action of a screen: coral with navy text (5:1). */
 .btn-primary {
-  background: var(--color-primary);
-  color: #fff;
+  background: var(--color-action);
+  color: var(--color-on-action);
+  font-weight: 700;
+}
+
+.btn-primary:hover:not(:disabled) {
+  filter: brightness(1.06);
 }
 
 .btn-secondary {
