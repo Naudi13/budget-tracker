@@ -9,6 +9,9 @@
   <Folder Name="/tests/boundary/">
     <Project Path="tests/boundary/BudTack.Boundary.Tests.csproj" />
   </Folder>
+  <Folder Name="/tests/module-integration/">
+    <Project Path="tests/module-integration/BudTack.ModuleIntegration.Tests.csproj" />
+  </Folder>
   <Folder Name="/tests/end-to-end/">
     <Project Path="tests/end-to-end/BudTack.EndToEnd.Tests.csproj" />
   </Folder>
