@@ -27,6 +27,7 @@ The browser reaches one origin only, per
 | Environment | Serves the Angular files | Forwards `/api/` and `/health` to the API |
 |---|---|---|
 | `local` | `ng serve` on port 4200 | The Angular dev server's `proxy.conf.json`, to `localhost:3000` |
+| `local`, whole application | The `bud-tack-portal` nginx image on port 8080 (`docker compose --profile app` in `bud-tack-infra`) | The same nginx, to the API container — the same shape as `staging` |
 | `staging`, `production` | The `bud-tack-portal` nginx image | The same nginx, to the API container, on `bud-tack-infra`'s Compose network |
 
 The API exposes no port of its own outside that network and sends no CORS headers.
