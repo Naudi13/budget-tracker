@@ -61,6 +61,7 @@ erDiagram
     TRANSACTION_DETAILS {
         uuid id PK
         uuid transaction_id FK
+        smallint line_number
         uuid subcategory_id FK
         numeric amount
     }

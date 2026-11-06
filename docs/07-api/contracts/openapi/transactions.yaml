@@ -128,6 +128,7 @@ components:
         description: { type: string }
         details:
           type: array
+          description: In the order the lines were entered.
           items:
             $ref: '#/components/schemas/TransactionDetail'
 
