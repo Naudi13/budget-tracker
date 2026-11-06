@@ -42,6 +42,7 @@ creates in those schemas automatically (default privileges, `Platform001`).
 | `202611061610` | `Transactions003_CreateTransactions` | HU-04 to HU-06 | `transactions.transactions`: an owner, a date, a non-blank description up to 200 characters; a soft delete sets `deleted_at` and `deleted_by` together (BR-04); a partial index serves the owner's history, newest first |
 | `202611061611` | `Transactions004_CreateTransactionDetails` | HU-04 | `transactions.transaction_details`: an amount `numeric(14,2)` above zero against one subcategory, and no type column (BR-01); both keys `ON DELETE RESTRICT`, so a subcategory in use cannot be deleted (BR-05) |
 | `202611061625` | `Transactions005_AddDetailLineNumber` | HU-04 | `line_number` on `transaction_details`: the lines keep the order they were entered (unique per transaction, from 1); existing lines are numbered by `created_at, id` |
+| `202611061710` | `Transactions006_CreateBudgets` | HU-07 | `transactions.budgets`: an owner, a category, an amount `numeric(14,2)` above zero and a period that ends after it starts, both checked so a change can never break them (BR-06); deleted physically; its key to the category is `ON DELETE RESTRICT`, so a category with a budget cannot be deleted (BR-05) |
 
 **Round trip**, the check CI runs on every pull request: up, down to 0, up
 again with the same schema, plus the rules of each table tried as the app role
