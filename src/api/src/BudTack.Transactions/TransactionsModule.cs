@@ -26,10 +26,16 @@ public static class TransactionsModule
         services.AddScoped(provider => new ManageMovements(
             provider.GetRequiredService<IMovementsRepository>(),
             provider.GetRequiredService<ILogger<ManageMovements>>()));
+        services.AddScoped<IBudgetsRepository, BudgetsRepository>();
+        services.AddScoped(provider => new ManageBudgets(
+            provider.GetRequiredService<IBudgetsRepository>(),
+            provider.GetRequiredService<ICategoriesRepository>(),
+            provider.GetRequiredService<ILogger<ManageBudgets>>()));
         services.AddScoped(provider => new TransactionsFacade(
             provider.GetRequiredService<IdentityFacade>(),
             provider.GetRequiredService<ManageCategories>(),
-            provider.GetRequiredService<ManageMovements>()));
+            provider.GetRequiredService<ManageMovements>(),
+            provider.GetRequiredService<ManageBudgets>()));
         return services;
     }
 }
