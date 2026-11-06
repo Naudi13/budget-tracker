@@ -1,0 +1,76 @@
+<div class="heading">
+  <h1>Panel</h1>
+  <a class="btn-primary" routerLink="/transactions/new">Registrar un movimiento</a>
+</div>
+
+@if (notice) {
+  <p class="banner banner-success" role="status">{{ notice }}</p>
+}
+
+@switch (state()) {
+  @case ('loading') {
+    <div aria-busy="true" aria-label="Cargando el panel">
+      <div class="kpis">
+        <div class="tile skeleton"></div>
+        <div class="tile skeleton"></div>
+        <div class="tile skeleton"></div>
+      </div>
+      <div class="list skeleton"></div>
+    </div>
+  }
+  @case ('error') {
+    <div class="banner banner-error" role="alert">
+      <span>No pudimos cargar el panel.</span>
+      <button type="button" class="btn-secondary" (click)="load()">Reintentar</button>
+    </div>
+  }
+  @case ('ready') {
+    @if (dashboard(); as d) {
+      <section class="kpis" aria-label="Resumen">
+        <div class="tile">
+          <span class="label">Ingresos</span>
+          <span class="figure income">{{ d.totalIncome | currency: 'COP' : 'symbol-narrow' : '1.2-2' }}</span>
+        </div>
+        <div class="tile">
+          <span class="label">Gastos</span>
+          <span class="figure">{{ d.totalExpenses | currency: 'COP' : 'symbol-narrow' : '1.2-2' }}</span>
+        </div>
+        <div class="tile balance">
+          <span class="label">Balance</span>
+          <!-- A negative balance is red and keeps its minus sign: never colour alone. -->
+          <span class="figure" [class.negative]="d.netBalance < 0">
+            {{ d.netBalance | currency: 'COP' : 'symbol-narrow' : '1.2-2' }}
+          </span>
+        </div>
+      </section>
+
+      <section class="recent" aria-labelledby="recent-title">
+        <div class="recent-heading">
+          <h2 id="recent-title">Movimientos recientes</h2>
+          @if (d.recentTransactions.length > 0) {
+            <a routerLink="/transactions">Ver todo el historial</a>
+          }
+        </div>
+        @if (d.recentTransactions.length === 0) {
+          <div class="empty">
+            <p>Aún no tienes movimientos</p>
+            <a routerLink="/transactions/new">Registrar un movimiento</a>
+          </div>
+        } @else {
+          <ul class="rows">
+            @for (row of d.recentTransactions; track row.id) {
+              <li>
+                <span class="date">{{ row.transactionDate | date: 'd MMM' : 'UTC' }}</span>
+                <span class="description">{{ row.description }}</span>
+                <span class="type" [class.income]="row.details[0]?.type === 'income'">{{ typeOf(row) }}</span>
+                <span class="amount">{{ totalOf(row) | currency: 'COP' : 'symbol-narrow' : '1.2-2' }}</span>
+              </li>
+            }
+          </ul>
+        }
+      </section>
+
+      <p class="settings"><a routerLink="/settings/categories">Configurar tus categorías</a></p>
+    }
+  }
+}
