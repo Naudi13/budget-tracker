@@ -34,6 +34,7 @@ signs the bearer tokens.
 | `DELETE`, `PATCH /api/v1/categories/{id}/subcategories/{id}` | Bearer | Delete (`409` while a transaction uses it, BR-05) and activate or deactivate (HU-03) |
 | `GET`, `POST /api/v1/transactions` | Bearer | History newest first without deleted ones (HU-05), and record (HU-04): `201`; `400` per field; `422 BUSINESS_RULE_VIOLATED` when lines mix income and expense (BR-02) or use an inactive subcategory or category (BR-05). Each line's type comes from its category (BR-01); lines come back in the order they were entered |
 | `DELETE /api/v1/transactions/{id}` | Bearer | Soft delete (HU-06, BR-04): `204`, then `404` |
+| `GET /api/v1/dashboard` | Bearer | HU-08: total income, total expenses and net balance computed on read (BR-03) without deleted transactions (BR-04), and the five most recent transactions |
 | Every other controller action | `Authorization: Bearer <token>` | `401 UNAUTHORIZED` without a valid token (NFR-05) |
 
 Contracts: `07-api/contracts/openapi/` in `bud-tack-docs`. Passwords are stored as
@@ -51,7 +52,7 @@ controller is protected by default; only `[AllowAnonymous]` opens it.
 | `src/BudTack.Api/Platform/Errors` | `{ error, message, details }` for every non-2xx response, including the errors a facade declares |
 | `src/BudTack.Identity` | The identity module: `IdentityModule` (marker + registration), `Api/IdentityFacade` and `Api/Contracts`; `Internal/` holds the domain, the use cases (`SignUp`, `SignIn`, `TokenService`, `PasswordHasher`) and `UsersRepository` |
 | `src/BudTack.Transactions` | The transactions module: `TransactionsModule`, `Api/TransactionsFacade` and `Api/Contracts`; `Internal/` holds the category and movement rules, `ManageCategories`, `ManageMovements` and their repositories; a movement and its lines are stored in one database transaction. Every row is read and written through its owner (`owned_by`): another business's row answers `404` |
-| `src/BudTack.Dashboard` | The dashboard module: `DashboardModule`, `Api/DashboardFacade`; reads through `TransactionsFacade` only and owns no table |
+| `src/BudTack.Dashboard` | The dashboard module: `DashboardModule`, `Api/DashboardFacade` and `Api/Contracts/DashboardView`; reads `GetTotalsAsync` and `ListTransactionsAsync` through `TransactionsFacade` only, and owns no table |
 | `tests/boundary` | NetArchTest: no module `Internal` reachable from outside |
 | `tests/unit` | One class at a time, no database |
 | `tests/module-integration` | Each module through its facade only, against a throwaway PostgreSQL (Docker) |
