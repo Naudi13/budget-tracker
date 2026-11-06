@@ -37,6 +37,8 @@ creates in those schemas automatically (default privileges, `Platform001`).
 |---|---|---|---|
 | `202611041500` | `Platform001_CreateSchemas` | Sprint 0 | Schemas `identity` and `transactions`, and the app role's rights on them |
 | `202611052230` | `Identity001_CreateUsers` | HU-01 | `identity.users`: unique email (`idx_users_email`), stored lowercase (`ck_users_email_lowercase`), a non-blank name, the password only as a hash |
+| `202611060035` | `Transactions001_CreateCategories` | HU-02 | `transactions.categories`: an owner (`owned_by`), `income` or `expense`, a non-blank name unique per owner and type ignoring case (`idx_categories_owned_by_type_name`), `is_active` |
+| `202611060036` | `Transactions002_CreateSubcategories` | HU-02 | `transactions.subcategories`: a name unique per category ignoring case; its key to the category is `ON DELETE RESTRICT`, so a category that owns a subcategory cannot be deleted (BR-05) |
 
 **Round trip**, the check CI runs on every pull request: up, down to 0, up
 again with the same schema, plus the rules of each table tried as the app role

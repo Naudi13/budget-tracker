@@ -98,9 +98,68 @@ refused "a user without a password hash is refused" \
 refused "the app role cannot drop identity.users" \
   "DROP TABLE identity.users;"
 
+# Transactions001_CreateCategories and Transactions002_CreateSubcategories (HU-02).
+allowed() {
+  if docker exec -i "$PG_CONTAINER" psql -v ON_ERROR_STOP=1 -X -q -U "$PG_SUPERUSER" -d "$PG_DB" > "$WORK/allowed.out" 2>&1 <<EOSQL
+BEGIN;
+SET LOCAL ROLE bud_tack_app;
+$2
+ROLLBACK;
+EOSQL
+  then echo "PASS  $1"
+  else echo "FAIL  $1" >&2; cat "$WORK/allowed.out" >&2; exit 1; fi
+}
+ana=00000000-0000-7000-8000-00000000000a
+leo=00000000-0000-7000-8000-00000000000b
+office=00000000-0000-7000-8000-0000000000c1
+category() { # id owner name type
+  echo "INSERT INTO transactions.categories (id, owned_by, name, type, created_by, updated_by) VALUES ('$1', '$2', '$3', '$4', '$2', '$2');"
+}
+subcategory() { # category name
+  echo "INSERT INTO transactions.subcategories (id, category_id, name, created_by, updated_by) VALUES (gen_random_uuid(), '$1', '$2', '$ana', '$ana');"
+}
+check "transactions.categories and .subcategories exist" \
+  "SELECT to_regclass('transactions.categories') IS NOT NULL AND to_regclass('transactions.subcategories') IS NOT NULL"
+check "app role may read and write both, and nothing more" \
+  "SELECT has_table_privilege('bud_tack_app', 'transactions.categories', 'SELECT, INSERT, UPDATE, DELETE')
+      AND has_table_privilege('bud_tack_app', 'transactions.subcategories', 'SELECT, INSERT, UPDATE, DELETE')
+      AND NOT has_table_privilege('bud_tack_app', 'transactions.categories', 'TRUNCATE')"
+check "a subcategory's key to its category is ON DELETE RESTRICT (BR-05)" \
+  "SELECT confdeltype = 'r' FROM pg_constraint WHERE conname = 'fk_subcategories_category_id'"
+allowed "a category and a subcategory are created active" \
+  "$(category $office $ana Oficina expense) $(subcategory $office Papelería)
+   DO \$\$ BEGIN
+     IF NOT (SELECT bool_and(is_active) FROM (SELECT is_active FROM transactions.categories UNION ALL SELECT is_active FROM transactions.subcategories) t)
+     THEN RAISE EXCEPTION 'not active'; END IF;
+   END \$\$;"
+refused "a second expense category of the same owner with the same name, in any case, is refused" \
+  "$(category $office $ana Oficina expense) $(category 00000000-0000-7000-8000-0000000000c2 $ana OFICINA expense)"
+allowed "the same name is allowed in the other type" \
+  "$(category $office $ana Oficina expense) $(category 00000000-0000-7000-8000-0000000000c2 $ana Oficina income)"
+allowed "the same name is allowed for another owner" \
+  "$(category $office $ana Oficina expense) $(category 00000000-0000-7000-8000-0000000000c2 $leo Oficina expense)"
+refused "a type other than income or expense is refused" \
+  "$(category $office $ana Oficina savings)"
+refused "a blank category name is refused" \
+  "$(category $office $ana '   ' expense)"
+refused "a category without an owner is refused" \
+  "INSERT INTO transactions.categories (id, name, type, created_by, updated_by) VALUES ('$office', 'Oficina', 'expense', '$ana', '$ana');"
+refused "a second subcategory with the same name in one category, in any case, is refused" \
+  "$(category $office $ana Oficina expense) $(subcategory $office Papelería) $(subcategory $office PAPELERÍA)"
+allowed "the same subcategory name is allowed in another category" \
+  "$(category $office $ana Oficina expense) $(category 00000000-0000-7000-8000-0000000000c2 $ana Viajes expense)
+   $(subcategory $office Varios) $(subcategory 00000000-0000-7000-8000-0000000000c2 Varios)"
+refused "a subcategory of a category that does not exist is refused" \
+  "$(subcategory 00000000-0000-7000-8000-0000000000ff Papelería)"
+refused "a category that owns a subcategory cannot be deleted (BR-05)" \
+  "$(category $office $ana Oficina expense) $(subcategory $office Papelería) DELETE FROM transactions.categories WHERE id = '$office';"
+allowed "a category without subcategories can be deleted" \
+  "$(category $office $ana Oficina expense) DELETE FROM transactions.categories WHERE id = '$office';"
+
 migrate down
-check "down removes identity.users" \
-  "SELECT to_regclass('identity.users') IS NULL"
+check "down removes identity.users, transactions.categories and .subcategories" \
+  "SELECT to_regclass('identity.users') IS NULL AND to_regclass('transactions.categories') IS NULL
+      AND to_regclass('transactions.subcategories') IS NULL"
 check "down removes both schemas" \
   "SELECT count(*) = 0 FROM pg_namespace WHERE nspname IN ('identity', 'transactions')"
 
