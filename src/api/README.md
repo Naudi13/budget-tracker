@@ -28,6 +28,10 @@ signs the bearer tokens.
 | `GET /health` | none | `200` / `503` with the database's state |
 | `POST /api/v1/users` | none | Sign-up (HU-01): `201` + `Location`, `400` per field, `409` email in use |
 | `POST /api/v1/sessions` | none | Sign-in (HU-01): `201` with `{ token, tokenType, expiresIn }`, `401` wrong email or password |
+| `GET`, `POST /api/v1/categories` | Bearer | List (`?page`, `?limit`, `?type`) and create (HU-02): `201`, `400`, `409` name in use for that type |
+| `DELETE`, `PATCH /api/v1/categories/{id}` | Bearer | Delete (`204`, `409` while it owns a subcategory or budget, BR-05) and activate or deactivate (HU-03) |
+| `GET`, `POST /api/v1/categories/{id}/subcategories` | Bearer | List and create (HU-02): `409` name in use in that category |
+| `DELETE`, `PATCH /api/v1/categories/{id}/subcategories/{id}` | Bearer | Delete (`409` while a transaction uses it, BR-05) and activate or deactivate (HU-03) |
 | Every other controller action | `Authorization: Bearer <token>` | `401 UNAUTHORIZED` without a valid token (NFR-05) |
 
 Contracts: `07-api/contracts/openapi/` in `bud-tack-docs`. Passwords are stored as
@@ -44,7 +48,7 @@ controller is protected by default; only `[AllowAnonymous]` opens it.
 | `src/BudTack.Api/Platform/Web` | Controllers (internal), bearer authentication, correlation id middleware, `GET /health` |
 | `src/BudTack.Api/Platform/Errors` | `{ error, message, details }` for every non-2xx response, including the errors a facade declares |
 | `src/BudTack.Identity` | The identity module: `IdentityModule` (marker + registration), `Api/IdentityFacade` and `Api/Contracts`; `Internal/` holds the domain, the use cases (`SignUp`, `SignIn`, `TokenService`, `PasswordHasher`) and `UsersRepository` |
-| `src/BudTack.Transactions` | The transactions module: `TransactionsModule`, `Api/TransactionsFacade`; calls identity through `IdentityFacade` only |
+| `src/BudTack.Transactions` | The transactions module: `TransactionsModule`, `Api/TransactionsFacade` and `Api/Contracts`; `Internal/` holds the category rules, `ManageCategories` and `CategoriesRepository`. Every row is read and written through its owner (`owned_by`): another business's row answers `404` |
 | `src/BudTack.Dashboard` | The dashboard module: `DashboardModule`, `Api/DashboardFacade`; reads through `TransactionsFacade` only and owns no table |
 | `tests/boundary` | NetArchTest: no module `Internal` reachable from outside |
 | `tests/unit` | One class at a time, no database |
@@ -62,12 +66,17 @@ modules depend on each other only as `09-modules/module-catalog.md` draws:
 ```bash
 dotnet build -c Release
 dotnet test --project tests/boundary -c Release --no-build      # boundary check
-dotnet test --project tests/unit -c Release --no-build --results-directory TestResults   --coverage --coverage-output-format cobertura --coverage-output unit.cobertura.xml
-sh scripts/coverage-gate.sh TestResults/unit.cobertura.xml       # NFR-07: 80 % per module, 90 % transactions
-dotnet test --project tests/module-integration -c Release --no-build   # needs Docker
+dotnet test --project tests/unit -c Release --no-build --results-directory TestResults --coverage --coverage-output-format cobertura --coverage-output unit.cobertura.xml
+dotnet test --project tests/module-integration -c Release --no-build --results-directory TestResults --coverage --coverage-output-format cobertura --coverage-output module-integration.cobertura.xml   # needs Docker
+python3 scripts/coverage-gate.py TestResults/unit.cobertura.xml TestResults/module-integration.cobertura.xml
 dotnet test --project tests/end-to-end -c Release --no-build    # needs Docker
 docker build -t bud-tack-api:local .                             # package
 ```
+
+The coverage gate applies NFR-07 to each module — 80 %, and 90 % for
+`BudTack.Transactions` — over the unit and module-integration layers together:
+a repository is only provable against a real PostgreSQL. The host is covered by
+the end-to-end layer and reported, not gated.
 
 `dotnet test` runs on Microsoft.Testing.Platform (set in `global.json`), the
 only runner xUnit v3 supports on the .NET 10 SDK.
