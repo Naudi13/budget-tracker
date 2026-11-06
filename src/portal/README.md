@@ -17,8 +17,17 @@ npm start                                  # http://localhost:4200
 
 `ng serve` forwards `/api/` and `/health` to `localhost:3000` through
 `proxy.conf.json`, so the browser sees one origin and the API needs no CORS
-(ADR-006). The start page calls `/health` and says whether the API and its
-database are up; sign-in replaces it with HU-01.
+(ADR-006). Without a token `/` goes to sign-in; `/sign-up` creates the
+account (HU-01). `/status` says whether the API and its database are up.
+
+| Route | Who | Screen |
+|---|---|---|
+| `/sign-in`, `/sign-up` | Signed out only | `12-ux-ui/screens/sign-in.md`, `sign-up.md` |
+| `/dashboard` (and `/`) | Signed in only | Placeholder until HU-08 |
+| `/status` | Anyone | `GET /health` through the proxy |
+
+The token lives in memory and `sessionStorage`. Sign-out discards it; a `401`
+from the API discards it too and goes to sign-in.
 
 ## Layout
 
@@ -26,7 +35,7 @@ database are up; sign-in replaces it with HU-01.
 |---|---|
 | `src/app/app.*` | The shell: header, skip link, one `<main>` with the router outlet |
 | `src/app/app.routes.ts` | One route per screen of `12-ux-ui/screens/` |
-| `src/app/core/` | HTTP wiring shared by every screen: the `{ error, message, details }` mapping, the error and bearer-token interceptors, the token store |
+| `src/app/core/` | HTTP wiring shared by every screen: the `{ error, message, details }` mapping, the error, bearer-token and 401 interceptors, the token store, `IdentityService` and the route guards |
 | `src/app/pages/` | One folder per screen |
 | `src/styles.css` | The tokens of `12-ux-ui/design-system.md` and the button styles |
 | `nginx/default.conf.template` | The production server: Angular files plus the `/api/` and `/health` proxy |

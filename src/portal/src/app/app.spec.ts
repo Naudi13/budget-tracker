@@ -5,9 +5,11 @@ import { provideRouter, Router } from '@angular/router';
 
 import { App } from './app';
 import { routes } from './app.routes';
+import { AuthTokenStore } from './core/auth-token.store';
 
 describe('App', () => {
   beforeEach(() => {
+    sessionStorage.clear();
     TestBed.configureTestingModule({
       imports: [App],
       providers: [provideRouter(routes), provideHttpClient(), provideHttpClientTesting()],
@@ -19,13 +21,43 @@ describe('App', () => {
     await TestBed.inject(Router).navigateByUrl(url);
     fixture.detectChanges();
     await fixture.whenStable();
+    fixture.detectChanges();
     return fixture.nativeElement as HTMLElement;
   }
 
-  it('shows the header and the status page at the root', async () => {
+  it('sends a visitor without a token from the root to sign-in', async () => {
     const page = await render('/');
 
-    expect(page.querySelector('header')?.textContent).toContain('Budget Tracker');
+    expect(TestBed.inject(Router).url).toBe('/sign-in');
+    expect(page.querySelector('main h1')?.textContent).toBe('Budget Tracker');
+    expect(page.querySelector('header button')).toBeNull();
+  });
+
+  it('sends a signed-in user from the root to the dashboard, with a sign-out button', async () => {
+    TestBed.inject(AuthTokenStore).set('a.b.c');
+
+    const page = await render('/');
+
+    expect(TestBed.inject(Router).url).toBe('/dashboard');
+    expect(page.querySelector('main h1')?.textContent).toBe('Dashboard');
+    expect(page.querySelector('header button')?.textContent?.trim()).toBe('Sign out');
+  });
+
+  it('signs out by discarding the token and going to sign-in', async () => {
+    TestBed.inject(AuthTokenStore).set('a.b.c');
+    const page = await render('/dashboard');
+
+    (page.querySelector('header button') as HTMLButtonElement).click();
+    await TestBed.inject(Router).navigated;
+    await new Promise((resolve) => setTimeout(resolve));
+
+    expect(TestBed.inject(AuthTokenStore).token()).toBeNull();
+    expect(TestBed.inject(Router).url).toBe('/sign-in');
+  });
+
+  it('keeps the status page open without a token', async () => {
+    const page = await render('/status');
+
     expect(page.querySelector('main h1')?.textContent).toBe('System status');
     TestBed.inject(HttpTestingController).expectOne('/health');
   });

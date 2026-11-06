@@ -1,0 +1,55 @@
+import { HttpClient } from '@angular/common/http';
+import { Injectable, computed, inject } from '@angular/core';
+import { Observable, tap } from 'rxjs';
+
+import { AuthTokenStore } from './auth-token.store';
+
+/** The schemas of bud-tack-docs 07-api/contracts/openapi/identity.yaml. */
+export interface NewUser {
+  readonly name: string;
+  readonly email: string;
+  readonly password: string;
+}
+
+export interface Credentials {
+  readonly email: string;
+  readonly password: string;
+}
+
+export interface User {
+  readonly id: string;
+  readonly name: string;
+  readonly email: string;
+}
+
+export interface Session {
+  readonly token: string;
+  readonly tokenType: 'Bearer';
+  readonly expiresIn: number;
+}
+
+/**
+ * Sign-up, sign-in and sign-out (HU-01). Sign-out is client-side only: the
+ * token is discarded, there is no `DELETE /sessions` in V1.
+ */
+@Injectable({ providedIn: 'root' })
+export class IdentityService {
+  private readonly http = inject(HttpClient);
+  private readonly tokens = inject(AuthTokenStore);
+
+  readonly signedIn = computed(() => this.tokens.token() !== null);
+
+  signUp(user: NewUser): Observable<User> {
+    return this.http.post<User>('/api/v1/users', user);
+  }
+
+  signIn(credentials: Credentials): Observable<Session> {
+    return this.http
+      .post<Session>('/api/v1/sessions', credentials)
+      .pipe(tap((session) => this.tokens.set(session.token)));
+  }
+
+  signOut(): void {
+    this.tokens.clear();
+  }
+}

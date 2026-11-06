@@ -1,0 +1,84 @@
+/* Sign-in and sign-up: one centred card (12-ux-ui/screens/sign-in.md, sign-up.md). */
+.auth-card {
+  max-width: 420px;
+  margin: 0 auto;
+  padding: calc(var(--space-unit) * 8) calc(var(--space-unit) * 6);
+  background: var(--color-bg-surface);
+  border-radius: calc(var(--space-unit) * 2);
+  border: 1px solid var(--color-border);
+}
+
+h1 {
+  text-align: center;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--space-unit) * 4);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-unit);
+}
+
+label {
+  font-weight: 600;
+}
+
+input {
+  padding: calc(var(--space-unit) * 2) calc(var(--space-unit) * 3);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--space-unit);
+  font: inherit;
+  color: var(--color-text);
+  background: var(--color-bg-surface);
+}
+
+input[aria-invalid='true'] {
+  border-color: var(--color-danger);
+}
+
+.field-error,
+.field-hint {
+  margin: 0;
+  font-size: var(--font-size-caption);
+}
+
+.field-error {
+  color: var(--color-danger);
+}
+
+.field-hint {
+  color: var(--color-text-muted);
+}
+
+.btn-primary {
+  margin-top: calc(var(--space-unit) * 2);
+}
+
+.banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: calc(var(--space-unit) * 3);
+  margin: 0 0 calc(var(--space-unit) * 4);
+  padding: calc(var(--space-unit) * 3) calc(var(--space-unit) * 4);
+  border-radius: var(--space-unit);
+  border: 1px solid currentColor;
+}
+
+.banner-success {
+  color: var(--color-success);
+}
+
+.banner-error {
+  color: var(--color-danger);
+}
+
+.switch {
+  margin: calc(var(--space-unit) * 6) 0 0;
+  text-align: center;
+}
