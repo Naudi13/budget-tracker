@@ -5,11 +5,17 @@
 | Entity | Key attributes | Invariants |
 |---|---|---|
 | User | name, email, password_hash | Email is unique; V1 has a single account per business, with no differentiated roles |
-| Category | name, type (income \| expense) | Name is unique within its own type |
-| Subcategory | category reference, name | Name is unique within its category |
+| Category | owner, name, type (income \| expense) | Name is unique within its owner and type, ignoring case |
+| Subcategory | category reference, name | Name is unique within its category, ignoring case |
 | Transaction | transaction date, description | Deleting a transaction is a soft delete, never a physical removal |
 | Transaction detail | transaction reference, subcategory reference, amount | Amount is always strictly greater than zero |
 | Budget | category reference, amount, period start, period end | Amount is greater than zero; period end is always after period start |
+
+Every category, transaction and budget belongs to one user — the business's
+single account (V1). A user reads and writes only their own; asking for anyone
+else's answers `404`, as if it did not exist (`07-api/rest-conventions.md`).
+Subcategories and transaction details belong to the owner of their category or
+transaction.
 
 ## Business rules
 
