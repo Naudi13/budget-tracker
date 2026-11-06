@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 
 import { signedInGuard, signedOutGuard } from './core/auth.guards';
+import { BudgetsPage } from './pages/budgets/budgets.page';
 import { CategoriesPage } from './pages/categories/categories.page';
 import { DashboardPage } from './pages/dashboard/dashboard.page';
 import { HistoryPage } from './pages/history/history.page';
@@ -33,6 +34,12 @@ export const routes: Routes = [
     component: CategoriesPage,
     canActivate: [signedInGuard],
     title: 'Categorías · Budget Tracker',
+  },
+  {
+    path: 'settings/budgets',
+    component: BudgetsPage,
+    canActivate: [signedInGuard],
+    title: 'Presupuestos · Budget Tracker',
   },
   // Whether the API and its database are up; open, for local setup (local-setup.md).
   { path: 'status', component: StatusPage, title: 'Estado del sistema · Budget Tracker' },

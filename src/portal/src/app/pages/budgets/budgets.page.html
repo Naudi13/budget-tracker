@@ -1,0 +1,203 @@
+<div class="heading">
+  <h1 #heading tabindex="-1">Presupuestos</h1>
+  @if (state() === 'ready' && !formOpen() && (rows().length > 0 || filter.value)) {
+    <button type="button" class="btn-primary" (click)="openNew()">Nuevo presupuesto</button>
+  }
+</div>
+
+@if (notice()) {
+  <p class="banner banner-success" role="status">{{ notice() }}</p>
+}
+
+@if (formOpen()) {
+  <form class="panel budget-form" [formGroup]="form" (submit)="$event.preventDefault(); save()" novalidate>
+    <h2>{{ editing() ? 'Editar presupuesto' : 'Nuevo presupuesto' }}</h2>
+
+    @if (failure()) {
+      <p class="banner banner-error" role="alert">No pudimos guardar el presupuesto. Inténtalo de nuevo.</p>
+    }
+    @if (activeCategories().length === 0) {
+      <p class="hint">
+        Aún no tienes categorías activas. <a routerLink="/settings/categories">Crea una en Categorías</a>.
+      </p>
+    }
+
+    <div class="fields">
+      <div class="field grow">
+        <label for="budget-category">Categoría</label>
+        <select
+          id="budget-category"
+          #firstField
+          formControlName="categoryId"
+          [attr.aria-invalid]="error('categoryId') !== null"
+          [attr.aria-describedby]="error('categoryId') ? 'budget-category-error' : null"
+        >
+          <option value="">Elige una categoría</option>
+          @for (category of activeCategories(); track category.id) {
+            <option [value]="category.id">{{ category.name }}</option>
+          }
+        </select>
+        @if (error('categoryId'); as message) {
+          <p id="budget-category-error" class="field-error">{{ message }}</p>
+        }
+      </div>
+
+      <div class="field amount">
+        <label for="budget-amount">Monto</label>
+        <input
+          id="budget-amount"
+          type="text"
+          inputmode="decimal"
+          autocomplete="off"
+          formControlName="amount"
+          [attr.aria-invalid]="error('amount') !== null"
+          [attr.aria-describedby]="error('amount') ? 'budget-amount-error' : null"
+        />
+        @if (error('amount'); as message) {
+          <p id="budget-amount-error" class="field-error">{{ message }}</p>
+        }
+      </div>
+
+      <div class="field">
+        <label for="budget-start">Desde</label>
+        <input
+          id="budget-start"
+          type="date"
+          formControlName="periodStart"
+          [attr.aria-invalid]="error('periodStart') !== null"
+          [attr.aria-describedby]="error('periodStart') ? 'budget-start-error' : null"
+        />
+        @if (error('periodStart'); as message) {
+          <p id="budget-start-error" class="field-error">{{ message }}</p>
+        }
+      </div>
+
+      <div class="field">
+        <label for="budget-end">Hasta</label>
+        <input
+          id="budget-end"
+          type="date"
+          formControlName="periodEnd"
+          [attr.aria-invalid]="error('periodEnd') !== null"
+          [attr.aria-describedby]="error('periodEnd') ? 'budget-end-error' : null"
+        />
+        @if (error('periodEnd'); as message) {
+          <p id="budget-end-error" class="field-error">{{ message }}</p>
+        }
+      </div>
+    </div>
+
+    <div class="actions">
+      <button type="submit" class="btn-primary" [disabled]="saving()">
+        {{ saving() ? 'Guardando…' : 'Guardar presupuesto' }}
+      </button>
+      <button type="button" class="btn-secondary" [disabled]="saving()" (click)="cancelForm()">Cancelar</button>
+    </div>
+  </form>
+}
+
+@if (state() !== 'error' && (rows().length > 0 || filter.value)) {
+  <div class="filter field">
+    <label for="budget-filter">Categoría</label>
+    <select id="budget-filter" [formControl]="filter">
+      <option value="">Todas</option>
+      @for (category of allCategories(); track category.id) {
+        <option [value]="category.id">{{ category.name }}</option>
+      }
+    </select>
+  </div>
+}
+
+@switch (state()) {
+  @case ('loading') {
+    <div class="skeleton" aria-busy="true" aria-label="Cargando presupuestos">
+      <div class="bar"></div>
+      <div class="bar"></div>
+      <div class="bar"></div>
+    </div>
+  }
+  @case ('error') {
+    <div class="banner banner-error" role="alert">
+      <span>No pudimos cargar los presupuestos.</span>
+      <button type="button" class="btn-secondary" (click)="load()">Reintentar</button>
+    </div>
+  }
+  @case ('ready') {
+    @if (rows().length === 0) {
+      @if (filter.value) {
+        <div class="panel empty"><p>Esta categoría no tiene presupuestos.</p></div>
+      } @else if (!formOpen()) {
+        <div class="panel empty">
+          <p>Aún no tienes presupuestos</p>
+          <button type="button" class="btn-primary" (click)="openNew()">Nuevo presupuesto</button>
+        </div>
+      }
+    } @else {
+      <div class="table-wrap">
+        <table>
+          <caption class="visually-hidden">Presupuestos, del periodo más reciente al más antiguo</caption>
+          <thead>
+            <tr>
+              <th scope="col">Categoría</th>
+              <th scope="col" class="number">Monto</th>
+              <th scope="col">Desde</th>
+              <th scope="col">Hasta</th>
+              <th scope="col"><span class="visually-hidden">Acciones</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of rows(); track row.id) {
+              <tr>
+                <td>{{ categoryName(row.categoryId) }}</td>
+                <td class="number">{{ row.amount | currency: 'COP' : 'symbol-narrow' : '1.2-2' }}</td>
+                <!-- A business date has no time: read it as UTC so it never shifts a day. -->
+                <td>{{ row.periodStart | date: 'dd/MM/y' : 'UTC' }}</td>
+                <td>{{ row.periodEnd | date: 'dd/MM/y' : 'UTC' }}</td>
+                <td class="actions">
+                  <button type="button" class="link" (click)="openEdit(row)">
+                    Editar <span class="visually-hidden">el presupuesto de {{ categoryName(row.categoryId) }}</span>
+                  </button>
+                  <button type="button" class="link danger" (click)="askDelete(row)">
+                    Eliminar <span class="visually-hidden">el presupuesto de {{ categoryName(row.categoryId) }}</span>
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      @if (pages() > 1) {
+        <nav class="pager" aria-label="Páginas de presupuestos">
+          <button type="button" class="btn-secondary" [disabled]="page() === 1" (click)="loadBudgets(page() - 1)">
+            Anterior
+          </button>
+          <span>Página {{ page() }} de {{ pages() }}</span>
+          <button type="button" class="btn-secondary" [disabled]="page() === pages()" (click)="loadBudgets(page() + 1)">
+            Siguiente
+          </button>
+        </nav>
+      }
+    }
+  }
+}
+
+@if (pending(); as pending) {
+  <div class="backdrop">
+    <div class="dialog" role="alertdialog" aria-modal="true" aria-labelledby="dialog-message">
+      @if (pending.failed) {
+        <p id="dialog-message">No pudimos eliminar el presupuesto. Inténtalo de nuevo.</p>
+      } @else {
+        <p id="dialog-message">
+          ¿Eliminar el presupuesto de '{{ categoryName(pending.budget.categoryId) }}'? No se puede deshacer.
+        </p>
+      }
+      <div class="actions">
+        <button type="button" class="btn-danger" #dialogAction [disabled]="busy()" (click)="confirmDelete()">
+          {{ pending.failed ? 'Reintentar' : 'Eliminar' }}
+        </button>
+        <button type="button" class="btn-secondary" [disabled]="busy()" (click)="closeDialog()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+}
