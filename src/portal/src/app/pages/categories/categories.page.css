@@ -1,0 +1,220 @@
+.heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: calc(var(--space-unit) * 4);
+  margin-bottom: calc(var(--space-unit) * 6);
+}
+
+.heading h1 {
+  margin: 0;
+}
+
+h2 {
+  margin: 0 0 calc(var(--space-unit) * 3);
+  font-size: 1.125rem;
+}
+
+.panel {
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  border-radius: calc(var(--space-unit) * 2);
+  padding: calc(var(--space-unit) * 4) calc(var(--space-unit) * 5);
+}
+
+.new-category {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--space-unit) * 4);
+  margin-bottom: calc(var(--space-unit) * 6);
+  border-top: 4px solid var(--brand-mint);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-unit);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+label,
+legend {
+  font-weight: 600;
+}
+
+.choice {
+  display: inline-flex;
+  align-items: center;
+  gap: calc(var(--space-unit) * 2);
+  font-weight: 400;
+}
+
+input[type='text'] {
+  padding: calc(var(--space-unit) * 2) calc(var(--space-unit) * 3);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--space-unit);
+  font: inherit;
+  color: var(--color-text);
+  background: var(--color-bg-surface);
+}
+
+input[aria-invalid='true'] {
+  border-color: var(--color-danger);
+}
+
+.field-error {
+  margin: 0;
+  font-size: var(--font-size-caption);
+  color: var(--color-danger);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(var(--space-unit) * 3);
+}
+
+.banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: calc(var(--space-unit) * 3);
+  margin: 0 0 calc(var(--space-unit) * 4);
+  padding: calc(var(--space-unit) * 3) calc(var(--space-unit) * 4);
+  border-radius: var(--space-unit);
+  border: 1px solid currentColor;
+}
+
+.banner-success {
+  color: var(--color-success);
+  background: #eaf8f6;
+}
+
+.banner-error {
+  color: var(--color-danger);
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: calc(var(--space-unit) * 3);
+}
+
+.empty p {
+  margin: 0;
+}
+
+.type {
+  margin-bottom: calc(var(--space-unit) * 8);
+}
+
+.categories,
+.subcategories {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.category {
+  margin-bottom: calc(var(--space-unit) * 3);
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: calc(var(--space-unit) * 3);
+  min-height: 36px;
+}
+
+.category > .row .name {
+  font-weight: 700;
+}
+
+.subcategories {
+  margin: calc(var(--space-unit) * 2) 0 0 calc(var(--space-unit) * 4);
+  padding-left: calc(var(--space-unit) * 4);
+  border-left: 2px solid var(--color-border);
+}
+
+.row-actions {
+  display: inline-flex;
+  gap: calc(var(--space-unit) * 3);
+  margin-left: auto;
+}
+
+/* Activa: mint tint with dark-mint text (5:1); Inactiva: grey. */
+.badge {
+  padding: 0 calc(var(--space-unit) * 2);
+  border-radius: 999px;
+  font-size: var(--font-size-caption);
+  color: var(--color-success);
+  background: #eaf8f6;
+}
+
+.badge.off {
+  color: var(--color-text-muted);
+  background: #eef0f4;
+}
+
+.link {
+  padding: var(--space-unit);
+  border: 0;
+  background: none;
+  font: inherit;
+  color: var(--color-primary);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.link.danger {
+  color: var(--color-danger);
+}
+
+.add-subcategory {
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(var(--space-unit) * 2);
+  margin-top: calc(var(--space-unit) * 3);
+}
+
+.add-subcategory input {
+  flex: 1;
+  min-width: 160px;
+}
+
+.add-subcategory .field-error {
+  flex-basis: 100%;
+}
+
+.skeleton .bar {
+  height: 56px;
+  margin-bottom: calc(var(--space-unit) * 3);
+  border-radius: calc(var(--space-unit) * 2);
+  background: linear-gradient(90deg, #e9ecf2, #f4f6fa, #e9ecf2);
+}
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: calc(var(--space-unit) * 4);
+  background: rgb(27 42 74 / 45%);
+  z-index: 10;
+}
+
+.dialog {
+  width: min(440px, 100%);
+  padding: calc(var(--space-unit) * 6);
+  border-radius: calc(var(--space-unit) * 2);
+  background: var(--color-bg-surface);
+  box-shadow: 0 8px 24px rgb(27 42 74 / 25%);
+}
+
+.dialog p {
+  margin: 0 0 calc(var(--space-unit) * 5);
+}
