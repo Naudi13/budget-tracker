@@ -15,6 +15,10 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) | [SemVer](http
   `TC-019`, and HU-07 and its screen extended to match
 
 ### Changed
+- Data belongs to its owner: `owned_by` on `transactions.categories`, `.transactions`
+  and `.budgets` (subcategories and details through their parent), every read and
+  write filtered by the signed-in user; category and subcategory names are unique
+  ignoring case; `categories.yaml` caps names at 100 characters
 - The user interface is in Spanish (Colombia): `12-ux-ui/design-system.md` states
   the language rule, every screen in `12-ux-ui/screens/` and the Gherkin of HU-01
   to HU-07 quote their visible texts in Spanish, with *tuteo*. Code, contracts and
