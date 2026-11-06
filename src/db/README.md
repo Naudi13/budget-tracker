@@ -39,6 +39,8 @@ creates in those schemas automatically (default privileges, `Platform001`).
 | `202611052230` | `Identity001_CreateUsers` | HU-01 | `identity.users`: unique email (`idx_users_email`), stored lowercase (`ck_users_email_lowercase`), a non-blank name, the password only as a hash |
 | `202611060035` | `Transactions001_CreateCategories` | HU-02 | `transactions.categories`: an owner (`owned_by`), `income` or `expense`, a non-blank name unique per owner and type ignoring case (`idx_categories_owned_by_type_name`), `is_active` |
 | `202611060036` | `Transactions002_CreateSubcategories` | HU-02 | `transactions.subcategories`: a name unique per category ignoring case; its key to the category is `ON DELETE RESTRICT`, so a category that owns a subcategory cannot be deleted (BR-05) |
+| `202611061610` | `Transactions003_CreateTransactions` | HU-04 to HU-06 | `transactions.transactions`: an owner, a date, a non-blank description up to 200 characters; a soft delete sets `deleted_at` and `deleted_by` together (BR-04); a partial index serves the owner's history, newest first |
+| `202611061611` | `Transactions004_CreateTransactionDetails` | HU-04 | `transactions.transaction_details`: an amount `numeric(14,2)` above zero against one subcategory, and no type column (BR-01); both keys `ON DELETE RESTRICT`, so a subcategory in use cannot be deleted (BR-05) |
 
 **Round trip**, the check CI runs on every pull request: up, down to 0, up
 again with the same schema, plus the rules of each table tried as the app role
