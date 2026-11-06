@@ -18,13 +18,16 @@ public sealed class TransactionsFacade
 {
     private readonly ManageCategories _categories;
     private readonly ManageMovements _movements;
+    private readonly ManageBudgets _budgets;
 
-    internal TransactionsFacade(IdentityFacade identity, ManageCategories categories, ManageMovements movements)
+    internal TransactionsFacade(
+        IdentityFacade identity, ManageCategories categories, ManageMovements movements, ManageBudgets budgets)
     {
         ArgumentNullException.ThrowIfNull(identity);
         Identity = identity;
         _categories = categories;
         _movements = movements;
+        _budgets = budgets;
     }
 
     /// <summary>Identity's public API, for what transactions needs to know about users.</summary>
@@ -106,4 +109,31 @@ public sealed class TransactionsFacade
     /// </summary>
     public Task<Totals> GetTotalsAsync(Guid userId, CancellationToken cancellationToken = default) =>
         _movements.TotalsAsync(userId, cancellationToken);
+
+    /// <summary>HU-07: <c>GET /budgets</c>, newest period first, optionally for one category.</summary>
+    public Task<Page<Budget>> ListBudgetsAsync(
+        Guid userId, int? page = null, int? limit = null, Guid? categoryId = null, CancellationToken cancellationToken = default) =>
+        _budgets.ListAsync(userId, page, limit, categoryId, cancellationToken);
+
+    /// <summary>
+    /// HU-07: <c>POST /budgets</c>. A period that does not end after it starts, or
+    /// an inactive category (BR-05), is a <see cref="TransactionsBusinessRuleException"/>.
+    /// </summary>
+    public Task<Budget> CreateBudgetAsync(Guid userId, NewBudget request, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        return _budgets.CreateAsync(userId, request, cancellationToken);
+    }
+
+    /// <summary>HU-07: <c>PATCH /budgets/{id}</c>; the changed budget is held to the same rules (BR-06).</summary>
+    public Task<Budget> UpdateBudgetAsync(
+        Guid userId, Guid budgetId, BudgetChanges changes, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(changes);
+        return _budgets.UpdateAsync(userId, budgetId, changes, cancellationToken);
+    }
+
+    /// <summary>HU-07: <c>DELETE /budgets/{id}</c>, a physical delete (BR-06).</summary>
+    public Task DeleteBudgetAsync(Guid userId, Guid budgetId, CancellationToken cancellationToken = default) =>
+        _budgets.DeleteAsync(userId, budgetId, cancellationToken);
 }
