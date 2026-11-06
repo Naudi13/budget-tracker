@@ -1,5 +1,5 @@
 -- The database schema the tests run against: bud-tack-db after every migration
--- up to Transactions002_CreateSubcategories (202611060036). Generated, never edited by hand:
+-- up to Transactions005_AddDetailLineNumber (202611061625). Generated, never edited by hand:
 --   docker exec bud-tack-postgres-1 pg_dump --schema-only --no-owner --no-privileges \n--     --no-comments --schema=identity --schema=transactions -U postgres app_dev
 -- Regenerate it in the pull request that needs a newer migration.
 
@@ -41,14 +41,52 @@ CREATE TABLE transactions.subcategories (
     updated_by uuid NOT NULL,
     CONSTRAINT ck_subcategories_name_not_blank CHECK ((btrim((name)::text) <> ''::text))
 );
+CREATE TABLE transactions.transaction_details (
+    id uuid NOT NULL,
+    transaction_id uuid NOT NULL,
+    subcategory_id uuid NOT NULL,
+    amount numeric(14,2) NOT NULL,
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    created_by uuid NOT NULL,
+    updated_by uuid NOT NULL,
+    line_number smallint NOT NULL,
+    CONSTRAINT ck_transaction_details_amount_positive CHECK ((amount > (0)::numeric)),
+    CONSTRAINT ck_transaction_details_line_number_positive CHECK ((line_number > 0))
+);
+CREATE TABLE transactions.transactions (
+    id uuid NOT NULL,
+    owned_by uuid NOT NULL,
+    transaction_date date NOT NULL,
+    description character varying(200) NOT NULL,
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    created_by uuid NOT NULL,
+    updated_by uuid NOT NULL,
+    deleted_at timestamp with time zone,
+    deleted_by uuid,
+    CONSTRAINT ck_transactions_deleted_together CHECK (((deleted_at IS NULL) = (deleted_by IS NULL))),
+    CONSTRAINT ck_transactions_description_not_blank CHECK ((btrim((description)::text) <> ''::text))
+);
 ALTER TABLE ONLY identity.users
     ADD CONSTRAINT pk_users PRIMARY KEY (id);
 ALTER TABLE ONLY transactions.categories
     ADD CONSTRAINT pk_categories PRIMARY KEY (id);
 ALTER TABLE ONLY transactions.subcategories
     ADD CONSTRAINT pk_subcategories PRIMARY KEY (id);
+ALTER TABLE ONLY transactions.transaction_details
+    ADD CONSTRAINT pk_transaction_details PRIMARY KEY (id);
+ALTER TABLE ONLY transactions.transactions
+    ADD CONSTRAINT pk_transactions PRIMARY KEY (id);
 CREATE UNIQUE INDEX idx_users_email ON identity.users USING btree (email);
 CREATE UNIQUE INDEX idx_categories_owned_by_type_name ON transactions.categories USING btree (owned_by, type, lower((name)::text));
 CREATE UNIQUE INDEX idx_subcategories_category_id_name ON transactions.subcategories USING btree (category_id, lower((name)::text));
+CREATE INDEX idx_transaction_details_subcategory_id ON transactions.transaction_details USING btree (subcategory_id);
+CREATE UNIQUE INDEX idx_transaction_details_transaction_id_line_number ON transactions.transaction_details USING btree (transaction_id, line_number);
+CREATE INDEX idx_transactions_owned_by_transaction_date ON transactions.transactions USING btree (owned_by, transaction_date DESC, created_at DESC) WHERE (deleted_at IS NULL);
 ALTER TABLE ONLY transactions.subcategories
     ADD CONSTRAINT fk_subcategories_category_id FOREIGN KEY (category_id) REFERENCES transactions.categories(id) ON DELETE RESTRICT;
+ALTER TABLE ONLY transactions.transaction_details
+    ADD CONSTRAINT fk_transaction_details_subcategory_id FOREIGN KEY (subcategory_id) REFERENCES transactions.subcategories(id) ON DELETE RESTRICT;
+ALTER TABLE ONLY transactions.transaction_details
+    ADD CONSTRAINT fk_transaction_details_transaction_id FOREIGN KEY (transaction_id) REFERENCES transactions.transactions(id) ON DELETE RESTRICT;
