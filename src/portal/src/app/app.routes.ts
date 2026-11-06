@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 
 import { signedInGuard, signedOutGuard } from './core/auth.guards';
+import { CategoriesPage } from './pages/categories/categories.page';
 import { DashboardPage } from './pages/dashboard/dashboard.page';
 import { NotFoundPage } from './pages/not-found/not-found.page';
 import { SignInPage } from './pages/sign-in/sign-in.page';
@@ -13,6 +14,12 @@ export const routes: Routes = [
   { path: 'sign-in', component: SignInPage, canActivate: [signedOutGuard], title: 'Iniciar sesión · Budget Tracker' },
   { path: 'sign-up', component: SignUpPage, canActivate: [signedOutGuard], title: 'Crear cuenta · Budget Tracker' },
   { path: 'dashboard', component: DashboardPage, canActivate: [signedInGuard], title: 'Panel · Budget Tracker' },
+  {
+    path: 'settings/categories',
+    component: CategoriesPage,
+    canActivate: [signedInGuard],
+    title: 'Categorías · Budget Tracker',
+  },
   // Whether the API and its database are up; open, for local setup (local-setup.md).
   { path: 'status', component: StatusPage, title: 'Estado del sistema · Budget Tracker' },
   { path: '**', component: NotFoundPage, title: 'Página no encontrada · Budget Tracker' },
