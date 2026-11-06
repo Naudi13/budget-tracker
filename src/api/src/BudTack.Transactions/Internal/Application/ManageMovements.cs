@@ -34,6 +34,12 @@ internal sealed partial class ManageMovements(IMovementsRepository repository, I
         return new Page<Transaction>([.. rows.Select(ToContract)], new PageMeta(paging.Page, paging.Limit, total));
     }
 
+    public async Task<Totals> TotalsAsync(Guid owner, CancellationToken cancellationToken)
+    {
+        var (income, expenses) = await repository.TotalsAsync(owner, cancellationToken).ConfigureAwait(false);
+        return new Totals(income, expenses);
+    }
+
     public async Task DeleteAsync(Guid owner, Guid transactionId, CancellationToken cancellationToken)
     {
         if (!await repository.SoftDeleteAsync(owner, transactionId, cancellationToken).ConfigureAwait(false))

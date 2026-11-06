@@ -118,6 +118,25 @@ internal sealed class MovementsRepository(NpgsqlDataSource dataSource) : IMoveme
         return (rows, total);
     }
 
+    public async Task<(decimal Income, decimal Expenses)> TotalsAsync(Guid owner, CancellationToken cancellationToken)
+    {
+        // One pass over the owner's undeleted lines; each line's type is its category's (BR-01).
+        await using var command = dataSource.CreateCommand(
+            """
+            SELECT coalesce(sum(d.amount) FILTER (WHERE c.type = 'income'), 0),
+                   coalesce(sum(d.amount) FILTER (WHERE c.type = 'expense'), 0)
+            FROM transactions.transactions t
+            JOIN transactions.transaction_details d ON d.transaction_id = t.id
+            JOIN transactions.subcategories s ON s.id = d.subcategory_id
+            JOIN transactions.categories c ON c.id = s.category_id
+            WHERE t.owned_by = $1 AND t.deleted_at IS NULL
+            """);
+        command.Parameters.Add(new NpgsqlParameter { Value = owner });
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+        await reader.ReadAsync(cancellationToken).ConfigureAwait(false);
+        return (reader.GetDecimal(0), reader.GetDecimal(1));
+    }
+
     public async Task<bool> SoftDeleteAsync(Guid owner, Guid movementId, CancellationToken cancellationToken)
     {
         await using var command = dataSource.CreateCommand(

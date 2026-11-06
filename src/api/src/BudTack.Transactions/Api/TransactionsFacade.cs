@@ -99,4 +99,11 @@ public sealed class TransactionsFacade
     /// <summary>HU-06: <c>DELETE /transactions/{id}</c>, a soft delete (BR-04); an already deleted one is not found.</summary>
     public Task DeleteTransactionAsync(Guid userId, Guid transactionId, CancellationToken cancellationToken = default) =>
         _movements.DeleteAsync(userId, transactionId, cancellationToken);
+
+    /// <summary>
+    /// HU-08: the owner's income and expense totals, computed on read (BR-03)
+    /// without deleted transactions (BR-04). Called by the dashboard.
+    /// </summary>
+    public Task<Totals> GetTotalsAsync(Guid userId, CancellationToken cancellationToken = default) =>
+        _movements.TotalsAsync(userId, cancellationToken);
 }
