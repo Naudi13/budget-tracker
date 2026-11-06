@@ -17,12 +17,12 @@ Scenario: Set a budget for a category
 Scenario: Reject a period that ends before it starts
   When  I set a budget from 2026-11-30 to 2026-11-01
   Then  it is not saved
-  And   I see "The end date must be after the start date."
+  And   I see "La fecha final debe ser posterior a la inicial."
 
 Scenario: Reject an amount of zero or less
   When  I set a budget of 0 for "Office"
   Then  it is not saved
-  And   I see "Enter an amount above zero."
+  And   I see "Escribe un monto mayor que cero."
 
 Scenario: Change a budget (BR-06)
   Given a budget of 500.00 for "Office" exists
@@ -33,7 +33,7 @@ Scenario: Reject a change that breaks the period (BR-06)
   Given a budget for "Office" from 2026-11-01 to 2026-11-30 exists
   When  I change its end date to 2026-10-15
   Then  the budget keeps its previous dates
-  And   I see "The end date must be after the start date."
+  And   I see "La fecha final debe ser posterior a la inicial."
 
 Scenario: Delete a budget after confirming (BR-06)
   Given a budget for "Office" exists

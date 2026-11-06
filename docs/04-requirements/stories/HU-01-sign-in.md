@@ -18,7 +18,7 @@ Scenario: Reject a sign-up with an email already in use
   Given an account exists with email "owner@example.com"
   When  I sign up again with that email
   Then  the account is not created
-  And   I see "An account already uses this email. Sign in instead."
+  And   I see "Ya existe una cuenta con este correo. Inicia sesión."
 
 Scenario: Sign in with valid credentials
   Given an account exists with email "owner@example.com"
@@ -30,7 +30,7 @@ Scenario: Reject a sign-in with a wrong password
   Given an account exists with email "owner@example.com"
   When  I sign in with that email and a wrong password
   Then  I stay on the sign-in screen
-  And   I see "The email or password is not correct."
+  And   I see "El correo o la contraseña no son correctos."
 
 Scenario: Reject a write without signing in (NFR-05)
   Given I am not signed in

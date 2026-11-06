@@ -18,7 +18,7 @@ Scenario: Block deleting a subcategory in use (BR-05)
   Given the subcategory "Supplies" is referenced by a transaction detail
   When  I delete "Supplies"
   Then  it is not deleted
-  And   I see "'Supplies' is used by recorded transactions. Deactivate it instead."
+  And   I see "'Supplies' está en uso: tiene movimientos, subcategorías o presupuestos. Mejor desactívala."
 
 Scenario: Block deleting a category that owns a subcategory or a budget (BR-05)
   Given the category "Office" owns the subcategory "Supplies"

@@ -29,7 +29,7 @@ Scenario: Exclude deleted transactions (BR-04)
 Scenario: Empty history
   Given no transaction has been recorded
   When  I open the transaction history
-  Then  I see "No transactions yet" and a button to record the first one
+  Then  I see "Aún no has registrado movimientos" and a button to record the first one
 ```
 
 ## Affected module and requirements
