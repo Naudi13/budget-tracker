@@ -30,12 +30,12 @@ Scenario: Reject a transaction mixing income and expense (BR-02)
   Given a transaction being recorded has a line against an income subcategory
   When  I add a line against an expense subcategory and save
   Then  nothing is saved
-  And   I see "A transaction cannot mix income and expense lines."
+  And   I see "Este movimiento ya tiene líneas de ingreso. Quítalas para agregar un gasto, o guárdalas como otro movimiento."
 
 Scenario: Reject an amount of zero or less
   When  I record a line with amount 0
   Then  nothing is saved
-  And   I see "Enter an amount above zero."
+  And   I see "Escribe un monto mayor que cero."
 
 Scenario: Inactive subcategories are not offered (BR-05)
   Given the subcategory "Supplies" is inactive

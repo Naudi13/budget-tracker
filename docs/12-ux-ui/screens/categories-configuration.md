@@ -12,10 +12,10 @@
 
 | State | What the user sees |
 |---|---|
-| Empty | "No categories yet" with one action, *New category* |
+| Empty | "Aún no tienes categorías" with one action, *Nueva categoría* |
 | Loading | List skeleton while categories are requested |
-| Error | "Categories could not be loaded." with *Retry* |
-| Populated | Categories grouped by type, each with its subcategories and an *Active* / *Inactive* label |
+| Error | "No pudimos cargar las categorías." with *Reintentar* |
+| Populated | Categories grouped by type, each with its subcategories and an *Activa* / *Inactiva* label |
 
 ## Delete flow
 
@@ -24,11 +24,11 @@ see the note below the table.
 
 | Step | What the user sees |
 |---|---|
-| 1. Select *Delete* on a category or subcategory | Confirm dialog: "Delete *name*?" |
-| 2a. *Cancel* | Back to the list; nothing changes |
-| 2b. *Delete* — not in use | Removed; success banner "*name* deleted." |
-| 2c. *Delete* — in use | Blocked notice: "*name* is in use — it has transactions, subcategories or budgets. Deactivate it instead." with *Deactivate* as the action |
-| 2d. *Deactivate* | The row shows *Inactive*; it is no longer offered on the new record screen |
+| 1. Select *Eliminar* on a category or subcategory | Confirm dialog: "¿Eliminar *nombre*?" |
+| 2a. *Cancelar* | Back to the list; nothing changes |
+| 2b. *Eliminar* — not in use | Removed; success banner "*nombre* eliminada." |
+| 2c. *Eliminar* — in use | Blocked notice: "*nombre* está en uso: tiene movimientos, subcategorías o presupuestos. Mejor desactívala." with *Desactivar* as the action |
+| 2d. *Desactivar* | The row shows *Inactiva*; it is no longer offered on the new record screen |
 
 Note: the flow document asks only whether a category has *transactions*. BR-05
 blocks a category that *owns a subcategory or a budget* even when none of them
@@ -39,9 +39,9 @@ the delete anyway. The screen follows BR-05.
 
 | Field | Rule | Message shown |
 |---|---|---|
-| Category name | Required; unique within its type | "Enter a name." / "An *income* category named *name* already exists." |
-| Category type | Required: income or expense | "Choose income or expense." |
-| Subcategory name | Required; unique within its category | "Enter a name." / "This category already has a subcategory named *name*." |
+| Category name (*Nombre*) | Required; unique within its type | "Escribe un nombre." / "Ya existe una categoría de *ingreso* llamada *nombre*." |
+| Category type (*Tipo*) | Required: income or expense | "Elige ingreso o gasto." |
+| Subcategory name (*Nombre*) | Required; unique within its category | "Escribe un nombre." / "Esta categoría ya tiene una subcategoría llamada *nombre*." |
 
 ---
 

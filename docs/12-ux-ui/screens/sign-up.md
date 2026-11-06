@@ -9,38 +9,38 @@
 | Wireframe | Inline sketch below — no design file exists for this screen |
 
 ```
-┌──────────────────────────────────────┐
-│       Create your business account   │
-│  Name              [______________]  │
-│  Email             [______________]  │
-│  Password          [______________]  │
-│  Repeat password   [______________]  │
-│                [ Create account ]    │  ← primary button
-│  Already have an account?  Sign in   │  ← link to sign-in.md
-└──────────────────────────────────────┘
+┌──────────────────────────────────────────┐
+│       Crea la cuenta de tu negocio       │
+│  Nombre               [______________]   │
+│  Correo electrónico   [______________]   │
+│  Contraseña           [______________]   │
+│  Repite la contraseña [______________]   │
+│                       [ Crear cuenta ]   │  ← primary button
+│  ¿Ya tienes cuenta?  Inicia sesión       │  ← link to sign-in.md
+└──────────────────────────────────────────┘
 ```
 
 Flow: on `201` from `POST /users` the user is sent to [`sign-in.md`](./sign-in.md)
-with the email filled in and a success banner "Account created. Sign in to start."
+with the email filled in and a success banner "Cuenta creada. Inicia sesión para empezar."
 V1 has one account per business, with no roles.
 
 ## States
 
 | State | What the user sees |
 |---|---|
-| Empty | All fields blank, the cursor in *Name* |
-| Loading | *Create account* disabled and labelled "Creating…" while the request is in flight |
-| Error | `409`: inline under *Email*, "An account already uses this email. Sign in instead." Network or `500`: "The account could not be created. Try again." with *Retry*; the form is not cleared |
+| Empty | All fields blank, the cursor in *Nombre* |
+| Loading | *Crear cuenta* disabled and labelled "Creando…" while the request is in flight |
+| Error | `409`: inline under *Correo electrónico*, "Ya existe una cuenta con este correo. Inicia sesión." Network or `500`: "No pudimos crear la cuenta. Inténtalo de nuevo." with *Reintentar*; the form is not cleared |
 | Populated | The filled form, ready to submit |
 
 ## Validation rules
 
 | Field | Rule | Message shown |
 |---|---|---|
-| Name | Required, at least one character | "Enter your name or your business's name." |
-| Email | Required, a valid email address | "Enter an email, for example owner@example.com." |
-| Password | Required, at least 8 characters (`identity.yaml`) | "Use at least 8 characters." |
-| Repeat password | Equal to *Password*; checked in the browser only | "The two passwords do not match." |
+| Name (*Nombre*) | Required, 1 to 100 characters | "Escribe tu nombre o el de tu negocio." / over 100: "Usa máximo 100 caracteres." |
+| Email (*Correo electrónico*) | Required, a valid email address | "Escribe un correo válido, por ejemplo ana@example.com." |
+| Password (*Contraseña*) | Required, 8 to 128 characters (`identity.yaml`) | "Usa al menos 8 caracteres." / over 128: "Usa máximo 128 caracteres." |
+| Repeat password (*Repite la contraseña*) | Equal to *Contraseña*; checked in the browser only | "Las contraseñas no coinciden." |
 
 ---
 

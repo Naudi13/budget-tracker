@@ -15,6 +15,10 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) | [SemVer](http
   `TC-019`, and HU-07 and its screen extended to match
 
 ### Changed
+- The user interface is in Spanish (Colombia): `12-ux-ui/design-system.md` states
+  the language rule, every screen in `12-ux-ui/screens/` and the Gherkin of HU-01
+  to HU-07 quote their visible texts in Spanish, with *tuteo*. Code, contracts and
+  these documents stay in English
 - `12-ux-ui/design-system.md` takes the BudgetTrack identity manual: the logo and
   its usage rules, and the navy / mint / coral palette, mapped to tokens that
   meet WCAG 2.1 AA (coral action buttons with navy text, navy primary, darkened

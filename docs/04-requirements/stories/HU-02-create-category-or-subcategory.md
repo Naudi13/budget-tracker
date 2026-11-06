@@ -25,7 +25,7 @@ Scenario: Reject a category name duplicated within its type
   Given an expense category named "Office" exists
   When  I create another expense category named "Office"
   Then  it is not created
-  And   I see "An expense category named 'Office' already exists."
+  And   I see "Ya existe una categoría de gasto llamada 'Office'."
 
 Scenario: Allow the same name in the other type
   Given an expense category named "Other" exists
@@ -36,7 +36,7 @@ Scenario: Reject a subcategory name duplicated within its category
   Given the category "Office" owns a subcategory named "Supplies"
   When  I create another subcategory named "Supplies" in "Office"
   Then  it is not created
-  And   I see "'Office' already has a subcategory named 'Supplies'."
+  And   I see "Esta categoría ya tiene una subcategoría llamada 'Supplies'."
 ```
 
 ## Affected module and requirements

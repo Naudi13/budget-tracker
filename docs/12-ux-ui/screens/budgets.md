@@ -10,20 +10,21 @@
 
 ```
 ┌──────────────────────────────────────────────────────────┐
-│ Budgets                              [ New budget ]      │  ← primary button
-│ Category [ All ▾ ]                                       │  ← filter, ?categoryId=
-│ ┌──────────┬────────┬────────────┬────────────┬────────┐ │
-│ │ Category │ Amount │ From       │ To         │        │ │
-│ │ Office   │ 500.00 │ 2026-11-01 │ 2026-11-30 │ ✎  🗑  │ │  ← edit, delete
-│ └──────────┴────────┴────────────┴────────────┴────────┘ │
-│                                   ‹ 1 2 › (20 per page)  │
+│ Presupuestos                    [ Nuevo presupuesto ]    │  ← primary button
+│ Categoría [ Todas ▾ ]                                    │  ← filter, ?categoryId=
+│ ┌───────────┬────────────┬────────────┬────────────┬───┐ │
+│ │ Categoría │ Monto      │ Desde      │ Hasta      │   │ │
+│ │ Oficina   │ $ 500.000  │ 01/11/2026 │ 30/11/2026 │✎🗑│ │  ← edit, delete
+│ └───────────┴────────────┴────────────┴────────────┴───┘ │
+│                                 ‹ 1 2 › (20 por página)  │
 └──────────────────────────────────────────────────────────┘
 ```
 
-*New budget* opens a form with *Category*, *Amount*, *From* and *To*; *Edit*
-opens the same form filled in (`PATCH`). Saving returns to the list with the
-banner "Budget saved." *Delete* opens the confirm dialog "Delete the budget for
-'Office'? This cannot be undone." with a danger *Delete* and a *Cancel* (BR-06).
+*Nuevo presupuesto* opens a form with *Categoría*, *Monto*, *Desde* and *Hasta*;
+*Editar* opens the same form filled in (`PATCH`). Saving returns to the list with
+the banner "Presupuesto guardado." *Eliminar* opens the confirm dialog "¿Eliminar
+el presupuesto de 'Oficina'? No se puede deshacer." with a danger *Eliminar* and a
+*Cancelar* (BR-06).
 V1 only stores the limit: no actual-versus-budget figure is shown
 ([`scope.md`](../../01-context/scope.md)).
 
@@ -31,19 +32,19 @@ V1 only stores the limit: no actual-versus-budget figure is shown
 
 | State | What the user sees |
 |---|---|
-| Empty | "No budgets yet" with one action, *New budget* |
+| Empty | "Aún no tienes presupuestos" with one action, *Nuevo presupuesto* |
 | Loading | Table skeleton while budgets are requested |
-| Error | "Budgets could not be loaded." with *Retry*; a failed save keeps the form filled |
+| Error | "No pudimos cargar los presupuestos." with *Reintentar*; a failed save keeps the form filled |
 | Populated | The paginated table, newest period first |
 
 ## Validation rules
 
 | Field | Rule | Message shown |
 |---|---|---|
-| Category | Required; only active categories are offered (BR-05) | "Choose a category. Inactive categories are not listed." |
-| Amount | Required, strictly greater than zero | "Enter an amount above zero." |
-| From | Required, a valid date | "Choose the first day of the period." |
-| To | Required, after *From* (`422` from the API) | "The end date must be after the start date." |
+| Category (*Categoría*) | Required; only active categories are offered (BR-05) | "Elige una categoría. Las inactivas no aparecen." |
+| Amount (*Monto*) | Required, strictly greater than zero | "Escribe un monto mayor que cero." |
+| From (*Desde*) | Required, a valid date | "Elige el primer día del periodo." |
+| To (*Hasta*) | Required, after *Desde* (`422` from the API) | "La fecha final debe ser posterior a la inicial." |
 
 ---
 
