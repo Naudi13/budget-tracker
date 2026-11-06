@@ -1,0 +1,95 @@
+<div class="heading">
+  <h1 #heading tabindex="-1">Movimientos</h1>
+  @if (state() === 'ready' && rows().length > 0) {
+    <a class="btn-primary" routerLink="/transactions/new">Registrar un movimiento</a>
+  }
+</div>
+
+@if (notice()) {
+  <p class="banner banner-success" role="status">{{ notice() }}</p>
+}
+
+@switch (state()) {
+  @case ('loading') {
+    <div class="skeleton" aria-busy="true" aria-label="Cargando movimientos">
+      <div class="bar"></div>
+      <div class="bar"></div>
+      <div class="bar"></div>
+    </div>
+  }
+  @case ('error') {
+    <div class="banner banner-error" role="alert">
+      <span>No pudimos cargar el historial.</span>
+      <button type="button" class="btn-secondary" (click)="load(page())">Reintentar</button>
+    </div>
+  }
+  @case ('ready') {
+    @if (rows().length === 0) {
+      <div class="panel empty">
+        <p>Aún no has registrado movimientos</p>
+        <a class="btn-primary" routerLink="/transactions/new">Registrar un movimiento</a>
+      </div>
+    } @else {
+      <div class="table-wrap">
+        <table>
+          <caption class="visually-hidden">Movimientos, del más reciente al más antiguo</caption>
+          <thead>
+            <tr>
+              <th scope="col">Fecha</th>
+              <th scope="col">Descripción</th>
+              <th scope="col">Tipo</th>
+              <th scope="col" class="number">Total</th>
+              <th scope="col"><span class="visually-hidden">Acciones</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of rows(); track row.id) {
+              <tr>
+                <!-- A business date has no time: read it as UTC so it never shifts a day. -->
+                <td>{{ row.transactionDate | date: 'd MMM y' : 'UTC' }}</td>
+                <td>{{ row.description }}</td>
+                <td>
+                  <span class="type" [class.income]="row.details[0]?.type === 'income'">{{ typeOf(row) }}</span>
+                </td>
+                <td class="number">{{ totalOf(row) | currency: 'COP' : 'symbol-narrow' : '1.2-2' }}</td>
+                <td class="actions">
+                  <button type="button" class="link danger" (click)="askDelete(row)">
+                    Eliminar <span class="visually-hidden">{{ row.description }}</span>
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      @if (pages() > 1) {
+        <nav class="pager" aria-label="Páginas del historial">
+          <button type="button" class="btn-secondary" [disabled]="page() === 1" (click)="load(page() - 1)">Anterior</button>
+          <span>Página {{ page() }} de {{ pages() }}</span>
+          <button type="button" class="btn-secondary" [disabled]="page() === pages()" (click)="load(page() + 1)">
+            Siguiente
+          </button>
+        </nav>
+      }
+    }
+  }
+}
+
+@if (pending(); as pending) {
+  <div class="backdrop">
+    <div class="dialog" role="alertdialog" aria-modal="true" aria-labelledby="dialog-message">
+      @if (pending.failed) {
+        <p id="dialog-message">No pudimos eliminar el movimiento. Inténtalo de nuevo.</p>
+      } @else {
+        <p id="dialog-message">¿Eliminar este movimiento? Saldrá del historial y de los totales del panel.</p>
+      }
+      <div class="dialog-actions">
+        <button type="button" class="btn-danger" #dialogAction [disabled]="busy()" (click)="confirmDelete()">
+          {{ pending.failed ? 'Reintentar' : 'Eliminar' }}
+        </button>
+        <button type="button" class="btn-secondary" [disabled]="busy()" (click)="closeDialog()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+}
