@@ -7,6 +7,13 @@
   @if (identity.signedIn()) {
     <nav class="nav" aria-label="Principal">
       <a routerLink="/dashboard" routerLinkActive="active" ariaCurrentWhenActive="page">Panel</a>
+      <a
+        routerLink="/transactions"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: false }"
+        ariaCurrentWhenActive="page"
+        >Movimientos</a
+      >
       <a routerLink="/settings/categories" routerLinkActive="active" ariaCurrentWhenActive="page">Categorías</a>
     </nav>
     <button type="button" class="btn-secondary" (click)="signOut()">Cerrar sesión</button>
