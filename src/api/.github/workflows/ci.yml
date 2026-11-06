@@ -40,11 +40,14 @@ jobs:
           --results-directory TestResults
           --coverage --coverage-output-format cobertura --coverage-output unit.cobertura.xml
 
-      - name: coverage gate (NFR-07)
-        run: sh scripts/coverage-gate.sh TestResults/unit.cobertura.xml
+      - name: test (module-integration, with coverage, against a throwaway PostgreSQL)
+        run: >
+          dotnet test --project tests/module-integration -c Release --no-build
+          --results-directory TestResults
+          --coverage --coverage-output-format cobertura --coverage-output module-integration.cobertura.xml
 
-      - name: test (module-integration, against a throwaway PostgreSQL)
-        run: dotnet test --project tests/module-integration -c Release --no-build
+      - name: coverage gate (NFR-07, unit and module-integration together)
+        run: python3 scripts/coverage-gate.py TestResults/unit.cobertura.xml TestResults/module-integration.cobertura.xml
 
       - name: test (end-to-end, against a throwaway PostgreSQL)
         run: dotnet test --project tests/end-to-end -c Release --no-build
@@ -54,7 +57,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: coverage
-          path: TestResults/unit.cobertura.xml
+          path: TestResults/*.cobertura.xml
           if-no-files-found: ignore
 
       - name: package
