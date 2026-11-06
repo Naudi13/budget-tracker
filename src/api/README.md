@@ -34,6 +34,8 @@ signs the bearer tokens.
 | `DELETE`, `PATCH /api/v1/categories/{id}/subcategories/{id}` | Bearer | Delete (`409` while a transaction uses it, BR-05) and activate or deactivate (HU-03) |
 | `GET`, `POST /api/v1/transactions` | Bearer | History newest first without deleted ones (HU-05), and record (HU-04): `201`; `400` per field; `422 BUSINESS_RULE_VIOLATED` when lines mix income and expense (BR-02) or use an inactive subcategory or category (BR-05). Each line's type comes from its category (BR-01); lines come back in the order they were entered |
 | `DELETE /api/v1/transactions/{id}` | Bearer | Soft delete (HU-06, BR-04): `204`, then `404` |
+| `GET`, `POST /api/v1/budgets` | Bearer | List newest period first (`?page`, `?limit`, `?categoryId`) and set (HU-07): `201` with `Location`; `400` per field; `422 BUSINESS_RULE_VIOLATED` when the period does not end after it starts or the category is inactive (TC-007, BR-05) |
+| `PATCH`, `DELETE /api/v1/budgets/{id}` | Bearer | Change only the fields sent, held to the same rules (`200`, `422`), and delete physically (`204`, then `404`) (BR-06, TC-019) |
 | `GET /api/v1/dashboard` | Bearer | HU-08: total income, total expenses and net balance computed on read (BR-03) without deleted transactions (BR-04), and the five most recent transactions |
 | Every other controller action | `Authorization: Bearer <token>` | `401 UNAUTHORIZED` without a valid token (NFR-05) |
 
