@@ -1,54 +1,54 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { CurrencyPipe, DatePipe } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 
+import { Dashboard, DashboardService } from '../../core/dashboard.service';
+import { Transaction, totalOf } from '../../core/transactions.service';
 import { DashboardState } from '../new-record/new-record.page';
 
 /**
- * Where sign-in lands (HU-01) and the entry point to the rest (dashboard.md):
- * Nuevo registro, Historial and Configuración. The KPI tiles and the recent
- * list arrive with HU-08.
+ * HU-08, 12-ux-ui/screens/dashboard.md: the three KPIs and the five most
+ * recent transactions, read in one request, and the entry point to Nuevo
+ * registro, Historial and Configuración. Where sign-in lands (HU-01).
  */
 @Component({
   selector: 'bt-dashboard-page',
-  imports: [RouterLink],
-  template: `
-    <h1>Panel</h1>
-    @if (notice) {
-      <p class="banner" role="status">{{ notice }}</p>
-    }
-    <p>Aquí verás tus ingresos, tus gastos y tus movimientos recientes.</p>
-    <nav class="shortcuts" aria-label="Accesos">
-      <a class="btn-primary" routerLink="/transactions/new">Registrar un movimiento</a>
-      <a routerLink="/transactions">Ver el historial</a>
-      <a routerLink="/settings/categories">Configurar tus categorías</a>
-    </nav>
-  `,
-  styles: `
-    .banner {
-      padding: calc(var(--space-unit) * 3) calc(var(--space-unit) * 4);
-      border: 1px solid currentColor;
-      border-radius: var(--space-unit);
-      color: var(--color-success);
-      background: #eaf8f6;
-    }
-    .shortcuts {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: calc(var(--space-unit) * 5);
-    }
-    .btn-primary {
-      text-decoration: none;
-    }
-  `,
+  imports: [RouterLink, CurrencyPipe, DatePipe],
+  templateUrl: './dashboard.page.html',
+  styleUrl: './dashboard.page.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DashboardPage {
+  private readonly dashboards = inject(DashboardService);
+
+  protected readonly state = signal<'loading' | 'error' | 'ready'>('loading');
+  protected readonly dashboard = signal<Dashboard | null>(null);
   /** "Movimiento guardado." after a new record (new-record.md, Populated state). */
   protected readonly notice: string | null;
+  protected readonly totalOf = totalOf;
 
   constructor() {
     const state = (inject(Router).currentNavigation()?.extras.state ?? history.state ?? {}) as DashboardState;
     this.notice = state.notice ?? null;
+    this.load();
+  }
+
+  protected load(): void {
+    this.state.set('loading');
+    this.dashboards.get().subscribe({
+      next: (dashboard) => {
+        this.dashboard.set(dashboard);
+        this.state.set('ready');
+      },
+      // No partial figures are shown (dashboard.md, Error state).
+      error: () => {
+        this.dashboard.set(null);
+        this.state.set('error');
+      },
+    });
+  }
+
+  protected typeOf(row: Transaction): string {
+    return row.details[0]?.type === 'income' ? 'Ingreso' : 'Gasto';
   }
 }

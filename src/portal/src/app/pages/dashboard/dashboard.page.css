@@ -1,0 +1,179 @@
+.heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: calc(var(--space-unit) * 4);
+  margin-bottom: calc(var(--space-unit) * 6);
+}
+
+.heading h1 {
+  margin: 0;
+}
+
+a.btn-primary {
+  text-decoration: none;
+}
+
+.banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: calc(var(--space-unit) * 3);
+  margin: 0 0 calc(var(--space-unit) * 5);
+  padding: calc(var(--space-unit) * 3) calc(var(--space-unit) * 4);
+  border: 1px solid currentColor;
+  border-radius: var(--space-unit);
+}
+
+.banner-success {
+  color: var(--color-success);
+  background: #eaf8f6;
+}
+
+.banner-error {
+  color: var(--color-danger);
+}
+
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: calc(var(--space-unit) * 4);
+  margin-bottom: calc(var(--space-unit) * 8);
+}
+
+.tile {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--space-unit) * 2);
+  min-height: 96px;
+  padding: calc(var(--space-unit) * 5);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  border-top: 4px solid var(--brand-mint);
+  border-radius: calc(var(--space-unit) * 2);
+}
+
+/* The figure that answers "how am I doing": navy, the brand's principal colour. */
+.balance {
+  border-top-color: var(--brand-navy);
+}
+
+.label {
+  font-size: var(--font-size-caption);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-muted);
+}
+
+.figure {
+  font-size: 1.625rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.figure.income {
+  color: var(--color-success);
+}
+
+.figure.negative {
+  color: var(--color-danger);
+}
+
+.recent {
+  padding: calc(var(--space-unit) * 5);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  border-radius: calc(var(--space-unit) * 2);
+}
+
+.recent-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: calc(var(--space-unit) * 3);
+  margin-bottom: calc(var(--space-unit) * 3);
+}
+
+h2 {
+  margin: 0;
+  font-size: 1.125rem;
+}
+
+.rows {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rows li {
+  display: grid;
+  grid-template-columns: 4.5rem 1fr auto auto;
+  align-items: center;
+  gap: calc(var(--space-unit) * 3);
+  padding: calc(var(--space-unit) * 3) 0;
+  border-top: 1px solid var(--color-border);
+}
+
+.date {
+  color: var(--color-text-muted);
+}
+
+.description {
+  overflow-wrap: anywhere;
+}
+
+.amount {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.type {
+  padding: 0 calc(var(--space-unit) * 2);
+  border-radius: 999px;
+  font-size: var(--font-size-caption);
+  color: var(--color-text-muted);
+  background: #eef0f4;
+}
+
+.type.income {
+  color: var(--color-success);
+  background: #eaf8f6;
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: calc(var(--space-unit) * 2);
+}
+
+.empty p {
+  margin: 0;
+}
+
+.settings {
+  margin-top: calc(var(--space-unit) * 6);
+}
+
+.skeleton {
+  border: 0;
+  background: linear-gradient(90deg, #e9ecf2, #f4f6fa, #e9ecf2);
+}
+
+.list.skeleton {
+  height: 240px;
+  border-radius: calc(var(--space-unit) * 2);
+}
+
+/* Narrow screens: date and description on one line, the amount beside them. */
+@media (max-width: 480px) {
+  .rows li {
+    grid-template-columns: 1fr auto;
+  }
+
+  .type {
+    display: none;
+  }
+}
