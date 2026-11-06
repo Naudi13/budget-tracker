@@ -29,6 +29,15 @@ account (HU-01). `/status` says whether the API and its database are up.
 The token lives in memory and `sessionStorage`. Sign-out discards it; a `401`
 from the API discards it too and goes to sign-in.
 
+## Language
+
+Everything the user sees is in Spanish (`<html lang="es">`, locale `es-CO`
+for dates, numbers and money), written with *tuteo*, as the BudgetTrack
+identity manual asks. Code, names, comments, tests' names and commits stay in
+English. The API's error `message` is English and meant for developers: a
+screen never shows it, it picks its own Spanish text from the `status`, the
+`error` code and the `details[].field` of the response.
+
 ## Layout
 
 | Path | Holds |
