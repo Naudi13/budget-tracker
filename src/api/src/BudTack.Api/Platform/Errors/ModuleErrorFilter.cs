@@ -1,4 +1,5 @@
 using BudTack.Identity.Api.Contracts;
+using TransactionsContracts = BudTack.Transactions.Api.Contracts;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 
@@ -24,6 +25,16 @@ internal sealed class ModuleErrorFilter : IExceptionFilter
                 StatusCodes.Status409Conflict, new ApiError(ErrorCodes.Conflict, e.Message)),
             InvalidCredentialsException e => Respond(
                 StatusCodes.Status401Unauthorized, new ApiError(ErrorCodes.Unauthorized, e.Message)),
+            TransactionsContracts.TransactionsValidationException e => Respond(
+                StatusCodes.Status400BadRequest,
+                new ApiError(
+                    ErrorCodes.ValidationError,
+                    e.Message,
+                    [.. e.Errors.Select(error => new ApiErrorDetail(error.Field, error.Message))])),
+            TransactionsContracts.TransactionsNotFoundException e => Respond(
+                StatusCodes.Status404NotFound, new ApiError(ErrorCodes.NotFound, e.Message)),
+            TransactionsContracts.TransactionsConflictException e => Respond(
+                StatusCodes.Status409Conflict, new ApiError(ErrorCodes.Conflict, e.Message)),
             _ => null,
         };
 

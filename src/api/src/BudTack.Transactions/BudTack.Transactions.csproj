@@ -13,6 +13,9 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.3" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.3" />
+    <!-- The categories, subcategories and, later, transactions and budgets tables. -->
+    <PackageReference Include="Npgsql" Version="10.0.3" />
   </ItemGroup>
 
   <!-- transactions -> identity, through IdentityFacade only (module-catalog.md). -->
