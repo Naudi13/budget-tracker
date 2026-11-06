@@ -24,6 +24,7 @@ account (HU-01). `/status` says whether the API and its database are up.
 |---|---|---|
 | `/sign-in`, `/sign-up` | Signed out only | `12-ux-ui/screens/sign-in.md`, `sign-up.md` |
 | `/dashboard` (and `/`) | Signed in only | Placeholder until HU-08 |
+| `/settings/categories` | Signed in only | `categories-configuration.md`: categories and subcategories (HU-02, HU-03) |
 | `/status` | Anyone | `GET /health` through the proxy |
 
 The token lives in memory and `sessionStorage`. Sign-out discards it; a `401`
