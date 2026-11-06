@@ -33,6 +33,12 @@ internal sealed class ModuleErrorFilter : IExceptionFilter
                     [.. e.Errors.Select(error => new ApiErrorDetail(error.Field, error.Message))])),
             TransactionsContracts.TransactionsNotFoundException e => Respond(
                 StatusCodes.Status404NotFound, new ApiError(ErrorCodes.NotFound, e.Message)),
+            TransactionsContracts.TransactionsBusinessRuleException e => Respond(
+                StatusCodes.Status422UnprocessableEntity,
+                new ApiError(
+                    ErrorCodes.BusinessRuleViolated,
+                    e.Message,
+                    [.. e.Errors.Select(error => new ApiErrorDetail(error.Field, error.Message))])),
             TransactionsContracts.TransactionsConflictException e => Respond(
                 StatusCodes.Status409Conflict, new ApiError(ErrorCodes.Conflict, e.Message)),
             _ => null,

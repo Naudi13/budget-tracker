@@ -10,18 +10,21 @@ namespace BudTack.Transactions.Api;
 /// <see cref="IdentityFacade"/>: a user reads and changes only their own rows,
 /// and anyone else's answer <see cref="TransactionsNotFoundException"/>.
 /// Errors a caller can expect are <see cref="TransactionsValidationException"/>
-/// (400), <see cref="TransactionsNotFoundException"/> (404) and
-/// <see cref="TransactionsConflictException"/> (409).
+/// (400), <see cref="TransactionsNotFoundException"/> (404),
+/// <see cref="TransactionsConflictException"/> (409) and
+/// <see cref="TransactionsBusinessRuleException"/> (422).
 /// </summary>
 public sealed class TransactionsFacade
 {
     private readonly ManageCategories _categories;
+    private readonly ManageMovements _movements;
 
-    internal TransactionsFacade(IdentityFacade identity, ManageCategories categories)
+    internal TransactionsFacade(IdentityFacade identity, ManageCategories categories, ManageMovements movements)
     {
         ArgumentNullException.ThrowIfNull(identity);
         Identity = identity;
         _categories = categories;
+        _movements = movements;
     }
 
     /// <summary>Identity's public API, for what transactions needs to know about users.</summary>
@@ -76,4 +79,24 @@ public sealed class TransactionsFacade
         ArgumentNullException.ThrowIfNull(request);
         return _categories.SetSubcategoryActiveAsync(userId, categoryId, subcategoryId, request, cancellationToken);
     }
+
+    /// <summary>
+    /// HU-04: <c>POST /transactions</c>. Each line's type comes from its subcategory
+    /// (BR-01); lines of both types, or of an inactive subcategory or category, are
+    /// refused with <see cref="TransactionsBusinessRuleException"/> (BR-02, BR-05).
+    /// </summary>
+    public Task<Transaction> RecordTransactionAsync(Guid userId, NewTransaction request, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        return _movements.RecordAsync(userId, request, cancellationToken);
+    }
+
+    /// <summary>HU-05: <c>GET /transactions</c>, newest first, without deleted ones (BR-04).</summary>
+    public Task<Page<Transaction>> ListTransactionsAsync(
+        Guid userId, int? page = null, int? limit = null, CancellationToken cancellationToken = default) =>
+        _movements.ListAsync(userId, page, limit, cancellationToken);
+
+    /// <summary>HU-06: <c>DELETE /transactions/{id}</c>, a soft delete (BR-04); an already deleted one is not found.</summary>
+    public Task DeleteTransactionAsync(Guid userId, Guid transactionId, CancellationToken cancellationToken = default) =>
+        _movements.DeleteAsync(userId, transactionId, cancellationToken);
 }

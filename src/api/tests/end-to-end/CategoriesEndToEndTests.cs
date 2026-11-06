@@ -1,5 +1,4 @@
 using System.Net;
-using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
 using BudTack.EndToEnd.Tests.Support;
@@ -198,17 +197,7 @@ public sealed class CategoriesEndToEndTests(PostgresFixture postgres)
         Assert.Equal(HttpStatusCode.NotFound, notAGuid.StatusCode);
     }
 
-    /// <summary>A client signed in as a brand-new account.</summary>
-    private static async Task<HttpClient> SignedIn(ApiFactory api)
-    {
-        var client = api.CreateClient();
-        var email = $"owner-{Guid.NewGuid():N}@example.com";
-        (await client.PostAsJsonAsync("/api/v1/users", new { name = "Ana", email, password = "Str0ngPass!23" }, Ct)).Dispose();
-        using var session = await client.PostAsJsonAsync("/api/v1/sessions", new { email, password = "Str0ngPass!23" }, Ct);
-        var token = (await Json(session)).RootElement.GetProperty("token").GetString();
-        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-        return client;
-    }
+    private static Task<HttpClient> SignedIn(ApiFactory api) => Accounts.SignedInAsync(api);
 
     private static async Task<JsonDocument> Json(HttpResponseMessage response) =>
         await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync(Ct), cancellationToken: Ct);

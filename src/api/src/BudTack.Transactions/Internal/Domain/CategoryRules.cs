@@ -44,23 +44,7 @@ internal static class CategoryRules
             ? type
             : throw new TransactionsValidationException([new FieldError("type", "must be income or expense")]);
 
-    public static Paging Validate(int? page, int? limit)
-    {
-        var errors = new List<FieldError>();
-        if (page is < 1)
-        {
-            errors.Add(new FieldError("page", "must be 1 or more"));
-        }
-
-        if (limit is < 1 or > Paging.MaxLimit)
-        {
-            errors.Add(new FieldError("limit", $"must be between 1 and {Paging.MaxLimit}"));
-        }
-
-        return errors.Count == 0
-            ? new Paging(page ?? 1, limit ?? Paging.DefaultLimit)
-            : throw new TransactionsValidationException(errors);
-    }
+    public static Paging Validate(int? page, int? limit) => Paging.From(page, limit);
 
     private static string Name(string? raw, List<FieldError> errors)
     {
