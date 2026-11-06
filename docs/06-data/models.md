@@ -31,6 +31,7 @@ erDiagram
     TRANSACTIONS ||--|{ TRANSACTION_DETAILS : contains
     CATEGORIES {
         uuid id PK
+        uuid owned_by
         string name
         string type
         boolean is_active
@@ -43,6 +44,7 @@ erDiagram
     }
     BUDGETS {
         uuid id PK
+        uuid owned_by
         uuid category_id FK
         numeric amount
         date period_start
@@ -50,6 +52,7 @@ erDiagram
     }
     TRANSACTIONS {
         uuid id PK
+        uuid owned_by
         date transaction_date
         string description
         uuid deleted_by FK
@@ -69,6 +72,7 @@ Every foreign key above stays inside `transactions`, `ON DELETE RESTRICT` (**BR-
 
 | Table | Column | Points to | Enforced by |
 |---|---|---|---|
+| `categories`, `transactions`, `budgets` | `owned_by` | `identity.users` | The authenticated user id; every read and write is filtered by it, so one business never sees another's data |
 | Every table in `transactions` (`categories`, `subcategories`, `transactions`, `transaction_details`, `budgets`) | `created_by`, `updated_by` | `identity.users` | `IdentityFacade`, not a database foreign key — see [`database-conventions.md`](./database-conventions.md) |
 | `transactions.transactions` | `deleted_by` | `identity.users` | Same as above; set only together with `deleted_at`, never alone (**BR-04**) |
 
