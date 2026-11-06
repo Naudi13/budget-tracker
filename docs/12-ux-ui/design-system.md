@@ -22,6 +22,19 @@ rising bars in a rounded navy square, beside the word BUDGETTRACK.
 | `--brand-mint` | `#2EC4B6` | Secundario — growth and clarity |
 | `--brand-coral` | `#FF6B35` | Apoyo / acento — energy, used sparingly on actions and details |
 
+## Language
+
+Everything the user sees is in **Spanish (Colombia)**: labels, buttons,
+messages, page titles, and dates, numbers and money formatted for `es-CO`
+(`<html lang="es">`). The tone is the one the identity manual asks for: *tuteo*,
+short sentences, no financial jargon, never blaming the user. Code, names,
+comments, commits, API contracts and these documents stay in English.
+
+The screens quote every visible text in Spanish, as it must appear. The API's
+error `message` is English and for developers; a screen never shows it, it
+picks its own Spanish text from the status, the `error` code and
+`details[].field` of the response.
+
 ## Tokens
 
 ### Color

@@ -15,19 +15,19 @@ the dashboard totals, but is kept in storage.
 
 | State | What the user sees |
 |---|---|
-| Empty | "No transactions recorded yet" with one action, *Record a transaction* |
+| Empty | "Aún no has registrado movimientos" with one action, *Registrar un movimiento* |
 | Loading | Table skeleton while the current page is requested |
-| Error | "The history could not be loaded." with *Retry*; the previous page is not shown as current |
-| Populated | A page of transactions, newest first, with date, description, type, total amount and a *Delete* action per row |
+| Error | "No pudimos cargar el historial." with *Reintentar*; the previous page is not shown as current |
+| Populated | A page of transactions, newest first, with date, description, type, total amount and an *Eliminar* action per row |
 
 ## Delete flow
 
 | Step | What the user sees |
 |---|---|
-| 1. Select *Delete* on a row | A confirm dialog: "Delete this transaction? It will be removed from the history and from the dashboard totals." |
-| 2a. *Cancel* | The dialog closes; the list is unchanged |
-| 2b. *Delete* (danger) | The row leaves the list; a success banner "Transaction deleted." appears; the dashboard recomputes on return |
-| 2c. Request fails | The dialog stays open with "The transaction was not deleted. Try again." |
+| 1. Select *Eliminar* on a row | A confirm dialog: "¿Eliminar este movimiento? Saldrá del historial y de los totales del panel." |
+| 2a. *Cancelar* | The dialog closes; the list is unchanged |
+| 2b. *Eliminar* (danger) | The row leaves the list; a success banner "Movimiento eliminado." appears; the dashboard recomputes on return |
+| 2c. Request fails | The dialog stays open with "No pudimos eliminar el movimiento. Inténtalo de nuevo." |
 
 ## Validation rules
 

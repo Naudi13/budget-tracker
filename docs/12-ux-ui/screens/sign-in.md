@@ -9,13 +9,13 @@
 | Wireframe | Inline sketch below — no design file exists for this screen |
 
 ```
-┌──────────────────────────────────┐
-│          Budget Tracker          │
-│  Email     [__________________]  │
-│  Password  [__________________]  │
-│            [     Sign in      ]  │  ← primary button
-│  No account yet?  Create one     │  ← link to sign-up.md
-└──────────────────────────────────┘
+┌──────────────────────────────────────────┐
+│              Budget Tracker              │
+│  Correo electrónico  [________________]  │
+│  Contraseña          [________________]  │
+│                      [ Iniciar sesión ]  │  ← primary button
+│  ¿Aún no tienes cuenta?  Crea una        │  ← link to sign-up.md
+└──────────────────────────────────────────┘
 ```
 
 Flow: on success the bearer token from `POST /sessions` is kept in memory and in
@@ -26,17 +26,17 @@ redirects here when there is no token or a request answers `401`.
 
 | State | What the user sees |
 |---|---|
-| Empty | Both fields blank, the cursor in *Email* |
-| Loading | *Sign in* disabled and labelled "Signing in…" while the request is in flight |
-| Error | `401`: banner "The email or password is not correct." — the email is kept, the password is cleared. Network or `500`: "We could not sign you in. Try again." with *Retry* |
+| Empty | Both fields blank, the cursor in *Correo electrónico* |
+| Loading | *Iniciar sesión* disabled and labelled "Iniciando sesión…" while the request is in flight |
+| Error | `401`: banner "El correo o la contraseña no son correctos." — the email is kept, the password is cleared. Network or `500`: "No pudimos iniciar tu sesión. Inténtalo de nuevo." with *Reintentar* |
 | Populated | The filled form, ready to submit |
 
 ## Validation rules
 
 | Field | Rule | Message shown |
 |---|---|---|
-| Email | Required, a valid email address | "Enter the email you signed up with, for example owner@example.com." |
-| Password | Required | "Enter your password." |
+| Email (*Correo electrónico*) | Required, a valid email address | "Escribe el correo con el que te registraste, por ejemplo ana@example.com." |
+| Password (*Contraseña*) | Required | "Escribe tu contraseña." |
 
 The message for a wrong password never says which of the two fields is wrong,
 so it does not reveal which emails have an account.
