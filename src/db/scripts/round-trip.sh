@@ -164,8 +164,8 @@ setup="$(category $office $ana Oficina expense)
 transaction() { # id description
   echo "INSERT INTO transactions.transactions (id, owned_by, transaction_date, description, created_by, updated_by) VALUES ('$1', '$ana', DATE '2026-11-06', '$2', '$ana', '$ana');"
 }
-detail() { # transaction subcategory amount
-  echo "INSERT INTO transactions.transaction_details (id, transaction_id, subcategory_id, amount, created_by, updated_by) VALUES (gen_random_uuid(), '$1', '$2', $3, '$ana', '$ana');"
+detail() { # transaction subcategory amount [line_number, 1 by default]
+  echo "INSERT INTO transactions.transaction_details (id, transaction_id, subcategory_id, amount, line_number, created_by, updated_by) VALUES (gen_random_uuid(), '$1', '$2', $3, ${4:-1}, '$ana', '$ana');"
 }
 check "transactions.transactions and .transaction_details exist" \
   "SELECT to_regclass('transactions.transactions') IS NOT NULL AND to_regclass('transactions.transaction_details') IS NOT NULL"
@@ -180,7 +180,7 @@ check "a detail has no type column: it comes from its subcategory's category (BR
   "SELECT NOT EXISTS (SELECT 1 FROM information_schema.columns
     WHERE table_schema = 'transactions' AND table_name = 'transaction_details' AND column_name = 'type')"
 allowed "a transaction with two lines is recorded, amounts kept to the cent" \
-  "$setup $(transaction $movement 'Printer paper') $(detail $movement $paper 85.50) $(detail $movement $paper 0.01)
+  "$setup $(transaction $movement 'Printer paper') $(detail $movement $paper 85.50 1) $(detail $movement $paper 0.01 2)
    DO \$\$ BEGIN
      IF (SELECT sum(amount) FROM transactions.transaction_details) <> 85.51 THEN RAISE EXCEPTION 'sum'; END IF;
    END \$\$;"
@@ -204,6 +204,22 @@ refused "a subcategory a detail uses cannot be deleted (BR-05)" \
   "$setup $(transaction $movement 'x') $(detail $movement $paper 10) DELETE FROM transactions.subcategories WHERE id = '$paper';"
 refused "a transaction with lines cannot be physically deleted (BR-04)" \
   "$setup $(transaction $movement 'x') $(detail $movement $paper 10) DELETE FROM transactions.transactions WHERE id = '$movement';"
+
+# Transactions005_AddDetailLineNumber: the lines keep the order they were entered.
+numbered() { # line_number
+  echo "INSERT INTO transactions.transaction_details (id, transaction_id, subcategory_id, amount, line_number, created_by, updated_by) VALUES (gen_random_uuid(), '$movement', '$paper', 1, $1, '$ana', '$ana');"
+}
+refused "two lines of one transaction cannot share a line number" \
+  "$setup $(transaction $movement 'x') $(numbered 1) $(numbered 1)"
+refused "a line number below 1 is refused" \
+  "$setup $(transaction $movement 'x') $(numbered 0)"
+refused "a line without a number is refused" \
+  "$setup $(transaction $movement 'x')
+   INSERT INTO transactions.transaction_details (id, transaction_id, subcategory_id, amount, created_by, updated_by)
+   VALUES (gen_random_uuid(), '$movement', '$paper', 1, '$ana', '$ana');"
+check "the line order index replaces the plain transaction_id index" \
+  "SELECT to_regclass('transactions.idx_transaction_details_transaction_id_line_number') IS NOT NULL
+      AND to_regclass('transactions.idx_transaction_details_transaction_id') IS NULL"
 
 migrate down
 check "down removes identity.users and every transactions table" \
