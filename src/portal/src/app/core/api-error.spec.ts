@@ -57,13 +57,13 @@ describe('toApiError', () => {
     const result = toApiError(failure(status, '<html>Bad Gateway</html>'));
 
     expect(result.error).toBe(code);
-    expect(result.message).toBe('Something went wrong. Try again.');
+    expect(result.message).toBe('Algo salió mal. Inténtalo de nuevo.');
   });
 
   it('ignores a body whose error code is not one of ours', () => {
     const result = toApiError(failure(500, { error: 'SOMETHING_ELSE', message: 'x' }));
 
     expect(result.error).toBe('INTERNAL_ERROR');
-    expect(result.message).toBe('Something went wrong. Try again.');
+    expect(result.message).toBe('Algo salió mal. Inténtalo de nuevo.');
   });
 });

@@ -5,9 +5,9 @@ import { RouterLink } from '@angular/router';
   selector: 'bt-not-found-page',
   imports: [RouterLink],
   template: `
-    <h1>Page not found</h1>
-    <p>The page you asked for does not exist.</p>
-    <a routerLink="/">Go to the start page</a>
+    <h1>Página no encontrada</h1>
+    <p>La página que buscas no existe.</p>
+    <a routerLink="/">Ir al inicio</a>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

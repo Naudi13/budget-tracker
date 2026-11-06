@@ -51,14 +51,17 @@ export class SignUpPage {
   /** 409: shown inline under Email (sign-up.md, Error state). */
   protected readonly emailInUse = signal(false);
   protected readonly unavailable = signal(false);
-  /** Field messages the API sent back with a 400, should it disagree with the browser. */
-  protected readonly serverErrors = signal<Readonly<Partial<Record<Field, string>>>>({});
+  /**
+   * Fields the API refused with a 400 although the browser accepted them. The
+   * screen shows its own Spanish message for the field, never the API's text.
+   */
+  protected readonly serverErrors = signal<ReadonlySet<Field>>(new Set());
 
   constructor() {
     // Empty state: the cursor starts in Name (sign-up.md).
     afterNextRender(() => this.first().nativeElement.focus());
     this.form.controls.email.valueChanges.subscribe(() => this.emailInUse.set(false));
-    this.form.valueChanges.subscribe(() => this.serverErrors.set({}));
+    this.form.valueChanges.subscribe(() => this.serverErrors.set(new Set()));
   }
 
   protected showError(field: Field): boolean {
@@ -67,7 +70,23 @@ export class SignUpPage {
     if (field === 'repeatPassword') {
       return visited && this.form.hasError('mismatch');
     }
-    return (visited && control.invalid) || this.serverErrors()[field] !== undefined;
+    return (visited && control.invalid) || this.serverErrors().has(field);
+  }
+
+  /** What to fix, in the user's words (Spanish), for a field with an error. */
+  protected message(field: 'name' | 'email' | 'password'): string {
+    const errors = this.form.controls[field].errors;
+    switch (field) {
+      case 'name':
+        return errors?.['maxlength'] ? 'Usa máximo 100 caracteres.' : 'Escribe tu nombre o el de tu negocio.';
+      case 'email':
+        return 'Escribe un correo válido, por ejemplo ana@example.com.';
+      case 'password':
+        if (errors?.['maxlength']) {
+          return 'Usa máximo 128 caracteres.';
+        }
+        return errors ? 'Usa al menos 8 caracteres.' : 'Usa entre 8 y 128 caracteres.';
+    }
   }
 
   protected submit(): void {
@@ -80,7 +99,7 @@ export class SignUpPage {
     this.submitting.set(true);
     this.unavailable.set(false);
     this.emailInUse.set(false);
-    this.serverErrors.set({});
+    this.serverErrors.set(new Set());
     this.identity.signUp({ name, email, password }).subscribe({
       next: (user) => {
         const state: SignInState = { email: user.email, created: true };
@@ -92,7 +111,7 @@ export class SignUpPage {
         if (error.status === 409) {
           this.emailInUse.set(true);
         } else if (error.status === 400 && error.details.length > 0) {
-          this.serverErrors.set(Object.fromEntries(error.details.map((d) => [d.field, d.message])));
+          this.serverErrors.set(new Set(error.details.map((detail) => detail.field as Field)));
         } else {
           this.unavailable.set(true);
         }

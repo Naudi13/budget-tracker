@@ -56,10 +56,10 @@ describe('SignUpPage', () => {
     submit();
 
     const text = page().textContent;
-    expect(text).toContain("Enter your name or your business's name.");
-    expect(text).toContain('Enter an email, for example owner@example.com.');
-    expect(text).toContain('Use at least 8 characters.');
-    expect(text).toContain('The two passwords do not match.');
+    expect(text).toContain('Escribe tu nombre o el de tu negocio.');
+    expect(text).toContain('Escribe un correo válido, por ejemplo ana@example.com.');
+    expect(text).toContain('Usa al menos 8 caracteres.');
+    expect(text).toContain('Las contraseñas no coinciden.');
     backend.expectNone('/api/v1/users');
   });
 
@@ -73,11 +73,11 @@ describe('SignUpPage', () => {
 
   it('notices a mismatch when the password changes after the repeat', () => {
     fill('Ana', 'a@b.co', 'Str0ngPass!23');
-    expect(page().textContent).not.toContain('do not match');
+    expect(page().textContent).not.toContain('no coinciden');
 
     type('sign-up-password', 'Str0ngPass!24');
 
-    expect(page().textContent).toContain('The two passwords do not match.');
+    expect(page().textContent).toContain('Las contraseñas no coinciden.');
   });
 
   it('creates the account, says so while waiting, then goes to sign-in with the email', () => {
@@ -86,7 +86,7 @@ describe('SignUpPage', () => {
     submit();
 
     expect(submitButton().disabled).toBe(true);
-    expect(submitButton().textContent?.trim()).toBe('Creating…');
+    expect(submitButton().textContent?.trim()).toBe('Creando…');
     const request = backend.expectOne('/api/v1/users');
     expect(request.request.body).toEqual({ name: 'Ana Owner', email: 'Owner@Example.com', password: 'Str0ngPass!23' });
     request.flush({ id: '1', name: 'Ana Owner', email: 'owner@example.com' }, { status: 201, statusText: 'Created' });
@@ -104,7 +104,7 @@ describe('SignUpPage', () => {
     fixture.detectChanges();
 
     expect(page().querySelector('#sign-up-email-error')?.textContent).toContain(
-      'An account already uses this email.',
+      'Ya existe una cuenta con este correo.',
     );
     expect(input('sign-up-email').getAttribute('aria-invalid')).toBe('true');
     expect(input('sign-up-name').value).toBe('Ana Owner');
@@ -114,7 +114,7 @@ describe('SignUpPage', () => {
     expect(page().querySelector('#sign-up-email-error')).toBeNull();
   });
 
-  it('shows the API message when it refuses a field the browser accepted', () => {
+  it('marks a field the API refused, in Spanish, never with the API English text', () => {
     fill('Ana Owner', 'owner@example.com', 'Str0ngPass!23');
 
     submit();
@@ -124,7 +124,26 @@ describe('SignUpPage', () => {
     );
     fixture.detectChanges();
 
-    expect(page().querySelector('#sign-up-password-error')?.textContent).toContain('Use at most 128 characters.');
+    const error = page().querySelector('#sign-up-password-error')?.textContent ?? '';
+    expect(error).toContain('Usa entre 8 y 128 caracteres.');
+    expect(error).not.toContain('Use at most');
+  });
+
+  it('says how long a name may be when it is too long', () => {
+    fill('a'.repeat(101), 'owner@example.com', 'Str0ngPass!23');
+
+    submit();
+
+    expect(page().querySelector('#sign-up-name-error')?.textContent).toContain('Usa máximo 100 caracteres.');
+    backend.expectNone('/api/v1/users');
+  });
+
+  it('says how long a password may be when it is too long', () => {
+    fill('Ana', 'owner@example.com', 'p'.repeat(129));
+
+    submit();
+
+    expect(page().querySelector('#sign-up-password-error')?.textContent).toContain('Usa máximo 128 caracteres.');
   });
 
   it('offers a retry when the server fails, without clearing the form', () => {
@@ -135,7 +154,7 @@ describe('SignUpPage', () => {
     fixture.detectChanges();
 
     const alert = page().querySelector('[role=alert]') as HTMLElement;
-    expect(alert.textContent).toContain('The account could not be created. Try again.');
+    expect(alert.textContent).toContain('No pudimos crear la cuenta. Inténtalo de nuevo.');
     expect(input('sign-up-password').value).toBe('Str0ngPass!23');
     (alert.querySelector('button') as HTMLButtonElement).click();
     backend

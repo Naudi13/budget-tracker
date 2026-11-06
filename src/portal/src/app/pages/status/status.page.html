@@ -1,22 +1,22 @@
-<h1>System status</h1>
+<h1>Estado del sistema</h1>
 
 <section class="card" aria-live="polite">
   @switch (state().kind) {
     @case ('loading') {
-      <p>Checking the API…</p>
+      <p>Verificando la API…</p>
     }
     @case ('healthy') {
-      <p class="ok">The API and its database are up.</p>
+      <p class="ok">La API y su base de datos están funcionando.</p>
     }
     @case ('database-down') {
-      <p class="bad">The API answered, but it cannot reach its database.</p>
+      <p class="bad">La API respondió, pero no puede conectarse a su base de datos.</p>
     }
     @case ('unreachable') {
-      <p class="bad">The API did not answer. Is it running on port 3000?</p>
+      <p class="bad">La API no respondió. ¿Está corriendo en el puerto 3000?</p>
     }
   }
 
   <button type="button" class="btn-secondary" (click)="refresh()" [disabled]="state().kind === 'loading'">
-    Check again
+    Verificar de nuevo
   </button>
 </section>

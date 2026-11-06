@@ -52,8 +52,8 @@ describe('SignInPage', () => {
     setUp();
 
     expect(input('sign-in-email').value).toBe('');
-    expect(page().querySelector('label[for=sign-in-email]')?.textContent).toBe('Email');
-    expect(page().querySelector('label[for=sign-in-password]')?.textContent).toBe('Password');
+    expect(page().querySelector('label[for=sign-in-email]')?.textContent).toBe('Correo electrónico');
+    expect(page().querySelector('label[for=sign-in-password]')?.textContent).toBe('Contraseña');
     expect(page().querySelector('[role=status]')).toBeNull();
   });
 
@@ -62,8 +62,8 @@ describe('SignInPage', () => {
 
     submit();
 
-    expect(page().textContent).toContain('Enter the email you signed up with, for example owner@example.com.');
-    expect(page().textContent).toContain('Enter your password.');
+    expect(page().textContent).toContain('Escribe el correo con el que te registraste, por ejemplo ana@example.com.');
+    expect(page().textContent).toContain('Escribe tu contraseña.');
     expect(input('sign-in-email').getAttribute('aria-invalid')).toBe('true');
     backend.expectNone('/api/v1/sessions');
   });
@@ -76,7 +76,7 @@ describe('SignInPage', () => {
     submit();
 
     expect(submitButton().disabled).toBe(true);
-    expect(submitButton().textContent?.trim()).toBe('Signing in…');
+    expect(submitButton().textContent?.trim()).toBe('Iniciando sesión…');
     const request = backend.expectOne('/api/v1/sessions');
     expect(request.request.body).toEqual({ email: 'owner@example.com', password: 'Str0ngPass!23' });
     request.flush({ token: 't.o.k', tokenType: 'Bearer', expiresIn: 3600 }, { status: 201, statusText: 'Created' });
@@ -96,9 +96,10 @@ describe('SignInPage', () => {
       .flush({ error: 'UNAUTHORIZED', message: 'x' }, { status: 401, statusText: 'Unauthorized' });
     fixture.detectChanges();
 
-    expect(page().querySelector('[role=alert]')?.textContent).toContain('The email or password is not correct.');
+    expect(page().querySelector('[role=alert]')?.textContent).toContain('El correo o la contraseña no son correctos.');
     expect(input('sign-in-email').value).toBe('owner@example.com');
     expect(input('sign-in-password').value).toBe('');
+    expect(page().querySelector('#sign-in-password-error')).toBeNull();
     expect(submitButton().disabled).toBe(false);
     expect(navigate).not.toHaveBeenCalled();
   });
@@ -113,7 +114,7 @@ describe('SignInPage', () => {
     fixture.detectChanges();
 
     const alert = page().querySelector('[role=alert]') as HTMLElement;
-    expect(alert.textContent).toContain('We could not sign you in. Try again.');
+    expect(alert.textContent).toContain('No pudimos iniciar tu sesión. Inténtalo de nuevo.');
     (alert.querySelector('button') as HTMLButtonElement).click();
     backend
       .expectOne('/api/v1/sessions')
@@ -124,7 +125,7 @@ describe('SignInPage', () => {
   it('welcomes a new account with its email filled in', () => {
     setUp({ email: 'new@example.com', created: true });
 
-    expect(page().querySelector('[role=status]')?.textContent).toContain('Account created. Sign in to start.');
+    expect(page().querySelector('[role=status]')?.textContent).toContain('Cuenta creada. Inicia sesión para empezar.');
     expect(input('sign-in-email').value).toBe('new@example.com');
   });
 
@@ -139,7 +140,7 @@ describe('SignInPage', () => {
     fixture.detectChanges();
 
     expect(page().querySelector('[role=status]')).toBeNull();
-    expect(page().querySelector('[role=alert]')?.textContent).toContain('The email or password is not correct.');
+    expect(page().querySelector('[role=alert]')?.textContent).toContain('El correo o la contraseña no son correctos.');
   });
 
   it('links to sign-up', () => {

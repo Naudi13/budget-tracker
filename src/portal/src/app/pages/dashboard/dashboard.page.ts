@@ -7,8 +7,8 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 @Component({
   selector: 'bt-dashboard-page',
   template: `
-    <h1>Dashboard</h1>
-    <p>You are signed in. Income, expenses and your recent transactions will appear here.</p>
+    <h1>Panel</h1>
+    <p>Ya iniciaste sesión. Aquí verás tus ingresos, tus gastos y tus movimientos recientes.</p>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

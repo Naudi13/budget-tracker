@@ -63,7 +63,7 @@ describe('identity in the portal', () => {
       const call = firstValueFrom(TestBed.inject(IdentityService).signIn({ email: 'a@b.co', password: 'x' }));
       backend
         .expectOne('/api/v1/sessions')
-        .flush({ error: 'UNAUTHORIZED', message: 'The email or password is not correct.' }, { status: 401, statusText: 'Unauthorized' });
+        .flush({ error: 'UNAUTHORIZED', message: 'El correo o la contraseña no son correctos.' }, { status: 401, statusText: 'Unauthorized' });
 
       const failure = (await call.catch((e: unknown) => e)) as ApiError;
       expect(failure.status).toBe(401);
