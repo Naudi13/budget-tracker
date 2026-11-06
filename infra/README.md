@@ -58,6 +58,27 @@ Both images carry the same `APP_TAG` (`10-devops/ci-cd.md`). `verify-stack.sh`
 checks `/`, a deep link, `/health` and `/api/` through the portal, that the API
 publishes no port, and that the migrations created the module schemas.
 
+### Demo data
+
+For a demo, fill the running application with one business, through the API:
+
+```bash
+sh scripts/seed-demo.sh
+```
+
+It creates the account below (local only; override with `DEMO_EMAIL`,
+`DEMO_PASSWORD` and `DEMO_NAME`), a stationery shop with income and expense
+categories, 24 transactions from September to November 2026 (some with several
+lines, so the history has two pages), an inactive category still seen in the
+history (BR-05), and budgets for October to December.
+
+| Email | Password |
+|---|---|
+| `demo@budgettracker.test` | `Demo-2026!` |
+
+Run it once: if the account exists it changes nothing. To start over, recreate
+the volume with `docker compose --profile app down --volumes`, then `up` again.
+
 Without `--profile app`, `docker compose up -d --wait` starts PostgreSQL alone,
 as before. Stop everything with `docker compose --profile app down`; add
 `--volumes` to start from an empty database.
