@@ -217,6 +217,41 @@ refused "a line without a number is refused" \
   "$setup $(transaction $movement 'x')
    INSERT INTO transactions.transaction_details (id, transaction_id, subcategory_id, amount, created_by, updated_by)
    VALUES (gen_random_uuid(), '$movement', '$paper', 1, '$ana', '$ana');"
+# Transactions006_CreateBudgets (HU-07).
+budget() { # amount start end
+  echo "INSERT INTO transactions.budgets (id, owned_by, category_id, amount, period_start, period_end, created_by, updated_by) VALUES (gen_random_uuid(), '$ana', '$office', $1, DATE '$2', DATE '$3', '$ana', '$ana');"
+}
+office_only="$(category $office $ana Oficina expense)"
+check "transactions.budgets exists, and the app role may read and write it" \
+  "SELECT to_regclass('transactions.budgets') IS NOT NULL
+      AND has_table_privilege('bud_tack_app', 'transactions.budgets', 'SELECT, INSERT, UPDATE, DELETE')
+      AND NOT has_table_privilege('bud_tack_app', 'transactions.budgets', 'TRUNCATE')"
+check "a budget's key to its category is ON DELETE RESTRICT (BR-05)" \
+  "SELECT confdeltype = 'r' FROM pg_constraint WHERE conname = 'fk_budgets_category_id'"
+allowed "a budget of 500.00 for November is stored" \
+  "$office_only $(budget 500.00 2026-11-01 2026-11-30)"
+refused "a period that ends before it starts is refused" \
+  "$office_only $(budget 500 2026-11-30 2026-11-01)"
+refused "a period that ends the day it starts is refused" \
+  "$office_only $(budget 500 2026-11-01 2026-11-01)"
+refused "an amount of zero is refused" \
+  "$office_only $(budget 0 2026-11-01 2026-11-30)"
+refused "an amount of a trillion or more is refused" \
+  "$office_only $(budget 1000000000000.00 2026-11-01 2026-11-30)"
+refused "a change that breaks the period is refused, keeping the row (BR-06)" \
+  "$office_only $(budget 500 2026-11-01 2026-11-30) UPDATE transactions.budgets SET period_end = DATE '2026-10-15';"
+allowed "a change of amount is kept, and a budget can be deleted physically (BR-06)" \
+  "$office_only $(budget 500 2026-11-01 2026-11-30) UPDATE transactions.budgets SET amount = 650;
+   DELETE FROM transactions.budgets;
+   DO \$\$ BEGIN IF EXISTS (SELECT 1 FROM transactions.budgets) THEN RAISE EXCEPTION 'kept'; END IF; END \$\$;"
+refused "a category that owns a budget cannot be deleted (BR-05)" \
+  "$office_only $(budget 500 2026-11-01 2026-11-30) DELETE FROM transactions.categories WHERE id = '$office';"
+allowed "once its budget is deleted, the category can be (TC-019)" \
+  "$office_only $(budget 500 2026-11-01 2026-11-30) DELETE FROM transactions.budgets; DELETE FROM transactions.categories WHERE id = '$office';"
+refused "a budget for a category that does not exist is refused" \
+  "INSERT INTO transactions.budgets (id, owned_by, category_id, amount, period_start, period_end, created_by, updated_by)
+   VALUES (gen_random_uuid(), '$ana', '00000000-0000-7000-8000-0000000000ff', 1, DATE '2026-11-01', DATE '2026-11-30', '$ana', '$ana');"
+
 check "the line order index replaces the plain transaction_id index" \
   "SELECT to_regclass('transactions.idx_transaction_details_transaction_id_line_number') IS NOT NULL
       AND to_regclass('transactions.idx_transaction_details_transaction_id') IS NULL"
@@ -225,7 +260,7 @@ migrate down
 check "down removes identity.users and every transactions table" \
   "SELECT to_regclass('identity.users') IS NULL AND to_regclass('transactions.categories') IS NULL
       AND to_regclass('transactions.subcategories') IS NULL AND to_regclass('transactions.transactions') IS NULL
-      AND to_regclass('transactions.transaction_details') IS NULL"
+      AND to_regclass('transactions.transaction_details') IS NULL AND to_regclass('transactions.budgets') IS NULL"
 check "down removes both schemas" \
   "SELECT count(*) = 0 FROM pg_namespace WHERE nspname IN ('identity', 'transactions')"
 
