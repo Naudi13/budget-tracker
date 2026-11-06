@@ -87,6 +87,18 @@ public sealed class ManageMovementsTests
     }
 
     [Fact]
+    public async Task TotalsAsync_addsIncomeAndExpenses_withoutDeletedOnes() // BR-03, BR-04
+    {
+        await Record(new DateOnly(2026, 11, 1), "Sale", (Sales, 1000m));
+        await Record(new DateOnly(2026, 11, 2), "Paper", (Supplies, 300m), (Supplies, 50m));
+        var deleted = await Record(new DateOnly(2026, 11, 3), "Mistake", (Supplies, 100m));
+        await _movements.DeleteAsync(Ana, deleted.Id, Ct);
+
+        Assert.Equal(new Totals(1000m, 350m), await _movements.TotalsAsync(Ana, Ct));
+        Assert.Equal(new Totals(0m, 0m), await _movements.TotalsAsync(Leo, Ct));
+    }
+
+    [Fact]
     public async Task DeleteAsync_twice_isNotFoundTheSecondTime() // HU-06
     {
         var transaction = await Record(new DateOnly(2026, 11, 6), "Printer paper", (Supplies, 85.50m));

@@ -35,6 +35,14 @@ internal sealed class InMemoryMovements : IMovementsRepository
         return Task.FromResult<(IReadOnlyList<Movement>, long)>(([.. all.Skip(paging.Offset).Take(paging.Limit)], all.Count));
     }
 
+    public Task<(decimal Income, decimal Expenses)> TotalsAsync(Guid owner, CancellationToken cancellationToken)
+    {
+        var lines = Movements.Where(m => m.OwnedBy == owner && !Deleted.Contains(m.Id)).SelectMany(m => m.Lines).ToList();
+        return Task.FromResult((
+            lines.Where(l => l.Type == "income").Sum(l => l.Amount),
+            lines.Where(l => l.Type == "expense").Sum(l => l.Amount)));
+    }
+
     public Task<bool> SoftDeleteAsync(Guid owner, Guid movementId, CancellationToken cancellationToken) =>
         Task.FromResult(Movements.Exists(m => m.Id == movementId && m.OwnedBy == owner) && Deleted.Add(movementId));
 }
