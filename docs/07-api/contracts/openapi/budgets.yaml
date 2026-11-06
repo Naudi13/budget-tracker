@@ -144,7 +144,12 @@ components:
       properties:
         id: { type: string, format: uuid }
         categoryId: { type: string, format: uuid }
-        amount: { type: number, exclusiveMinimum: 0 }
+        amount:
+          type: number
+          exclusiveMinimum: 0
+          maximum: 999999999999.99
+          multipleOf: 0.01
+          description: At most two decimal places, like a transaction's amount; stored as numeric(14,2).
         periodStart: { type: string, format: date }
         periodEnd: { type: string, format: date }
 
@@ -153,7 +158,12 @@ components:
       required: [categoryId, amount, periodStart, periodEnd]
       properties:
         categoryId: { type: string, format: uuid }
-        amount: { type: number, exclusiveMinimum: 0 }
+        amount:
+          type: number
+          exclusiveMinimum: 0
+          maximum: 999999999999.99
+          multipleOf: 0.01
+          description: At most two decimal places, like a transaction's amount; stored as numeric(14,2).
         periodStart: { type: string, format: date }
         periodEnd: { type: string, format: date }
 
@@ -163,7 +173,12 @@ components:
       description: Only the fields sent are changed.
       properties:
         categoryId: { type: string, format: uuid }
-        amount: { type: number, exclusiveMinimum: 0 }
+        amount:
+          type: number
+          exclusiveMinimum: 0
+          maximum: 999999999999.99
+          multipleOf: 0.01
+          description: At most two decimal places, like a transaction's amount; stored as numeric(14,2).
         periodStart: { type: string, format: date }
         periodEnd: { type: string, format: date }
 

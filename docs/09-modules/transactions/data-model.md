@@ -8,7 +8,7 @@
 | `transactions.subcategories` | `transactions` | Subcategory | category_id, name, is_active |
 | `transactions.transactions` | `transactions` | Transaction | owned_by, transaction_date, description, deleted_at |
 | `transactions.transaction_details` | `transactions` | Transaction detail | transaction_id, line_number (the order the lines were entered, from 1), subcategory_id, amount (`numeric(14,2)`, above zero) |
-| `transactions.budgets` | `transactions` | Budget | owned_by, category_id, amount, period_start, period_end |
+| `transactions.budgets` | `transactions` | Budget | owned_by, category_id, amount (`numeric(14,2)`, above zero), period_start, period_end (after period_start) |
 
 Schema-per-module and naming rules live in
 [`../../06-data/database-conventions.md`](../../06-data/database-conventions.md).
