@@ -6,6 +6,9 @@
   background: var(--color-bg-surface);
   border-radius: calc(var(--space-unit) * 2);
   border: 1px solid var(--color-border);
+  /* The secondary colour, as a band across the top. */
+  border-top: 4px solid var(--brand-mint);
+  box-shadow: 0 1px 2px rgb(27 42 74 / 8%);
 }
 
 h1 {
@@ -72,6 +75,7 @@ input[aria-invalid='true'] {
 
 .banner-success {
   color: var(--color-success);
+  background: #eaf8f6;
 }
 
 .banner-error {

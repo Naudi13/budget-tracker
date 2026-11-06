@@ -1,7 +1,9 @@
 <a class="skip-link" href="#main">Skip to content</a>
 
 <header class="header">
-  <a class="brand" routerLink="/">Budget Tracker</a>
+  <a class="brand" routerLink="/">
+    <img src="brand/logo-reverse.png" alt="BudgetTrack" width="436" height="96" />
+  </a>
   @if (identity.signedIn()) {
     <button type="button" class="btn-secondary" (click)="signOut()">Sign out</button>
   }

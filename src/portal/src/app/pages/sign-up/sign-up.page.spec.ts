@@ -63,6 +63,14 @@ describe('SignUpPage', () => {
     backend.expectNone('/api/v1/users');
   });
 
+  it('shows no error when a field only loses focus, so the button does not move under the pointer', () => {
+    input('sign-up-name').dispatchEvent(new Event('focus'));
+    input('sign-up-name').dispatchEvent(new Event('blur'));
+    fixture.detectChanges();
+
+    expect(page().querySelectorAll('.field-error').length).toBe(0);
+  });
+
   it('notices a mismatch when the password changes after the repeat', () => {
     fill('Ana', 'a@b.co', 'Str0ngPass!23');
     expect(page().textContent).not.toContain('do not match');
