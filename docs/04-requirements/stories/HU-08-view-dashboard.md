@@ -33,7 +33,7 @@ Scenario: Empty dashboard
   Given no transaction has been recorded
   When  I open the dashboard
   Then  the three KPIs show 0.00
-  And   the recent list says "No transactions yet" with a button to record one
+  And   the recent list says "Aún no tienes movimientos" with a button to record one
 ```
 
 ## Affected module and requirements
