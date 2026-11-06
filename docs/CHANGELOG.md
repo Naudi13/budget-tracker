@@ -15,6 +15,8 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) | [SemVer](http
   `TC-019`, and HU-07 and its screen extended to match
 
 ### Changed
+- `transactions.yaml` bounds a transaction: a description of 1 to 200 characters, and
+  amounts above zero with at most two decimals and below 10^12, stored as `numeric(14,2)`
 - Data belongs to its owner: `owned_by` on `transactions.categories`, `.transactions`
   and `.budgets` (subcategories and details through their parent), every read and
   write filtered by the signed-in user; category and subcategory names are unique
