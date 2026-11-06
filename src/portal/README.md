@@ -27,6 +27,7 @@ account (HU-01). `/status` says whether the API and its database are up.
 | `/transactions` | Signed in only | `transaction-history.md`: history newest first, 20 per page, soft delete (HU-05, HU-06) |
 | `/transactions/new` | Signed in only | `new-record.md`: a transaction with one or more lines, BR-02 warned before saving (HU-04) |
 | `/settings/categories` | Signed in only | `categories-configuration.md`: categories and subcategories (HU-02, HU-03) |
+| `/settings/budgets` | Signed in only | `budgets.md`: budgets newest period first, filtered by category, set, edited and deleted (HU-07) |
 | `/status` | Anyone | `GET /health` through the proxy |
 
 The token lives in memory and `sessionStorage`. Sign-out discards it; a `401`
