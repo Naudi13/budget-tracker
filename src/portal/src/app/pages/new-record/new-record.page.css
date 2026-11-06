@@ -1,0 +1,128 @@
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--space-unit) * 5);
+  padding: calc(var(--space-unit) * 6);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  border-top: 4px solid var(--brand-mint);
+  border-radius: calc(var(--space-unit) * 2);
+}
+
+.panel p {
+  margin: 0;
+}
+
+.row-2,
+.line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: calc(var(--space-unit) * 4);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-unit);
+}
+
+.grow {
+  flex: 1;
+  min-width: 200px;
+}
+
+.amount {
+  width: 160px;
+}
+
+label,
+legend {
+  font-weight: 600;
+}
+
+input,
+select {
+  padding: calc(var(--space-unit) * 2) calc(var(--space-unit) * 3);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--space-unit);
+  font: inherit;
+  color: var(--color-text);
+  background: var(--color-bg-surface);
+}
+
+input[aria-invalid='true'],
+select[aria-invalid='true'] {
+  border-color: var(--color-danger);
+}
+
+.field-error {
+  margin: 0;
+  font-size: var(--font-size-caption);
+  color: var(--color-danger);
+}
+
+.lines {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: calc(var(--space-unit) * 4);
+  margin: 0;
+  padding: calc(var(--space-unit) * 4) 0 0;
+  border: 0;
+  border-top: 1px solid var(--color-border);
+}
+
+.line {
+  width: 100%;
+}
+
+.remove {
+  align-self: flex-end;
+  margin-bottom: calc(var(--space-unit) * 2);
+}
+
+.link {
+  padding: var(--space-unit);
+  border: 0;
+  background: none;
+  font: inherit;
+  color: var(--color-primary);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.link.danger {
+  color: var(--color-danger);
+}
+
+.total {
+  font-size: 1.125rem;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--space-unit) * 5);
+}
+
+.banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: calc(var(--space-unit) * 3);
+  margin: 0 0 calc(var(--space-unit) * 4);
+  padding: calc(var(--space-unit) * 3) calc(var(--space-unit) * 4);
+  border-radius: var(--space-unit);
+  border: 1px solid currentColor;
+}
+
+.banner-error {
+  color: var(--color-danger);
+}
+
+.skeleton .bar {
+  height: 240px;
+  border-radius: calc(var(--space-unit) * 2);
+  background: linear-gradient(90deg, #e9ecf2, #f4f6fa, #e9ecf2);
+}

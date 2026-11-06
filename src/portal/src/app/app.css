@@ -6,8 +6,10 @@
 
 .header {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
+  gap: calc(var(--space-unit) * 3) calc(var(--space-unit) * 6);
   padding: calc(var(--space-unit) * 4) calc(var(--space-unit) * 6);
   background: var(--brand-navy);
   /* A thin mint line, the secondary colour, under the navy band. */
@@ -36,7 +38,19 @@
   display: flex;
   gap: calc(var(--space-unit) * 5);
   margin-left: auto;
-  margin-right: calc(var(--space-unit) * 6);
+}
+
+.header .btn-secondary {
+  white-space: nowrap;
+}
+
+/* Narrow screens: logo and Cerrar sesión on the first row, the menu below. */
+@media (max-width: 640px) {
+  .nav {
+    order: 3;
+    width: 100%;
+    margin-left: 0;
+  }
 }
 
 .nav a {

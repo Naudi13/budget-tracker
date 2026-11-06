@@ -1,0 +1,119 @@
+<h1>Nuevo registro</h1>
+
+@if (failure()) {
+  <div class="banner banner-error" role="alert">
+    <span>No pudimos guardar el registro. Tus datos siguen aquí, inténtalo de nuevo.</span>
+    <button type="button" class="btn-secondary" (click)="save()">Reintentar</button>
+  </div>
+}
+
+@switch (optionsState()) {
+  @case ('loading') {
+    <div class="skeleton" aria-busy="true" aria-label="Cargando subcategorías"><div class="bar"></div></div>
+  }
+  @case ('error') {
+    <div class="banner banner-error" role="alert">
+      <span>No pudimos cargar tus subcategorías.</span>
+      <button type="button" class="btn-secondary" (click)="loadOptions()">Reintentar</button>
+    </div>
+  }
+  @case ('ready') {
+    @if (options().length === 0 && !formShown()) {
+      <div class="panel">
+        <p>Para registrar un movimiento necesitas al menos una subcategoría activa.</p>
+        <a routerLink="/settings/categories">Configura tus categorías</a>
+      </div>
+    } @else {
+      <form class="panel" [formGroup]="form" (ngSubmit)="save()" novalidate>
+        <div class="row-2">
+          <div class="field">
+            <label for="record-date">Fecha</label>
+            <input
+              id="record-date"
+              type="date"
+              formControlName="transactionDate"
+              [attr.aria-invalid]="dateError() !== null"
+              [attr.aria-describedby]="dateError() ? 'record-date-error' : null"
+            />
+            @if (dateError(); as message) {
+              <p id="record-date-error" class="field-error">{{ message }}</p>
+            }
+          </div>
+          <div class="field grow">
+            <label for="record-description">Descripción</label>
+            <input
+              id="record-description"
+              type="text"
+              formControlName="description"
+              maxlength="200"
+              [attr.aria-invalid]="descriptionError() !== null"
+              [attr.aria-describedby]="descriptionError() ? 'record-description-error' : null"
+            />
+            @if (descriptionError(); as message) {
+              <p id="record-description-error" class="field-error">{{ message }}</p>
+            }
+          </div>
+        </div>
+
+        <fieldset class="lines" formArrayName="lines">
+          <legend>Líneas</legend>
+          @for (line of lines.controls; track line; let i = $index) {
+            <div class="line" [formGroupName]="i">
+              <div class="field grow">
+                <label [for]="'line-sub-' + i">Subcategoría</label>
+                <select
+                  [id]="'line-sub-' + i"
+                  formControlName="subcategoryId"
+                  [attr.aria-invalid]="subcategoryError(i) !== null"
+                  [attr.aria-describedby]="subcategoryError(i) ? 'line-sub-error-' + i : null"
+                >
+                  <option value="">Elige una subcategoría</option>
+                  @for (group of groups(); track group.label) {
+                    <optgroup [label]="group.label">
+                      @for (option of group.options; track option.id) {
+                        <option [value]="option.id">{{ option.name }}</option>
+                      }
+                    </optgroup>
+                  }
+                </select>
+                @if (subcategoryError(i); as message) {
+                  <p [id]="'line-sub-error-' + i" class="field-error">{{ message }}</p>
+                }
+              </div>
+              <div class="field amount">
+                <label [for]="'line-amount-' + i">Monto</label>
+                <input
+                  [id]="'line-amount-' + i"
+                  type="text"
+                  inputmode="decimal"
+                  formControlName="amount"
+                  placeholder="0,00"
+                  [attr.aria-invalid]="amountError(i) !== null"
+                  [attr.aria-describedby]="amountError(i) ? 'line-amount-error-' + i : null"
+                />
+                @if (amountError(i); as message) {
+                  <p [id]="'line-amount-error-' + i" class="field-error">{{ message }}</p>
+                }
+              </div>
+              @if (lines.length > 1) {
+                <button type="button" class="link danger remove" (click)="removeLine(i)">
+                  Quitar <span class="visually-hidden">la línea {{ i + 1 }}</span>
+                </button>
+              }
+            </div>
+          }
+          <button type="button" class="btn-secondary" (click)="addLine()">Agregar línea</button>
+        </fieldset>
+
+        <p class="total">Total: <strong>{{ total() | currency: 'COP' : 'symbol-narrow' : '1.2-2' }}</strong></p>
+
+        <div class="actions">
+          <button type="submit" class="btn-primary" [disabled]="saving()">
+            {{ saving() ? 'Guardando…' : 'Guardar' }}
+          </button>
+          <a routerLink="/dashboard">Cancelar</a>
+        </div>
+      </form>
+    }
+  }
+}

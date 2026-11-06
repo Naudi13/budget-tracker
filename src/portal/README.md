@@ -24,6 +24,8 @@ account (HU-01). `/status` says whether the API and its database are up.
 |---|---|---|
 | `/sign-in`, `/sign-up` | Signed out only | `12-ux-ui/screens/sign-in.md`, `sign-up.md` |
 | `/dashboard` (and `/`) | Signed in only | Placeholder until HU-08 |
+| `/transactions` | Signed in only | `transaction-history.md`: history newest first, 20 per page, soft delete (HU-05, HU-06) |
+| `/transactions/new` | Signed in only | `new-record.md`: a transaction with one or more lines, BR-02 warned before saving (HU-04) |
 | `/settings/categories` | Signed in only | `categories-configuration.md`: categories and subcategories (HU-02, HU-03) |
 | `/status` | Anyone | `GET /health` through the proxy |
 

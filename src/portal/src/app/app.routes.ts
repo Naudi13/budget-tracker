@@ -3,6 +3,8 @@ import { Routes } from '@angular/router';
 import { signedInGuard, signedOutGuard } from './core/auth.guards';
 import { CategoriesPage } from './pages/categories/categories.page';
 import { DashboardPage } from './pages/dashboard/dashboard.page';
+import { HistoryPage } from './pages/history/history.page';
+import { NewRecordPage } from './pages/new-record/new-record.page';
 import { NotFoundPage } from './pages/not-found/not-found.page';
 import { SignInPage } from './pages/sign-in/sign-in.page';
 import { SignUpPage } from './pages/sign-up/sign-up.page';
@@ -14,6 +16,18 @@ export const routes: Routes = [
   { path: 'sign-in', component: SignInPage, canActivate: [signedOutGuard], title: 'Iniciar sesión · Budget Tracker' },
   { path: 'sign-up', component: SignUpPage, canActivate: [signedOutGuard], title: 'Crear cuenta · Budget Tracker' },
   { path: 'dashboard', component: DashboardPage, canActivate: [signedInGuard], title: 'Panel · Budget Tracker' },
+  {
+    path: 'transactions',
+    component: HistoryPage,
+    canActivate: [signedInGuard],
+    title: 'Movimientos · Budget Tracker',
+  },
+  {
+    path: 'transactions/new',
+    component: NewRecordPage,
+    canActivate: [signedInGuard],
+    title: 'Nuevo registro · Budget Tracker',
+  },
   {
     path: 'settings/categories',
     component: CategoriesPage,
