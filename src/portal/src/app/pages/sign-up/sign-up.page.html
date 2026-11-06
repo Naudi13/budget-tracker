@@ -1,16 +1,16 @@
 <section class="auth-card" aria-labelledby="sign-up-title">
-  <h1 id="sign-up-title">Create your business account</h1>
+  <h1 id="sign-up-title">Crea la cuenta de tu negocio</h1>
 
   @if (unavailable()) {
     <div class="banner banner-error" role="alert">
-      <span>The account could not be created. Try again.</span>
-      <button type="button" class="btn-secondary" (click)="submit()">Retry</button>
+      <span>No pudimos crear la cuenta. Inténtalo de nuevo.</span>
+      <button type="button" class="btn-secondary" (click)="submit()">Reintentar</button>
     </div>
   }
 
   <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
     <div class="field">
-      <label for="sign-up-name">Name</label>
+      <label for="sign-up-name">Nombre</label>
       <input
         id="sign-up-name"
         type="text"
@@ -21,12 +21,12 @@
         [attr.aria-describedby]="showError('name') ? 'sign-up-name-error' : null"
       />
       @if (showError('name')) {
-        <p id="sign-up-name-error" class="field-error">Enter your name or your business's name.</p>
+        <p id="sign-up-name-error" class="field-error">{{ message('name') }}</p>
       }
     </div>
 
     <div class="field">
-      <label for="sign-up-email">Email</label>
+      <label for="sign-up-email">Correo electrónico</label>
       <input
         id="sign-up-email"
         type="email"
@@ -37,15 +37,15 @@
       />
       @if (emailInUse()) {
         <p id="sign-up-email-error" class="field-error" role="alert">
-          An account already uses this email. <a routerLink="/sign-in">Sign in instead.</a>
+          Ya existe una cuenta con este correo. <a routerLink="/sign-in">Inicia sesión.</a>
         </p>
       } @else if (showError('email')) {
-        <p id="sign-up-email-error" class="field-error">Enter an email, for example owner&#64;example.com.</p>
+        <p id="sign-up-email-error" class="field-error">{{ message('email') }}</p>
       }
     </div>
 
     <div class="field">
-      <label for="sign-up-password">Password</label>
+      <label for="sign-up-password">Contraseña</label>
       <input
         id="sign-up-password"
         type="password"
@@ -55,16 +55,14 @@
         [attr.aria-describedby]="showError('password') ? 'sign-up-password-error' : 'sign-up-password-hint'"
       />
       @if (showError('password')) {
-        <p id="sign-up-password-error" class="field-error">
-          {{ serverErrors().password ?? 'Use at least 8 characters.' }}
-        </p>
+        <p id="sign-up-password-error" class="field-error">{{ message('password') }}</p>
       } @else {
-        <p id="sign-up-password-hint" class="field-hint">At least 8 characters.</p>
+        <p id="sign-up-password-hint" class="field-hint">Mínimo 8 caracteres.</p>
       }
     </div>
 
     <div class="field">
-      <label for="sign-up-repeat">Repeat password</label>
+      <label for="sign-up-repeat">Repite la contraseña</label>
       <input
         id="sign-up-repeat"
         type="password"
@@ -74,14 +72,14 @@
         [attr.aria-describedby]="showError('repeatPassword') ? 'sign-up-repeat-error' : null"
       />
       @if (showError('repeatPassword')) {
-        <p id="sign-up-repeat-error" class="field-error">The two passwords do not match.</p>
+        <p id="sign-up-repeat-error" class="field-error">Las contraseñas no coinciden.</p>
       }
     </div>
 
     <button type="submit" class="btn-primary" [disabled]="submitting()">
-      {{ submitting() ? 'Creating…' : 'Create account' }}
+      {{ submitting() ? 'Creando…' : 'Crear cuenta' }}
     </button>
   </form>
 
-  <p class="switch">Already have an account? <a routerLink="/sign-in">Sign in</a></p>
+  <p class="switch">¿Ya tienes cuenta? <a routerLink="/sign-in">Inicia sesión</a></p>
 </section>

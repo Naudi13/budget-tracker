@@ -35,14 +35,16 @@ const KNOWN_CODES: readonly string[] = [
 /**
  * Turns any failed HTTP call into an {@link ApiError}, so a screen handles one
  * shape whether the API answered with its error body, a proxy answered with
- * HTML, or the network dropped the request.
+ * HTML, or the network dropped the request. The API's own `message` is in
+ * English for developers; a screen shows its own Spanish text, chosen by
+ * `status` and `error`, never that message.
  */
 export function toApiError(response: HttpErrorResponse): ApiError {
   if (response.status === 0) {
     return {
       status: 0,
       error: 'NETWORK_ERROR',
-      message: 'We could not reach the server. Check your connection and try again.',
+      message: 'No pudimos conectar con el servidor. Revisa tu conexión e inténtalo de nuevo.',
       details: [],
     };
   }
@@ -60,7 +62,7 @@ export function toApiError(response: HttpErrorResponse): ApiError {
   return {
     status: response.status,
     error: fallbackCode(response.status),
-    message: 'Something went wrong. Try again.',
+    message: 'Algo salió mal. Inténtalo de nuevo.',
     details: [],
   };
 }

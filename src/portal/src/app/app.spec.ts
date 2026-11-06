@@ -42,8 +42,8 @@ describe('App', () => {
     const page = await render('/');
 
     expect(TestBed.inject(Router).url).toBe('/dashboard');
-    expect(page.querySelector('main h1')?.textContent).toBe('Dashboard');
-    expect(page.querySelector('header button')?.textContent?.trim()).toBe('Sign out');
+    expect(page.querySelector('main h1')?.textContent).toBe('Panel');
+    expect(page.querySelector('header button')?.textContent?.trim()).toBe('Cerrar sesión');
   });
 
   it('signs out by discarding the token and going to sign-in', async () => {
@@ -61,13 +61,13 @@ describe('App', () => {
   it('keeps the status page open without a token', async () => {
     const page = await render('/status');
 
-    expect(page.querySelector('main h1')?.textContent).toBe('System status');
+    expect(page.querySelector('main h1')?.textContent).toBe('Estado del sistema');
     TestBed.inject(HttpTestingController).expectOne('/health');
   });
 
   it('shows the not-found page for an unknown path', async () => {
     const page = await render('/no/such/page');
 
-    expect(page.querySelector('main h1')?.textContent).toBe('Page not found');
+    expect(page.querySelector('main h1')?.textContent).toBe('Página no encontrada');
   });
 });

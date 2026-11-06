@@ -75,8 +75,10 @@ export class SignInPage {
       error: (error: ApiError) => {
         this.submitting.set(false);
         if (error.status === 401) {
-          // Keep the email, clear the password (sign-in.md, Error state).
+          // Keep the email, clear the password (sign-in.md, Error state). The
+          // banner already says what happened: no "enter your password" under it.
           this.form.controls.password.reset();
+          this.attempted.set(false);
           this.failure.set('credentials');
         } else {
           this.failure.set('unavailable');

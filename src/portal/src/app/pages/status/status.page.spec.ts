@@ -30,7 +30,7 @@ describe('StatusPage', () => {
   }
 
   it('says it is checking while /health is in flight', () => {
-    expect(text()).toContain('Checking the API');
+    expect(text()).toContain('Verificando la API');
     expect(button().disabled).toBe(true);
     backend.expectOne('/health').flush({ status: 'Healthy', checks: { database: 'Healthy' } });
   });
@@ -38,7 +38,7 @@ describe('StatusPage', () => {
   it('reports a healthy API', () => {
     backend.expectOne('/health').flush({ status: 'Healthy', checks: { database: 'Healthy' } });
 
-    expect(text()).toContain('The API and its database are up.');
+    expect(text()).toContain('La API y su base de datos están funcionando.');
     expect(button().disabled).toBe(false);
   });
 
@@ -47,19 +47,19 @@ describe('StatusPage', () => {
       .expectOne('/health')
       .flush({ status: 'Unhealthy', checks: { database: 'Unhealthy' } }, { status: 503, statusText: 'Unavailable' });
 
-    expect(text()).toContain('cannot reach its database');
+    expect(text()).toContain('no puede conectarse a su base de datos');
   });
 
   it('reports a degraded answer as a database problem', () => {
     backend.expectOne('/health').flush({ status: 'Degraded', checks: { database: 'Degraded' } });
 
-    expect(text()).toContain('cannot reach its database');
+    expect(text()).toContain('no puede conectarse a su base de datos');
   });
 
   it('reports an API that does not answer', () => {
     backend.expectOne('/health').error(new ProgressEvent('error'));
 
-    expect(text()).toContain('The API did not answer');
+    expect(text()).toContain('La API no respondió');
   });
 
   it('checks again on demand', () => {
@@ -69,6 +69,6 @@ describe('StatusPage', () => {
     button().click();
     backend.expectOne('/health').flush({ status: 'Healthy', checks: { database: 'Healthy' } });
 
-    expect(text()).toContain('The API and its database are up.');
+    expect(text()).toContain('La API y su base de datos están funcionando.');
   });
 });
