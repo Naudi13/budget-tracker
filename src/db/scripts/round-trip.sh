@@ -156,10 +156,60 @@ refused "a category that owns a subcategory cannot be deleted (BR-05)" \
 allowed "a category without subcategories can be deleted" \
   "$(category $office $ana Oficina expense) DELETE FROM transactions.categories WHERE id = '$office';"
 
+# Transactions003_CreateTransactions and Transactions004_CreateTransactionDetails (HU-04 to HU-06).
+paper=00000000-0000-7000-8000-0000000000d1
+movement=00000000-0000-7000-8000-0000000000e1
+setup="$(category $office $ana Oficina expense)
+  INSERT INTO transactions.subcategories (id, category_id, name, created_by, updated_by) VALUES ('$paper', '$office', 'Papelería', '$ana', '$ana');"
+transaction() { # id description
+  echo "INSERT INTO transactions.transactions (id, owned_by, transaction_date, description, created_by, updated_by) VALUES ('$1', '$ana', DATE '2026-11-06', '$2', '$ana', '$ana');"
+}
+detail() { # transaction subcategory amount
+  echo "INSERT INTO transactions.transaction_details (id, transaction_id, subcategory_id, amount, created_by, updated_by) VALUES (gen_random_uuid(), '$1', '$2', $3, '$ana', '$ana');"
+}
+check "transactions.transactions and .transaction_details exist" \
+  "SELECT to_regclass('transactions.transactions') IS NOT NULL AND to_regclass('transactions.transaction_details') IS NOT NULL"
+check "app role may read and write both, and nothing more" \
+  "SELECT has_table_privilege('bud_tack_app', 'transactions.transactions', 'SELECT, INSERT, UPDATE, DELETE')
+      AND has_table_privilege('bud_tack_app', 'transactions.transaction_details', 'SELECT, INSERT, UPDATE, DELETE')
+      AND NOT has_table_privilege('bud_tack_app', 'transactions.transaction_details', 'TRUNCATE')"
+check "both keys of a detail are ON DELETE RESTRICT" \
+  "SELECT bool_and(confdeltype = 'r') AND count(*) = 2 FROM pg_constraint
+    WHERE conname IN ('fk_transaction_details_transaction_id', 'fk_transaction_details_subcategory_id')"
+check "a detail has no type column: it comes from its subcategory's category (BR-01)" \
+  "SELECT NOT EXISTS (SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'transactions' AND table_name = 'transaction_details' AND column_name = 'type')"
+allowed "a transaction with two lines is recorded, amounts kept to the cent" \
+  "$setup $(transaction $movement 'Printer paper') $(detail $movement $paper 85.50) $(detail $movement $paper 0.01)
+   DO \$\$ BEGIN
+     IF (SELECT sum(amount) FROM transactions.transaction_details) <> 85.51 THEN RAISE EXCEPTION 'sum'; END IF;
+   END \$\$;"
+refused "an amount of zero is refused" \
+  "$setup $(transaction $movement 'x') $(detail $movement $paper 0)"
+refused "a negative amount is refused" \
+  "$setup $(transaction $movement 'x') $(detail $movement $paper -1)"
+refused "an amount of a trillion or more is refused" \
+  "$setup $(transaction $movement 'x') $(detail $movement $paper 1000000000000.00)"
+refused "a blank description is refused" \
+  "$(transaction $movement '   ')"
+refused "a description over 200 characters is refused" \
+  "$(transaction $movement "$(printf 'a%.0s' $(seq 201))")"
+refused "deleted_at without deleted_by is refused (BR-04)" \
+  "$(transaction $movement 'x') UPDATE transactions.transactions SET deleted_at = now() WHERE id = '$movement';"
+allowed "a soft delete sets deleted_at and deleted_by together (BR-04)" \
+  "$(transaction $movement 'x') UPDATE transactions.transactions SET deleted_at = now(), deleted_by = '$ana' WHERE id = '$movement';"
+refused "a detail against a subcategory that does not exist is refused" \
+  "$(transaction $movement 'x') $(detail $movement 00000000-0000-7000-8000-0000000000ff 10)"
+refused "a subcategory a detail uses cannot be deleted (BR-05)" \
+  "$setup $(transaction $movement 'x') $(detail $movement $paper 10) DELETE FROM transactions.subcategories WHERE id = '$paper';"
+refused "a transaction with lines cannot be physically deleted (BR-04)" \
+  "$setup $(transaction $movement 'x') $(detail $movement $paper 10) DELETE FROM transactions.transactions WHERE id = '$movement';"
+
 migrate down
-check "down removes identity.users, transactions.categories and .subcategories" \
+check "down removes identity.users and every transactions table" \
   "SELECT to_regclass('identity.users') IS NULL AND to_regclass('transactions.categories') IS NULL
-      AND to_regclass('transactions.subcategories') IS NULL"
+      AND to_regclass('transactions.subcategories') IS NULL AND to_regclass('transactions.transactions') IS NULL
+      AND to_regclass('transactions.transaction_details') IS NULL"
 check "down removes both schemas" \
   "SELECT count(*) = 0 FROM pg_namespace WHERE nspname IN ('identity', 'transactions')"
 
