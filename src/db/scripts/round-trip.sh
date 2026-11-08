@@ -98,6 +98,14 @@ refused "a user without a password hash is refused" \
 refused "the app role cannot drop identity.users" \
   "DROP TABLE identity.users;"
 
+# Identity002_AddUserRole and Identity003_SeedUsers (HU-09).
+check "a new account is a USER unless it says otherwise" \
+  "SELECT column_default LIKE '%USER%' FROM information_schema.columns WHERE table_schema = 'identity' AND table_name = 'users' AND column_name = 'role'"
+check "one seed user per role, stored with a BCrypt hash" \
+  "SELECT count(*) = 2 AND count(DISTINCT role) = 2 AND bool_and(password_hash LIKE '\$2a\$12\$%') FROM identity.users WHERE id::text LIKE '00000000-0000-4000-8000-%'"
+refused "a role that does not exist is refused" \
+  "INSERT INTO identity.users (id, name, email, password_hash, role) VALUES (gen_random_uuid(), 'Ana', 'badrole@example.com', 'hash', 'OWNER');"
+
 # Transactions001_CreateCategories and Transactions002_CreateSubcategories (HU-02).
 allowed() {
   if docker exec -i "$PG_CONTAINER" psql -v ON_ERROR_STOP=1 -X -q -U "$PG_SUPERUSER" -d "$PG_DB" > "$WORK/allowed.out" 2>&1 <<EOSQL
