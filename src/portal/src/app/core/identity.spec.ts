@@ -5,7 +5,7 @@ import { provideRouter, Router, UrlTree } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 
 import { ApiError } from './api-error';
-import { signedInGuard, signedOutGuard } from './auth.guards';
+import { adminGuard, signedInGuard, signedOutGuard } from './auth.guards';
 import { authInterceptor } from './auth.interceptor';
 import { AuthTokenStore } from './auth-token.store';
 import { errorInterceptor } from './error.interceptor';
@@ -41,9 +41,9 @@ describe('identity in the portal', () => {
       const request = backend.expectOne('/api/v1/users');
       expect(request.request.method).toBe('POST');
       expect(request.request.body).toEqual({ name: 'Ana', email: 'a@b.co', password: '12345678' });
-      request.flush({ id: '1', name: 'Ana', email: 'a@b.co' }, { status: 201, statusText: 'Created' });
+      request.flush({ id: '1', name: 'Ana', email: 'a@b.co', role: 'USER' }, { status: 201, statusText: 'Created' });
 
-      expect(await call).toEqual({ id: '1', name: 'Ana', email: 'a@b.co' });
+      expect(await call).toEqual({ id: '1', name: 'Ana', email: 'a@b.co', role: 'USER' });
       expect(tokens.token()).toBeNull();
     });
 
@@ -52,11 +52,13 @@ describe('identity in the portal', () => {
       const call = firstValueFrom(identity.signIn({ email: 'a@b.co', password: '12345678' }));
       backend
         .expectOne('/api/v1/sessions')
-        .flush({ token: 't.o.k', tokenType: 'Bearer', expiresIn: 3600 }, { status: 201, statusText: 'Created' });
+        .flush({ token: 't.o.k', tokenType: 'Bearer', expiresIn: 3600, role: 'ADMIN' }, { status: 201, statusText: 'Created' });
 
       await call;
       expect(tokens.token()).toBe('t.o.k');
       expect(identity.signedIn()).toBe(true);
+      expect(tokens.role()).toBe('ADMIN');
+      expect(identity.isAdmin()).toBe(true);
     });
 
     it('keeps no token when sign-in fails', async () => {
@@ -71,12 +73,13 @@ describe('identity in the portal', () => {
     });
 
     it('signs out by discarding the token', () => {
-      tokens.set('t.o.k');
+      tokens.set('t.o.k', 'ADMIN');
       const identity = TestBed.inject(IdentityService);
 
       identity.signOut();
 
       expect(tokens.token()).toBeNull();
+      expect(tokens.role()).toBeNull();
       expect(identity.signedIn()).toBe(false);
     });
   });
@@ -127,6 +130,13 @@ describe('identity in the portal', () => {
       expect((run(signedInGuard) as UrlTree).toString()).toBe('/sign-in');
       tokens.set('t.o.k');
       expect(run(signedInGuard)).toBe(true);
+    });
+
+    it('lets an administrator through, and sends any other role to the dashboard', () => {
+      tokens.set('t.o.k', 'USER');
+      expect((run(adminGuard) as UrlTree).toString()).toBe('/dashboard');
+      tokens.set('t.o.k', 'ADMIN');
+      expect(run(adminGuard)).toBe(true);
     });
 
     it('keeps a signed-in user away from sign-in and sign-up', () => {
