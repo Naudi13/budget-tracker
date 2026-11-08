@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router';
 
-import { signedInGuard, signedOutGuard } from './core/auth.guards';
+import { adminGuard, signedInGuard, signedOutGuard } from './core/auth.guards';
 import { BudgetsPage } from './pages/budgets/budgets.page';
 import { CategoriesPage } from './pages/categories/categories.page';
 import { DashboardPage } from './pages/dashboard/dashboard.page';
@@ -10,6 +10,7 @@ import { NotFoundPage } from './pages/not-found/not-found.page';
 import { SignInPage } from './pages/sign-in/sign-in.page';
 import { SignUpPage } from './pages/sign-up/sign-up.page';
 import { StatusPage } from './pages/status/status.page';
+import { UsersPage } from './pages/users/users.page';
 
 export const routes: Routes = [
   // The dashboard is the entry point; without a token its guard sends you to sign-in.
@@ -40,6 +41,12 @@ export const routes: Routes = [
     component: BudgetsPage,
     canActivate: [signedInGuard],
     title: 'Presupuestos · Budget Tracker',
+  },
+  {
+    path: 'settings/users',
+    component: UsersPage,
+    canActivate: [signedInGuard, adminGuard],
+    title: 'Usuarios · Budget Tracker',
   },
   // Whether the API and its database are up; open, for local setup (local-setup.md).
   { path: 'status', component: StatusPage, title: 'Estado del sistema · Budget Tracker' },
