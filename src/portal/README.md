@@ -28,6 +28,7 @@ account (HU-01). `/status` says whether the API and its database are up.
 | `/transactions/new` | Signed in only | `new-record.md`: a transaction with one or more lines, BR-02 warned before saving (HU-04) |
 | `/settings/categories` | Signed in only | `categories-configuration.md`: categories and subcategories (HU-02, HU-03) |
 | `/settings/budgets` | Signed in only | `budgets.md`: budgets newest period first, filtered by category, set, edited and deleted (HU-07) |
+| `/settings/users` | `ADMIN` only | `users.md`: the accounts with their role, paged (HU-09) |
 | `/status` | Anyone | `GET /health` through the proxy |
 
 The token lives in memory and `sessionStorage`. Sign-out discards it; a `401`
@@ -51,7 +52,7 @@ screen never shows it, it picks its own Spanish text from the `status`, the
 | `src/app/core/` | HTTP wiring shared by every screen: the `{ error, message, details }` mapping, the error, bearer-token and 401 interceptors, the token store, `IdentityService` and the route guards |
 | `src/app/pages/` | One folder per screen |
 | `src/styles.css` | The tokens of `12-ux-ui/design-system.md` and the button styles |
-| `nginx/default.conf.template` | The production server: Angular files plus the `/api/` and `/health` proxy |
+| `nginx/default.conf.template` | The production server: Angular files plus the `/api/`, `/health` and Swagger proxy |
 
 ## Pipeline
 
