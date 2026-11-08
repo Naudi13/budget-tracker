@@ -43,8 +43,30 @@ creates in those schemas automatically (default privileges, `Platform001`).
 | `202611061611` | `Transactions004_CreateTransactionDetails` | HU-04 | `transactions.transaction_details`: an amount `numeric(14,2)` above zero against one subcategory, and no type column (BR-01); both keys `ON DELETE RESTRICT`, so a subcategory in use cannot be deleted (BR-05) |
 | `202611061625` | `Transactions005_AddDetailLineNumber` | HU-04 | `line_number` on `transaction_details`: the lines keep the order they were entered (unique per transaction, from 1); existing lines are numbered by `created_at, id` |
 | `202611061710` | `Transactions006_CreateBudgets` | HU-07 | `transactions.budgets`: an owner, a category, an amount `numeric(14,2)` above zero and a period that ends after it starts, both checked so a change can never break them (BR-06); deleted physically; its key to the category is `ON DELETE RESTRICT`, so a category with a budget cannot be deleted (BR-05) |
+| `202611082300` | `Identity002_AddUserRole` | HU-09 | `role` on `identity.users`: `USER` or `ADMIN`, `USER` by default (ADR-007) |
+| `202611082301` | `Identity003_SeedUsers` | HU-09 | One test user per role, with BCrypt hashes (ADR-008) |
 
-**Round trip**, the check CI runs on every pull request: up, down to 0, up
+## Seed users
+
+Test accounts for local use only, created by `Identity003_SeedUsers`. A real
+deployment must replace them before opening to anyone.
+
+| Role | Email | Password |
+|---|---|---|
+| `ADMIN` | `admin@budgettracker.test` | `Admin-2026!` |
+| `USER` | `usuario@budgettracker.test` | `Usuario-2026!` |
+
+## Entity-relationship diagram
+
+![Entity-relationship diagram](docs/er-diagram.png)
+
+Solid lines are foreign keys. Dashed lines are the plain `owned_by` columns: they
+cross a module boundary, so `IdentityFacade` validates them instead of a database
+constraint (`06-data/database-conventions.md`).
+
+## Round trip
+
+The check CI runs on every pull request: up, down to 0, up
 again with the same schema, plus the rules of each table tried as the app role
 — build first:
 
