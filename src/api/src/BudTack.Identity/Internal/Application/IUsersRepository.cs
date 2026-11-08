@@ -9,4 +9,7 @@ internal interface IUsersRepository
     Task AddAsync(User user, CancellationToken cancellationToken);
 
     Task<User?> FindByEmailAsync(string email, CancellationToken cancellationToken);
+
+    /// <summary>One page of accounts ordered by email, and how many there are in all.</summary>
+    Task<(IReadOnlyList<User> Rows, long Total)> ListAsync(int limit, int offset, CancellationToken cancellationToken);
 }

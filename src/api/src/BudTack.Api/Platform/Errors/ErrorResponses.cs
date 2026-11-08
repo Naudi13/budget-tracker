@@ -54,6 +54,8 @@ internal static partial class ErrorResponses
             {
                 StatusCodes.Status401Unauthorized =>
                     new ApiError(ErrorCodes.Unauthorized, "Sign in to continue."),
+                StatusCodes.Status403Forbidden =>
+                    new ApiError(ErrorCodes.Forbidden, "Your role may not do this."),
                 StatusCodes.Status404NotFound or StatusCodes.Status405MethodNotAllowed =>
                     new ApiError(ErrorCodes.NotFound, "The resource does not exist."),
                 >= 500 => new ApiError(ErrorCodes.InternalError, "The request could not be handled."),

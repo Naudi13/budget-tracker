@@ -14,8 +14,10 @@ CREATE TABLE identity.users (
     updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     created_by uuid,
     updated_by uuid,
+    role character varying(10) DEFAULT 'USER'::character varying NOT NULL,
     CONSTRAINT ck_users_email_lowercase CHECK (((email)::text = lower((email)::text))),
-    CONSTRAINT ck_users_name_not_blank CHECK ((btrim((name)::text) <> ''::text))
+    CONSTRAINT ck_users_name_not_blank CHECK ((btrim((name)::text) <> ''::text)),
+    CONSTRAINT ck_users_role CHECK (((role)::text = ANY ((ARRAY['USER'::character varying, 'ADMIN'::character varying])::text[])))
 );
 CREATE TABLE transactions.budgets (
     id uuid NOT NULL,

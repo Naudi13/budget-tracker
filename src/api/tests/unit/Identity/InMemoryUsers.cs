@@ -21,4 +21,12 @@ internal sealed class InMemoryUsers : IUsersRepository
 
     public Task<BudTack.Identity.Internal.Domain.User?> FindByEmailAsync(string email, CancellationToken cancellationToken) =>
         Task.FromResult(Rows.Find(row => row.Email == email));
+
+    public Task<(IReadOnlyList<BudTack.Identity.Internal.Domain.User> Rows, long Total)> ListAsync(
+        int limit, int offset, CancellationToken cancellationToken)
+    {
+        IReadOnlyList<BudTack.Identity.Internal.Domain.User> page =
+            [.. Rows.OrderBy(row => row.Email, StringComparer.Ordinal).Skip(offset).Take(limit)];
+        return Task.FromResult((page, (long)Rows.Count));
+    }
 }
