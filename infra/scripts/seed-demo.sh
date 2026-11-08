@@ -1,14 +1,14 @@
 #!/bin/sh
 # Fills the running application with one demo business, through the API and
 # the portal's one door (ADR-006), so a demo never starts on empty screens.
-# Run after `docker compose --profile app up -d --build --wait`; needs curl.
+# Run after `docker compose up -d --build --wait`; needs curl.
 #
 # Usage: sh scripts/seed-demo.sh         (from the repository root, .env present)
 #
 # Creates the account DEMO_EMAIL / DEMO_PASSWORD (defaults below, local only),
 # then its categories, subcategories, 24 transactions from September to
 # November 2026, and budgets. Run it once: if the account exists it stops
-# without touching anything. To start over: `docker compose --profile app down
+# without touching anything. To start over: `docker compose down
 # --volumes`, then up again.
 set -eu
 
@@ -83,7 +83,7 @@ EOF
 ) || { echo "no answer from $BASE — is the stack up?" >&2; exit 1; }
 case "$signup" in
   201) ;;
-  409) echo "$DEMO_EMAIL already exists: nothing seeded. Start over with 'docker compose --profile app down --volumes'."; exit 0 ;;
+  409) echo "$DEMO_EMAIL already exists: nothing seeded. Start over with 'docker compose down --volumes'."; exit 0 ;;
   *) echo "POST /users: status $signup, expected 201" >&2; exit 1 ;;
 esac
 

@@ -1,6 +1,6 @@
 #!/bin/sh
 # Proves the whole application answers through its one door, the portal
-# (ADR-006), after `docker compose --profile app up -d --build --wait`.
+# (ADR-006), after `docker compose up -d --build --wait`.
 # Used by CI and by a developer; needs curl on the host.
 #
 # Usage: sh scripts/verify-stack.sh      (from the repository root, .env present)
@@ -28,6 +28,27 @@ check "portal serves the Angular app at /"              "$BASE/"                
 check "a deep link is answered by the Angular app"     "$BASE/transactions/history"  200 "<bt-root"
 check "/health reaches the API and its database"       "$BASE/health"                200 '"database":"Healthy"'
 check "/api/ reaches the API and its error format"     "$BASE/api/v1/no-such-thing"  404 '"error":"NOT_FOUND"'
+
+check "Swagger UI loads through the portal"             "$BASE/swagger/index.html"    200 "swagger"
+check "Swagger documents the API"                      "$BASE/swagger/v1/swagger.json" 200 "/api/v1/users"
+check "a protected endpoint refuses no token"          "$BASE/api/v1/users"          401 '"error":"UNAUTHORIZED"'
+
+# token EMAIL PASSWORD — the bearer token of a seed user (Identity003_SeedUsers).
+token() {
+  printf '{"email":"%s","password":"%s"}' "$1" "$2" \
+    | curl -s -X POST "$BASE/api/v1/sessions" -H 'Content-Type: application/json' --data-binary @- \
+    | sed -n 's/.*"token":"\([^"]*\)".*/\1/p'
+}
+
+# status_with TOKEN — what GET /users answers to that token.
+status_with() {
+  curl -s -o /dev/null -w '%{http_code}' -H "Authorization: Bearer $1" "$BASE/api/v1/users"
+}
+
+admin=$(token admin@budgettracker.test 'Admin-2026!')
+user=$(token usuario@budgettracker.test 'Usuario-2026!')
+if [ -n "$admin" ] && [ "$(status_with "$admin")" = "200" ]; then pass "the seeded ADMIN lists the accounts"; else fail "the seeded ADMIN lists the accounts"; fi
+if [ -n "$user" ] && [ "$(status_with "$user")" = "403" ]; then pass "the seeded USER gets 403"; else fail "the seeded USER gets 403"; fi
 
 if curl -s -o /dev/null --max-time 3 "http://localhost:3000/health"; then
   fail "the API is not published on the host (ADR-006)"

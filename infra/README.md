@@ -12,7 +12,7 @@ The one database of the application, with the two roles that
 
 ```bash
 cp .env.example .env
-docker compose up -d --wait
+docker compose up -d --wait postgres
 sh scripts/verify-roles.sh
 ```
 
@@ -37,26 +37,34 @@ reach the API through it, on one origin (ADR-006).
 
 ```bash
 cp .env.example .env                                   # once; set the *_SOURCE paths if your clones are not side by side
-docker compose --profile app up -d --build --wait      # about 1 minute the first time
+docker compose up -d --build --wait                    # a few minutes the first time
 sh scripts/verify-stack.sh
 ```
 
-Then open `http://localhost:8080`.
+Then open `http://localhost:8080`. Swagger is at `http://localhost:8080/swagger-ui.html`.
+
+The migrations create one test user per role (local only):
+
+| Role | Email | Password |
+|---|---|---|
+| `ADMIN` | `admin@budgettracker.test` | `Admin-2026!` |
+| `USER` | `usuario@budgettracker.test` | `Usuario-2026!` |
 
 | Service | Image | Published | Does |
 |---|---|---|---|
 | `postgres` | `postgres:17-alpine` | `127.0.0.1:5432` | The one database and its two roles |
 | `migrate` | `dotnet/sdk:10.0`, running `bud-tack-db`'s source | — | `up` as `bud_tack_migrator`, then exits |
-| `api` | `bud-tack-api:${APP_TAG}`, built from `API_SOURCE` | — | Starts once `migrate` exited with 0; connects as `bud_tack_app`; signs tokens with `AUTH_JWT_SECRET` |
-| `portal` | `bud-tack-portal:${APP_TAG}`, built from `PORTAL_SOURCE` | `${PORTAL_PORT}` → 8080 | Serves Angular; forwards `/api/` and `/health` to `api:3000` |
+| `api` | `bud-tack-api:${APP_TAG}`, built from `API_SOURCE` | — | Starts once `migrate` exited with 0; connects as `bud_tack_app`; signs tokens with `AUTH_JWT_SECRET`; admits only `CORS_ALLOWED_ORIGIN` across origins |
+| `portal` | `bud-tack-portal:${APP_TAG}`, built from `PORTAL_SOURCE` | `${PORTAL_PORT}` → 8080 | Serves Angular; forwards `/api/`, `/health` and Swagger to `api:3000` |
 
 `AUTH_JWT_SECRET` (at least 32 bytes) must be in `.env` for the API to start;
 a `.env` copied before HU-01 needs the two `AUTH_JWT_*` lines of `.env.example`.
 PostgreSQL alone does not need them.
 
 Both images carry the same `APP_TAG` (`10-devops/ci-cd.md`). `verify-stack.sh`
-checks `/`, a deep link, `/health` and `/api/` through the portal, that the API
-publishes no port, and that the migrations created the module schemas.
+checks `/`, a deep link, `/health`, `/api/` and Swagger through the portal, `401`
+without a token, `200` as `ADMIN` and `403` as `USER`, that the API publishes no
+port, and that the migrations created the module schemas.
 
 ### Demo data
 
@@ -77,11 +85,10 @@ history (BR-05), and budgets for October to December.
 | `demo@budgettracker.test` | `Demo-2026!` |
 
 Run it once: if the account exists it changes nothing. To start over, recreate
-the volume with `docker compose --profile app down --volumes`, then `up` again.
+the volume with `docker compose down --volumes`, then `up` again.
 
-Without `--profile app`, `docker compose up -d --wait` starts PostgreSQL alone,
-as before. Stop everything with `docker compose --profile app down`; add
-`--volumes` to start from an empty database.
+Stop everything with `docker compose down`; add `--volumes` to start from an
+empty database. `docker compose up -d --wait postgres` starts PostgreSQL alone.
 
 ## Pipeline
 
