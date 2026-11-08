@@ -4,7 +4,7 @@
 
 | Entity | Table | Owning module | Key attributes |
 |---|---|---|---|
-| User | `identity.users` | `identity` | name, email, password_hash |
+| User | `identity.users` | `identity` | name, email, password_hash, role (`USER` \| `ADMIN`, default `USER`) |
 | Category | `transactions.categories` | `transactions` | name, type (income \| expense), is_active |
 | Subcategory | `transactions.subcategories` | `transactions` | category reference, name, is_active |
 | Transaction | `transactions.transactions` | `transactions` | transaction date, description |

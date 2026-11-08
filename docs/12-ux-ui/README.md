@@ -28,6 +28,7 @@ the screens, and each one calls the single backend API directly.
 | [screens/transaction-history.md](./screens/transaction-history.md) | How are transactions listed and deleted? | ⭐ |
 | [screens/categories-configuration.md](./screens/categories-configuration.md) | How are categories and subcategories created, deactivated and deleted? | ⭐ |
 | [screens/budgets.md](./screens/budgets.md) | How is a budget set and listed? | — |
+| [screens/users.md](./screens/users.md) | How does an administrator list the accounts? | ⭐ |
 | [_template-screen.md](./_template-screen.md) | Template — copy it once per screen | — |
 
 ## Out of scope

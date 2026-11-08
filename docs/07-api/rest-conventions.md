@@ -30,13 +30,14 @@ once, to the whole application.
 | 200 / 201 / 204 | Success reading, creating, or with no response body; a 201 carries a `Location` header |
 | 400 | The request is malformed: wrong type, missing field |
 | 401 | No valid credentials, or sign-in with wrong ones |
+| 403 | Valid credentials, but the role may not call this endpoint — e.g. a `USER` calling `GET /users` |
 | 404 | The resource, or its parent in a nested path, does not exist — including a soft-deleted transaction (**BR-04**) |
 | 409 | The request conflicts with the resource's current state — e.g. a duplicate subcategory name, or deleting a category that still owns subcategories (**BR-05**) |
 | 422 | The request is well-formed but fails a business rule — e.g. a transaction mixing income and expense details (**BR-02**), or a budget whose period ends before it starts |
 | 500 | The application failed to handle the request at all — an unhandled error, logged with its `correlationId` per **NFR-09** |
 
-V1 has one account per business and no roles, so the `403` case does not arise:
-an authenticated user simply cannot see another business's data, and gets `404`.
+`403` is about the role, never about the data: an authenticated user asking for
+another business's data gets `404`.
 
 ## Error format
 
@@ -47,14 +48,15 @@ an authenticated user simply cannot see another business's data, and gets `404`.
 
 Every non-2xx response uses this shape. `error` is a stable machine code —
 `VALIDATION_ERROR`, `BUSINESS_RULE_VIOLATED`, `CONFLICT`, `NOT_FOUND`,
-`UNAUTHORIZED`, `INTERNAL_ERROR` — and never changes once published; `message`
+`UNAUTHORIZED`, `FORBIDDEN`, `INTERNAL_ERROR` — and never changes once published; `message`
 is for humans; `details` is present only for 400 and 422.
 
 ## Authentication
 
 Sign-up (`POST /users`) and sign-in (`POST /sessions`) are the only write
 endpoints that accept an unauthenticated request. Every other write endpoint
-rejects one, per **NFR-05**.
+rejects one, per **NFR-05**. Swagger UI at `/swagger-ui.html` is public and calls
+nothing by itself; its "Authorize" button takes a token from `POST /sessions`.
 
 ## Pagination
 

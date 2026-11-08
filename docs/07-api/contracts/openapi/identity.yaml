@@ -6,7 +6,7 @@ info:
     name: MIT
     identifier: MIT
   description: >
-    Sign-up and sign-in for the single account a business uses. These are the only
+    Sign-up, sign-in and the administrator's account list. Sign-up and sign-in are the only
     write endpoints that accept an unauthenticated request (NFR-05). Naming,
     versioning, status codes and the error shape follow ../../rest-conventions.md;
     shared components come from ./common.yaml.
@@ -25,7 +25,8 @@ paths:
       summary: Sign up a business account
       description: >
         Implements HU-01. An email already in use is a conflict; the password is
-        stored only as a salted hash (NFR-06).
+        stored only as a salted hash (NFR-06). A new account always has the role USER;
+        a role sent in the body is ignored.
       security: []
       requestBody:
         required: true
@@ -44,6 +45,32 @@ paths:
           $ref: './common.yaml#/components/responses/BadRequest'
         '409':
           $ref: './common.yaml#/components/responses/Conflict'
+        '500':
+          $ref: './common.yaml#/components/responses/InternalError'
+
+    get:
+      operationId: listUsers
+      summary: List the accounts
+      description: >
+        Implements HU-09. Only the ADMIN role may call it (ADR-007). Ordered by email.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: './common.yaml#/components/parameters/PageParam'
+        - $ref: './common.yaml#/components/parameters/LimitParam'
+      responses:
+        '200':
+          description: One page of accounts
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPage'
+        '400':
+          $ref: './common.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: './common.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: './common.yaml#/components/responses/Forbidden'
         '500':
           $ref: './common.yaml#/components/responses/InternalError'
 
@@ -78,11 +105,25 @@ components:
   schemas:
     User:
       type: object
-      required: [id, name, email]
+      required: [id, name, email, role]
       properties:
         id: { type: string, format: uuid }
         name: { type: string }
         email: { type: string, format: email }
+        role: { $ref: '#/components/schemas/Role' }
+
+    Role:
+      type: string
+      enum: [USER, ADMIN]
+
+    UserPage:
+      type: object
+      required: [data, meta]
+      properties:
+        data:
+          type: array
+          items: { $ref: '#/components/schemas/User' }
+        meta: { $ref: './common.yaml#/components/schemas/PaginationMeta' }
 
     NewUser:
       type: object
@@ -104,7 +145,7 @@ components:
 
     Session:
       type: object
-      required: [token, tokenType, expiresIn]
+      required: [token, tokenType, expiresIn, role]
       properties:
         token: { type: string }
         tokenType: { type: string, enum: [Bearer] }
@@ -112,3 +153,4 @@ components:
           type: integer
           description: Seconds until the token expires (AUTH_JWT_EXPIRY_SECONDS).
           examples: [3600]
+        role: { $ref: '#/components/schemas/Role' }

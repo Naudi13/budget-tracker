@@ -17,6 +17,7 @@ even for a story that gets dropped before it ships.
 | [HU-06](./stories/HU-06-delete-transaction.md) | Delete a transaction | `transactions` | ⭐ | HU-05 |
 | [HU-07](./stories/HU-07-set-budget.md) | Set, change or delete a budget for a category | `transactions` | — | HU-02 |
 | [HU-08](./stories/HU-08-view-dashboard.md) | View the dashboard | `dashboard` | ⭐ | HU-04 |
+| [HU-09](./stories/HU-09-list-accounts-as-admin.md) | List the accounts as an administrator | `identity` | ⭐ | HU-01 |
 
 Story points are not written here: the whole team assigns them in planning
 poker, per [`agile-conventions.md`](../00-governance/agile-conventions.md).

@@ -19,6 +19,7 @@ a defect.
 | HU-06 | `transactions` | [`transactions.yaml`](../07-api/contracts/openapi/transactions.yaml) · [`transaction-history.md`](../12-ux-ui/screens/transaction-history.md) | [`TC-006`](../11-quality/test-cases/TC-006-soft-delete-sets-audit-columns.md) |
 | HU-07 | `transactions` | [`budgets.yaml`](../07-api/contracts/openapi/budgets.yaml) · [`budgets.md`](../12-ux-ui/screens/budgets.md) | [`TC-007`](../11-quality/test-cases/TC-007-reject-invalid-budget-period.md) · [`TC-019`](../11-quality/test-cases/TC-019-change-and-delete-budget.md) |
 | HU-08 | `dashboard` | [`dashboard.yaml`](../07-api/contracts/openapi/dashboard.yaml) · [`dashboard.md`](../12-ux-ui/screens/dashboard.md) | [`TC-008`](../11-quality/test-cases/TC-008-dashboard-balance-matches-totals.md) |
+| HU-09 | `identity` | [`identity.yaml`](../07-api/contracts/openapi/identity.yaml) · [`users.md`](../12-ux-ui/screens/users.md) | [`TC-020`](../11-quality/test-cases/TC-020-only-admin-lists-accounts.md) |
 
 Each Design document cell names the API contract that defines the story's
 request and response shape, and the screen that serves it where one exists.
