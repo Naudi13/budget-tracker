@@ -1,73 +1,44 @@
-using System.Globalization;
-using System.Security.Cryptography;
-using System.Text;
+using BCrypt.Net;
+using BC = BCrypt.Net.BCrypt;
 
 namespace BudTack.Identity.Internal.Application;
 
 /// <summary>
-/// Salted PBKDF2-HMAC-SHA256 (NFR-06, security-policy.md). The stored value is
-/// <c>pbkdf2-sha256$&lt;iterations&gt;$&lt;salt&gt;$&lt;hash&gt;</c>, base64, so the cost can
-/// rise later without breaking the hashes already stored.
+/// BCrypt at cost 12 over a SHA-384 digest of the password (NFR-06, ADR-008):
+/// the digest keeps every character significant, where plain BCrypt ignores
+/// whatever comes after 72 bytes. The cost is part of the stored value, so it
+/// can rise later without breaking the hashes already stored.
 /// </summary>
 internal sealed class PasswordHasher
 {
-    public const string Prefix = "pbkdf2-sha256";
+    public const int DefaultWorkFactor = 12;
 
-    /// <summary>OWASP's 2023 figure for PBKDF2-HMAC-SHA256.</summary>
-    public const int DefaultIterations = 600_000;
-
-    private const int SaltBytes = 16;
-    private const int HashBytes = 32;
-
-    private readonly int _iterations;
+    private readonly int _workFactor;
 
     public PasswordHasher()
-        : this(DefaultIterations)
+        : this(DefaultWorkFactor)
     {
     }
 
-    /// <summary>Tests use fewer iterations; production always the default.</summary>
-    internal PasswordHasher(int iterations)
+    /// <summary>Tests use a lower cost; production always the default.</summary>
+    internal PasswordHasher(int workFactor)
     {
-        ArgumentOutOfRangeException.ThrowIfLessThan(iterations, 1);
-        _iterations = iterations;
+        ArgumentOutOfRangeException.ThrowIfLessThan(workFactor, 4);
+        _workFactor = workFactor;
     }
 
-    public string Hash(string password)
-    {
-        var salt = RandomNumberGenerator.GetBytes(SaltBytes);
-        var hash = Derive(password, salt, _iterations);
-        return string.Join(
-            '$',
-            Prefix,
-            _iterations.ToString(CultureInfo.InvariantCulture),
-            Convert.ToBase64String(salt),
-            Convert.ToBase64String(hash));
-    }
+    public string Hash(string password) => BC.EnhancedHashPassword(password, _workFactor);
 
+    /// <summary>False for a wrong password, and for a stored value that is not a BCrypt hash.</summary>
     public static bool Verify(string password, string stored)
     {
-        var parts = stored.Split('$');
-        if (parts.Length != 4
-            || parts[0] != Prefix
-            || !int.TryParse(parts[1], NumberStyles.None, CultureInfo.InvariantCulture, out var iterations)
-            || iterations < 1)
-        {
-            return false;
-        }
-
         try
         {
-            var salt = Convert.FromBase64String(parts[2]);
-            var expected = Convert.FromBase64String(parts[3]);
-            return CryptographicOperations.FixedTimeEquals(Derive(password, salt, iterations), expected);
+            return BC.EnhancedVerify(password, stored);
         }
-        catch (FormatException)
+        catch (Exception exception) when (exception is SaltParseException or BcryptAuthenticationException or ArgumentException or IndexOutOfRangeException)
         {
             return false;
         }
     }
-
-    private static byte[] Derive(string password, byte[] salt, int iterations) =>
-        Rfc2898DeriveBytes.Pbkdf2(Encoding.UTF8.GetBytes(password), salt, iterations, HashAlgorithmName.SHA256, HashBytes);
 }

@@ -120,7 +120,7 @@ public sealed class IdentityEndToEndTests(PostgresFixture postgres)
         var stored = (string?)await postgres.ScalarAsync("SELECT password_hash FROM identity.users WHERE email = $1", email);
         Assert.NotNull(stored);
         Assert.DoesNotContain(password, stored, StringComparison.Ordinal);
-        Assert.StartsWith("pbkdf2-sha256$600000$", stored, StringComparison.Ordinal);
+        Assert.StartsWith("$2a$12$", stored, StringComparison.Ordinal);
         Assert.NotEmpty(api.LogLines);
         Assert.DoesNotContain(api.LogLines, line => line.Contains(password, StringComparison.Ordinal));
     }
