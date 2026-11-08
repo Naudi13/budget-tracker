@@ -1,5 +1,5 @@
-# bud-tack-portal — serves the Angular files and forwards /api/ and /health to
-# the API on the same origin, so the browser never makes a cross-origin call
+# bud-tack-portal — serves the Angular files and forwards /api/, /health and
+# Swagger to the API on the same origin, so the browser never makes a cross-origin call
 # (ADR-006). ${API_ORIGIN} and ${NGINX_LOCAL_RESOLVERS} are filled in when the
 # container starts; every other $variable is nginx's own.
 
@@ -29,6 +29,19 @@ server {
     }
 
     location = /health {
+        proxy_pass $api;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+    }
+
+    # Swagger UI (ADR-008). ^~ keeps its .js and .css away from the static rule below.
+    location = /swagger-ui.html {
+        proxy_pass $api;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+    }
+
+    location ^~ /swagger/ {
         proxy_pass $api;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
