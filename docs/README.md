@@ -1,3 +1,57 @@
+# Budget Tracker
+
+## MVP sheet
+
+| Field | Team's answer |
+|---|---|
+| Product and GitHub team | Budget Tracker · `budget-tracker` |
+| Members | Victor Alfonso Tovar Ramirez (`Naudi13`) |
+| Problem it solves | Small business owners guess their cash position from scattered notes and spreadsheets. Budget Tracker turns every recorded income and expense into an always-current balance. |
+| MVP entities and relations | `Category` 1—N `Subcategory`; `Transaction` 1—N `TransactionDetail`, each detail N—1 `Subcategory`; `Budget` N—1 `Category`; `User` owns all of them through `owned_by` |
+| Roles | `USER`: manages only their own categories, transactions and budgets. `ADMIN`: the same, and can also list the accounts ([`ADR-007`](./05-architecture/decisions/records/ADR-007-two-roles-in-the-token.md)) |
+| Own business rule | A category or subcategory in use cannot be deleted, only deactivated (**BR-05**); a transaction cannot mix income and expense details (**BR-02**) |
+| Main endpoints | `POST /users` · `POST /sessions` · `GET /users` · `GET, POST, PATCH, DELETE /categories` · `POST /categories/{id}/subcategories` · `GET, POST, DELETE /transactions` · `GET, POST, PATCH, DELETE /budgets` · `GET /dashboard` (all under `/api/v1`) |
+| Frontend and database | Angular · PostgreSQL |
+| Owner of each part | api, portal, db and infra: Victor Alfonso Tovar Ramirez |
+
+## Overview & tech
+
+**Problem:** small business owners lose track of their cash position because
+their income and expenses live in scattered notes and spreadsheets.
+**Users:** entrepreneurs and small business owners, each with one account that
+sees only its own data, plus an administrator who can list the accounts.
+**Architecture:** one deployable modular monolith with the modules `identity`,
+`transactions` and `dashboard`, one PostgreSQL database with one schema per
+owning module, and an Angular client served behind nginx on a single origin.
+**Stack:** Angular 21, ASP.NET Core 10, PostgreSQL 17 and FluentMigrator, tested
+with xUnit, Testcontainers and Vitest, and packaged with Docker Compose.
+**Key decisions:** module boundaries are enforced by the compiler and NetArchTest,
+every query is filtered by its owner, sessions are JWT bearer tokens with a role
+claim, and each decision is recorded as an ADR in `05-architecture/decisions/`.
+**How to run:** clone the four code repositories side by side, copy `.env.example`
+to `.env` in `bud-tack-infra`, run `docker compose up -d --build --wait` there, and
+open `http://localhost:8080`; the full steps are in that repository's README.
+
+## Course guide, in this project's stack
+
+The course guide describes the backend in Spring Boot. This project's stack is
+ASP.NET Core ([`ADR-002`](./05-architecture/decisions/records/ADR-002-angular-dotnet-postgresql-stack.md)),
+so each item maps as follows:
+
+| Course guide | This project |
+|---|---|
+| Spring Boot 3 | ASP.NET Core 10 |
+| `controller`, `service`, `repository`, `entity`, `dto` | Controllers, `Internal/Application`, `Internal/Persistence`, `Internal/Domain`, `Api/Contracts` |
+| JPA | Repositories over Npgsql, with explicit SQL |
+| Bean Validation | Rules in the application and domain layers, answering `400` and `422` |
+| `@RestControllerAdvice` | `IExceptionFilter` and `IExceptionHandler` |
+| Spring Security with JWT | ASP.NET Core bearer authentication and authorization policies |
+| Flyway or Liquibase | FluentMigrator ([`ADR-005`](./05-architecture/decisions/records/ADR-005-fluentmigrator-for-schema-migrations.md)) |
+| JUnit 5, Mockito, `@WebMvcTest` | xUnit, hand-written test doubles, `WebApplicationFactory` |
+| `mvn test` | `dotnet test` |
+
+---
+
 # Monolith Governance Framework
 
 [![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)

@@ -71,6 +71,11 @@ components:
       content:
         application/json:
           schema: { $ref: '#/components/schemas/Error' }
+    Forbidden:
+      description: The credentials are valid, but the role may not call this endpoint
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
     NotFound:
       description: The resource, or its parent, does not exist
       content:

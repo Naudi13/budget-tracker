@@ -10,7 +10,7 @@ documentation, backend, frontend, and database repositories.
 
 | Capability | Description |
 |---|---|
-| User account | Sign in with a single account per business; V1 has no differentiated roles or permissions |
+| User account | Sign in with a single account per business, with the role `USER` or `ADMIN` |
 | Income tracking | Register a transaction with a date and description, and one or more detail lines (subcategory and amount) |
 | Expense tracking | Register a transaction the same way, using an expense subcategory instead |
 | Category management | Create custom categories and subcategories per type; delete only when unused, deactivate otherwise |

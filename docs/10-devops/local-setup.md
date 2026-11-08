@@ -20,7 +20,7 @@ A PostgreSQL installed on the machine works too, in place of step 2.
    side by side. In each, copy its `.env.example` to `.env`; the defaults, the
    same as this repository's [`.env.example`](../.env.example), match the local
    database and need no edits to start.
-2. In `bud-tack-infra`, start PostgreSQL with `docker compose up -d`. It
+2. In `bud-tack-infra`, start PostgreSQL alone with `docker compose up -d postgres`. It
    creates the database named in `DATABASE_URL`, the application's role and the
    migrator role from [`security-policy.md`](../00-governance/security-policy.md).
 3. In `bud-tack-db`, apply the pending migrations with
@@ -54,7 +54,7 @@ To run what `staging` runs instead of steps 3 to 5, in `bud-tack-infra` set
 side by side, then:
 
 ```bash
-docker compose --profile app up -d --build --wait
+docker compose up -d --build --wait
 sh scripts/verify-stack.sh
 ```
 

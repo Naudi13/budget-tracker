@@ -40,6 +40,8 @@ that names it, so the history of the reasoning stays readable.
 | [ADR-004](./records/ADR-004-shared-database-and-per-piece-repositories.md) | One shared database and one repository per piece | Accepted | 2026-11-04 |
 | [ADR-005](./records/ADR-005-fluentmigrator-for-schema-migrations.md) | FluentMigrator for schema migrations, in `bud-tack-db` | Accepted | 2026-11-04 |
 | [ADR-006](./records/ADR-006-portal-image-behind-reverse-proxy.md) | The portal ships as its own image, behind a reverse proxy | Accepted | 2026-11-04 |
+| [ADR-007](./records/ADR-007-two-roles-in-the-token.md) | Two roles, carried in the token | Accepted | 2026-11-08 |
+| [ADR-008](./records/ADR-008-bcrypt-cors-and-swagger.md) | BCrypt, a CORS allow-list and Swagger | Accepted | 2026-11-08 |
 
 ## Naming
 

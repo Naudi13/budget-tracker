@@ -14,7 +14,7 @@ Schema-per-module and naming rules live in
 | Invariant | Enforced where |
 |---|---|
 | Email is unique | This module's `internal/domain`, at write time, and a unique index on `identity.users.email` |
-| V1 has a single account per business, with no differentiated roles | This module's `internal/application` — `SignUp` has no role parameter to set |
+| V1 has a single account per business; the role is `USER` or `ADMIN` (ADR-007) | This module's `internal/application` — `SignUp` has no role parameter to set |
 
 ## Cross-module references
 

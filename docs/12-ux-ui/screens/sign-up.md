@@ -22,7 +22,7 @@
 
 Flow: on `201` from `POST /users` the user is sent to [`sign-in.md`](./sign-in.md)
 with the email filled in and a success banner "Cuenta creada. Inicia sesión para empezar."
-V1 has one account per business, with no roles.
+A new account always has the role `USER`.
 
 ## States
 

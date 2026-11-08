@@ -20,8 +20,8 @@
 
 ## Expected result
 
-`password_hash` does not equal the plaintext password and matches the
-configured hashing algorithm's output format. No log line captured during
+`password_hash` does not equal the plaintext password and has BCrypt's format,
+starting with `$2` and naming cost 12. No log line captured during
 the call contains the plaintext password.
 
 ---

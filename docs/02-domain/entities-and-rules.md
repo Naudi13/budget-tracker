@@ -4,7 +4,7 @@
 
 | Entity | Key attributes | Invariants |
 |---|---|---|
-| User | name, email, password_hash | Email is unique; V1 has a single account per business, with no differentiated roles |
+| User | name, email, password_hash, role | Email is unique; V1 has a single account per business; role is `USER` or `ADMIN`, and signing up always gives `USER` |
 | Category | owner, name, type (income \| expense) | Name is unique within its owner and type, ignoring case |
 | Subcategory | category reference, name | Name is unique within its category, ignoring case |
 | Transaction | transaction date, description | Deleting a transaction is a soft delete, never a physical removal |
