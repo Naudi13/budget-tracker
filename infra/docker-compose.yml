@@ -1,14 +1,14 @@
 # bud-tack-infra — the whole application on one machine.
 #
-#   browser ──► portal (nginx, the only published port) ──/api/, /health──► api ──► postgres
+#   browser ──► portal (nginx, the only published port) ──/api/, /health, /swagger──► api ──► postgres
 #                                                                    migrate ──┘ (DDL, then exits)
 #
-# One origin for the browser, no CORS (ADR-006). The API publishes no port: it
+# One origin for the browser (ADR-006). The API publishes no port: it
 # is reachable only through the portal. PostgreSQL publishes 5432 on 127.0.0.1
 # only, for `dotnet run` in bud-tack-db and bud-tack-api during development.
 #
-#   docker compose up -d --wait                          PostgreSQL only (local-setup.md, step 2)
-#   docker compose --profile app up -d --build --wait    the whole application on :8080
+#   docker compose up -d --build --wait    the whole application on :8080
+#   docker compose up -d --wait postgres   PostgreSQL only (local-setup.md, step 2)
 name: bud-tack
 
 services:
@@ -39,7 +39,6 @@ services:
   # source with the .NET SDK. The source is mounted read-only and built in a
   # copy, so no bin/ or obj/ owned by root lands in your clone.
   migrate:
-    profiles: [app]
     image: mcr.microsoft.com/dotnet/sdk:10.0
     working_dir: /work
     command:
@@ -58,7 +57,6 @@ services:
         condition: service_healthy
 
   api:
-    profiles: [app]
     image: bud-tack-api:${APP_TAG:-local}
     build: ${API_SOURCE:-../bud-tack-api}
     restart: unless-stopped
@@ -69,6 +67,8 @@ services:
       # in its log; PostgreSQL alone does not need it.
       AUTH_JWT_SECRET: ${AUTH_JWT_SECRET:-}
       AUTH_JWT_EXPIRY_SECONDS: ${AUTH_JWT_EXPIRY_SECONDS:-3600}
+      # The one origin the API admits across origins (ADR-008).
+      CORS_ALLOWED_ORIGIN: ${CORS_ALLOWED_ORIGIN:-http://localhost:8080}
     # No `ports:` — the portal is the only way in (ADR-006).
     healthcheck:
       # The aspnet image has no curl or wget: ask /health over bash's /dev/tcp.
@@ -86,7 +86,6 @@ services:
         condition: service_completed_successfully
 
   portal:
-    profiles: [app]
     image: bud-tack-portal:${APP_TAG:-local}
     build: ${PORTAL_SOURCE:-../bud-tack-portal}
     restart: unless-stopped
