@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using System.Text.Encodings.Web;
 using BudTack.Identity.Api;
+using BudTack.Identity.Api.Contracts;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Options;
@@ -20,11 +21,15 @@ internal static class BearerAuthentication
 {
     public const string Scheme = "Bearer";
 
+    /// <summary>The policy of the endpoints only an administrator may call (ADR-007).</summary>
+    public const string AdminOnly = "AdminOnly";
+
     public static IServiceCollection AddBearerAuthentication(this IServiceCollection services)
     {
         services.AddAuthentication(Scheme).AddScheme<AuthenticationSchemeOptions, Handler>(Scheme, configureOptions: null);
         services.AddAuthorizationBuilder()
-            .SetDefaultPolicy(new AuthorizationPolicyBuilder(Scheme).RequireAuthenticatedUser().Build());
+            .SetDefaultPolicy(new AuthorizationPolicyBuilder(Scheme).RequireAuthenticatedUser().Build())
+            .AddPolicy(AdminOnly, new AuthorizationPolicyBuilder(Scheme).RequireAuthenticatedUser().RequireRole(Roles.Admin).Build());
         return services;
     }
 
@@ -59,14 +64,14 @@ internal static class BearerAuthentication
                 return AuthenticateResult.Fail("The Authorization header is not a bearer token.");
             }
 
-            var userId = await identity.AuthenticateAsync(header[Prefix.Length..].Trim());
-            if (userId is null)
+            var user = await identity.AuthenticateAsync(header[Prefix.Length..].Trim());
+            if (user is null)
             {
                 return AuthenticateResult.Fail("The bearer token is not valid or has expired.");
             }
 
             var principal = new ClaimsPrincipal(new ClaimsIdentity(
-                [new Claim(ClaimTypes.NameIdentifier, userId.Value.ToString())], Scheme.Name));
+                [new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()), new Claim(ClaimTypes.Role, user.Role)], Scheme.Name));
             return AuthenticateResult.Success(new AuthenticationTicket(principal, Scheme.Name));
         }
     }

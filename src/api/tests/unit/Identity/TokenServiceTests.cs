@@ -1,4 +1,5 @@
 using BudTack.Identity;
+using BudTack.Identity.Api.Contracts;
 using BudTack.Identity.Internal.Application;
 using Xunit;
 
@@ -14,14 +15,22 @@ public sealed class TokenServiceTests
     {
         var tokens = new TokenService(Settings, TimeProvider.System);
 
-        Assert.Equal(UserId, await tokens.ValidateAsync(tokens.Issue(UserId)));
+        Assert.Equal(new AuthenticatedUser(UserId, Roles.User), await tokens.ValidateAsync(tokens.Issue(UserId, Roles.User)));
+    }
+
+    [Fact]
+    public async Task ValidateAsync_adminToken_keepsItsRole() // HU-09
+    {
+        var tokens = new TokenService(Settings, TimeProvider.System);
+
+        Assert.Equal(Roles.Admin, (await tokens.ValidateAsync(tokens.Issue(UserId, Roles.Admin)))?.Role);
     }
 
     [Fact]
     public async Task ValidateAsync_expiredToken_isRefused()
     {
         var issuedTwoHoursAgo = new TokenService(Settings, new FixedClock(DateTimeOffset.UtcNow.AddHours(-2)));
-        var token = issuedTwoHoursAgo.Issue(UserId);
+        var token = issuedTwoHoursAgo.Issue(UserId, Roles.User);
 
         Assert.Null(await new TokenService(Settings, TimeProvider.System).ValidateAsync(token));
     }
@@ -30,7 +39,7 @@ public sealed class TokenServiceTests
     public async Task ValidateAsync_tokenSignedWithAnotherKey_isRefused()
     {
         var other = new IdentitySettings("another-secret-another-secret-01234567", TimeSpan.FromHours(1));
-        var token = new TokenService(other, TimeProvider.System).Issue(UserId);
+        var token = new TokenService(other, TimeProvider.System).Issue(UserId, Roles.User);
 
         Assert.Null(await new TokenService(Settings, TimeProvider.System).ValidateAsync(token));
     }
@@ -39,7 +48,7 @@ public sealed class TokenServiceTests
     public async Task ValidateAsync_tamperedPayload_isRefused()
     {
         var tokens = new TokenService(Settings, TimeProvider.System);
-        var parts = tokens.Issue(UserId).Split('.');
+        var parts = tokens.Issue(UserId, Roles.User).Split('.');
         var forged = string.Join('.', parts[0], parts[1][..^2] + (parts[1][^2] == 'A' ? "BA" : "AA"), parts[2]);
 
         Assert.Null(await tokens.ValidateAsync(forged));

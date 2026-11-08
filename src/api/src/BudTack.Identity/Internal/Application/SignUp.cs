@@ -6,7 +6,8 @@ namespace BudTack.Identity.Internal.Application;
 
 /// <summary>
 /// HU-01, sign-up: validate, refuse a taken email (TC-001), store only the
-/// password's hash (TC-014). The password never reaches a log line.
+/// password's hash (TC-014). The password never reaches a log line, and a new
+/// account is always a <c>USER</c> (HU-09).
 /// </summary>
 internal sealed partial class SignUp(IUsersRepository users, PasswordHasher hasher, ILogger<SignUp> logger)
 {
@@ -20,11 +21,11 @@ internal sealed partial class SignUp(IUsersRepository users, PasswordHasher hash
             throw new EmailAlreadyInUseException();
         }
 
-        var user = new Domain.User(Guid.CreateVersion7(), name, email, hasher.Hash(password));
+        var user = new Domain.User(Guid.CreateVersion7(), name, email, hasher.Hash(password), Roles.User);
         await users.AddAsync(user, cancellationToken).ConfigureAwait(false);
         LogSignedUp(logger, user.Id);
 
-        return new Api.Contracts.User(user.Id, user.Name, user.Email);
+        return new Api.Contracts.User(user.Id, user.Name, user.Email, user.Role);
     }
 
     [LoggerMessage(Level = LogLevel.Information, Message = "Account {UserId} signed up")]

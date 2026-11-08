@@ -51,7 +51,7 @@ public sealed class IdentityFacadeTests(PostgresFixture database) : IAsyncLifeti
         Assert.Equal("Ana Owner", row.GetString(0));
         Assert.Equal("owner@example.com", row.GetString(1));
         Assert.NotEqual("Str0ngPass!23", row.GetString(2));
-        Assert.Matches(@"^pbkdf2-sha256\$600000\$", row.GetString(2));
+        Assert.Matches(@"^\$2a\$12\$", row.GetString(2));
         Assert.Equal(user.Id, row.GetGuid(3));
     }
 
@@ -92,7 +92,8 @@ public sealed class IdentityFacadeTests(PostgresFixture database) : IAsyncLifeti
 
         var session = await Facade().SignInAsync(new Credentials("OWNER@example.com", "Str0ngPass!23"), Ct);
 
-        Assert.Equal(user.Id, await Facade().AuthenticateAsync(session.Token));
+        Assert.Equal(new AuthenticatedUser(user.Id, Roles.User), await Facade().AuthenticateAsync(session.Token));
+        Assert.Equal(Roles.User, session.Role);
     }
 
     [Fact]
@@ -102,6 +103,22 @@ public sealed class IdentityFacadeTests(PostgresFixture database) : IAsyncLifeti
 
         await Assert.ThrowsAsync<InvalidCredentialsException>(
             () => Facade().SignInAsync(new Credentials("owner@example.com", "Wrong-Pass-1"), Ct));
+    }
+
+    [Fact]
+    public async Task ListUsersAsync_readsTheRoleStored() // HU-09
+    {
+        await Facade().SignUpAsync(new NewUser("Zoe", "zoe@example.com", "Str0ngPass!23"), Ct);
+        var admin = await Facade().SignUpAsync(new NewUser("Admin", "admin@example.com", "Str0ngPass!23"), Ct);
+        await using var promote = database.DataSource.CreateCommand("UPDATE identity.users SET role = 'ADMIN' WHERE id = $1");
+        promote.Parameters.Add(new NpgsqlParameter { Value = admin.Id });
+        await promote.ExecuteNonQueryAsync(Ct);
+
+        var page = await Facade().ListUsersAsync(null, null, Ct);
+
+        Assert.Equal(["admin@example.com", "zoe@example.com"], page.Data.Select(user => user.Email));
+        Assert.Equal([Roles.Admin, Roles.User], page.Data.Select(user => user.Role));
+        Assert.Equal(2L, page.Meta.Total);
     }
 
     private async Task<long> CountUsersAsync()

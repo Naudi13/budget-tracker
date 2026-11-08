@@ -34,10 +34,12 @@ public static class IdentityModule
             provider.GetRequiredService<PasswordHasher>(),
             provider.GetRequiredService<TokenService>(),
             provider.GetRequiredService<ILogger<SignIn>>()));
+        services.AddScoped(provider => new ListUsers(provider.GetRequiredService<IUsersRepository>()));
         services.AddScoped(provider => new IdentityFacade(
             provider.GetRequiredService<SignUp>(),
             provider.GetRequiredService<SignIn>(),
-            provider.GetRequiredService<TokenService>()));
+            provider.GetRequiredService<TokenService>(),
+            provider.GetRequiredService<ListUsers>()));
         return services;
     }
 }

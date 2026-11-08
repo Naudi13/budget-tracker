@@ -28,7 +28,7 @@ internal sealed partial class SignIn(
         }
 
         LogSignedIn(logger, user.Id);
-        return new Session(tokens.Issue(user.Id), "Bearer", (int)tokens.Lifetime.TotalSeconds);
+        return new Session(tokens.Issue(user.Id, user.Role), "Bearer", (int)tokens.Lifetime.TotalSeconds, user.Role);
     }
 
     [LoggerMessage(Level = LogLevel.Information, Message = "Account {UserId} signed in")]

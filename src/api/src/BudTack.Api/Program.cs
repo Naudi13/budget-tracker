@@ -22,6 +22,8 @@ builder.Services.AddDatabase(builder.Configuration);
 builder.Services.AddApiErrors();
 builder.Services.AddHealth();
 builder.Services.AddBearerAuthentication();
+builder.Services.AddPortalCors(builder.Configuration);
+builder.Services.AddApiDocumentation();
 InternalControllers.FindInternalControllers(
     builder.Services.AddControllers(options => options.Filters.Add<ModuleErrorFilter>()));
 
@@ -30,13 +32,12 @@ builder.Services.AddIdentityModule(IdentityConfiguration.Read(builder.Configurat
 builder.Services.AddTransactionsModule();
 builder.Services.AddDashboardModule();
 
-// No CORS: the portal reaches the API through a same-origin proxy (ADR-006),
-// so every cross-origin request is refused by the browser.
-
 var app = builder.Build();
 
 app.UseMiddleware<CorrelationIdMiddleware>();
 app.UseApiErrors();
+app.UseCors();
+app.UseApiDocumentation();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapHealth();

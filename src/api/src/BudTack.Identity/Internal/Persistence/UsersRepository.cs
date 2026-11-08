@@ -14,13 +14,14 @@ internal sealed class UsersRepository(NpgsqlDataSource dataSource) : IUsersRepos
     {
         await using var command = dataSource.CreateCommand(
             """
-            INSERT INTO identity.users (id, name, email, password_hash, created_by, updated_by)
-            VALUES ($1, $2, $3, $4, $1, $1)
+            INSERT INTO identity.users (id, name, email, password_hash, role, created_by, updated_by)
+            VALUES ($1, $2, $3, $4, $5, $1, $1)
             """);
         command.Parameters.Add(new NpgsqlParameter { Value = user.Id });
         command.Parameters.Add(new NpgsqlParameter { Value = user.Name });
         command.Parameters.Add(new NpgsqlParameter { Value = user.Email });
         command.Parameters.Add(new NpgsqlParameter { Value = user.PasswordHash });
+        command.Parameters.Add(new NpgsqlParameter { Value = user.Role });
 
         try
         {
@@ -36,7 +37,7 @@ internal sealed class UsersRepository(NpgsqlDataSource dataSource) : IUsersRepos
     public async Task<Domain.User?> FindByEmailAsync(string email, CancellationToken cancellationToken)
     {
         await using var command = dataSource.CreateCommand(
-            "SELECT id, name, email, password_hash FROM identity.users WHERE email = $1");
+            "SELECT id, name, email, password_hash, role FROM identity.users WHERE email = $1");
         command.Parameters.Add(new NpgsqlParameter { Value = email });
 
         await using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
@@ -45,6 +46,31 @@ internal sealed class UsersRepository(NpgsqlDataSource dataSource) : IUsersRepos
             return null;
         }
 
-        return new Domain.User(reader.GetGuid(0), reader.GetString(1), reader.GetString(2), reader.GetString(3));
+        return ReadUser(reader);
     }
+
+    public async Task<(IReadOnlyList<Domain.User> Rows, long Total)> ListAsync(
+        int limit, int offset, CancellationToken cancellationToken)
+    {
+        var rows = new List<Domain.User>();
+        await using (var command = dataSource.CreateCommand(
+            "SELECT id, name, email, password_hash, role FROM identity.users ORDER BY email LIMIT $1 OFFSET $2"))
+        {
+            command.Parameters.Add(new NpgsqlParameter { Value = limit });
+            command.Parameters.Add(new NpgsqlParameter { Value = offset });
+
+            await using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+            while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
+            {
+                rows.Add(ReadUser(reader));
+            }
+        }
+
+        await using var count = dataSource.CreateCommand("SELECT count(*) FROM identity.users");
+        var total = (long)(await count.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false))!;
+        return (rows, total);
+    }
+
+    private static Domain.User ReadUser(NpgsqlDataReader reader) =>
+        new(reader.GetGuid(0), reader.GetString(1), reader.GetString(2), reader.GetString(3), reader.GetString(4));
 }

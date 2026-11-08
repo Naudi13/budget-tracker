@@ -9,7 +9,7 @@ namespace BudTack.Unit.Tests.Identity;
 public sealed class SignUpAndSignInTests
 {
     private readonly InMemoryUsers _users = new();
-    private readonly PasswordHasher _hasher = new(iterations: 1_000);
+    private readonly PasswordHasher _hasher = new(workFactor: 4);
     private readonly TokenService _tokens = new(TestModules.Identity, TimeProvider.System);
 
     private static CancellationToken Ct => TestContext.Current.CancellationToken;
@@ -24,7 +24,7 @@ public sealed class SignUpAndSignInTests
         var user = await SignUp.HandleAsync(new NewUser("Ana Owner", "Owner@Example.com", "Str0ngPass!23"), Ct);
 
         var row = Assert.Single(_users.Rows);
-        Assert.Equal(new User(row.Id, "Ana Owner", "owner@example.com"), user);
+        Assert.Equal(new User(row.Id, "Ana Owner", "owner@example.com", Roles.User), user);
         Assert.NotEqual("Str0ngPass!23", row.PasswordHash);
         Assert.True(PasswordHasher.Verify("Str0ngPass!23", row.PasswordHash));
     }
@@ -56,7 +56,7 @@ public sealed class SignUpAndSignInTests
 
         Assert.Equal("Bearer", session.TokenType);
         Assert.Equal(3600, session.ExpiresIn);
-        Assert.Equal(user.Id, await _tokens.ValidateAsync(session.Token));
+        Assert.Equal(new AuthenticatedUser(user.Id, Roles.User), await _tokens.ValidateAsync(session.Token));
     }
 
     [Fact]
