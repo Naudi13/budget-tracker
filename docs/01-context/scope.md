@@ -4,7 +4,8 @@
 
 | Capability | Note |
 |---|---|
-| User account | A single account per business signs in to access its own data; no roles or multi-user permissions |
+| User account | A single account per business signs in to access its own data |
+| Roles | Two roles, `USER` and `ADMIN`: every account is a `USER`, and an `ADMIN` can also list the accounts ([`ADR-007`](../05-architecture/decisions/records/ADR-007-two-roles-in-the-token.md)) |
 | Income registration | Record a transaction (date, description) with one or more detail lines, each an amount against an income subcategory |
 | Expense registration | Record a transaction the same way, using an expense subcategory for each detail line |
 | Category & subcategory management | Create custom categories (income or expense) and subcategories from Configuration; delete only when unused, deactivate otherwise |
@@ -22,7 +23,7 @@
 | Invoicing and client billing | This product tracks the business's own income and expenses, not invoices issued to customers |
 | Bank account integration / auto-import | Transactions are entered manually in V1; no bank API integration exists yet |
 | Multi-currency support | The target user operates in a single currency |
-| Multi-user roles and permissions | V1 serves a single account per business; team collaboration is a later version |
+| Several people sharing one business's data | V1 serves a single account per business; team collaboration is a later version |
 | Tax reporting and compliance exports | Out of scope until a specific jurisdiction's requirements are defined |
 | Splitting recording and dashboard into a separately deployed application | This product ships and scales as one deployable, by design |
 

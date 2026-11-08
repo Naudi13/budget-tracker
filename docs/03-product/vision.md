@@ -18,6 +18,7 @@ arithmetic**.
 | 2 | Make recording a transaction fast | Under 30 seconds from opening "New record" to returning to the dashboard |
 | 3 | Never lose a financial record by mistake | Every deleted transaction remains recoverable (soft delete); zero physical deletes in year one |
 | 4 | Keep the system usable without dedicated support staff | Zero dedicated operations hire required in year one |
+| 5 | Let an administrator see who uses the application, without opening another account's data | The account list is available to the `ADMIN` role only; 100% of calls with any other role get `403` |
 
 ## Reviewing the vision
 
