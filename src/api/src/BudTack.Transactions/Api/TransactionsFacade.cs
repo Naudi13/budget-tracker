@@ -35,8 +35,8 @@ public sealed class TransactionsFacade
 
     /// <summary>HU-02: <c>GET /categories</c>, optionally only <c>income</c> or <c>expense</c>.</summary>
     public Task<Page<Category>> ListCategoriesAsync(
-        Guid userId, int? page = null, int? limit = null, string? type = null, CancellationToken cancellationToken = default) =>
-        _categories.ListCategoriesAsync(userId, page, limit, type, cancellationToken);
+        int? page = null, int? limit = null, string? type = null, CancellationToken cancellationToken = default) =>
+        _categories.ListCategoriesAsync(page, limit, type, cancellationToken);
 
     /// <summary>HU-02: <c>POST /categories</c>; a name already used in that type is a conflict.</summary>
     public Task<Category> CreateCategoryAsync(Guid userId, NewCategory request, CancellationToken cancellationToken = default)
@@ -46,8 +46,8 @@ public sealed class TransactionsFacade
     }
 
     /// <summary>HU-03: <c>DELETE /categories/{id}</c>; refused while it owns a subcategory or a budget (BR-05).</summary>
-    public Task DeleteCategoryAsync(Guid userId, Guid categoryId, CancellationToken cancellationToken = default) =>
-        _categories.DeleteCategoryAsync(userId, categoryId, cancellationToken);
+    public Task DeleteCategoryAsync(Guid categoryId, CancellationToken cancellationToken = default) =>
+        _categories.DeleteCategoryAsync(categoryId, cancellationToken);
 
     /// <summary>HU-03: <c>PATCH /categories/{id}</c> with <c>isActive</c> (BR-05).</summary>
     public Task<Category> UpdateCategoryAsync(
@@ -59,8 +59,8 @@ public sealed class TransactionsFacade
 
     /// <summary>HU-02: <c>GET /categories/{id}/subcategories</c>.</summary>
     public Task<Page<Subcategory>> ListSubcategoriesAsync(
-        Guid userId, Guid categoryId, int? page = null, int? limit = null, CancellationToken cancellationToken = default) =>
-        _categories.ListSubcategoriesAsync(userId, categoryId, page, limit, cancellationToken);
+        Guid categoryId, int? page = null, int? limit = null, CancellationToken cancellationToken = default) =>
+        _categories.ListSubcategoriesAsync(categoryId, page, limit, cancellationToken);
 
     /// <summary>HU-02: <c>POST /categories/{id}/subcategories</c>; a name already used in that category is a conflict.</summary>
     public Task<Subcategory> CreateSubcategoryAsync(
@@ -72,8 +72,8 @@ public sealed class TransactionsFacade
 
     /// <summary>HU-03: <c>DELETE /categories/{id}/subcategories/{id}</c>; refused while a transaction uses it (BR-05).</summary>
     public Task DeleteSubcategoryAsync(
-        Guid userId, Guid categoryId, Guid subcategoryId, CancellationToken cancellationToken = default) =>
-        _categories.DeleteSubcategoryAsync(userId, categoryId, subcategoryId, cancellationToken);
+        Guid categoryId, Guid subcategoryId, CancellationToken cancellationToken = default) =>
+        _categories.DeleteSubcategoryAsync(categoryId, subcategoryId, cancellationToken);
 
     /// <summary>HU-03: <c>PATCH /categories/{id}/subcategories/{id}</c> with <c>isActive</c> (BR-05).</summary>
     public Task<Subcategory> SetSubcategoryActiveAsync(
@@ -112,8 +112,8 @@ public sealed class TransactionsFacade
 
     /// <summary>HU-07: <c>GET /budgets</c>, newest period first, optionally for one category.</summary>
     public Task<Page<Budget>> ListBudgetsAsync(
-        Guid userId, int? page = null, int? limit = null, Guid? categoryId = null, CancellationToken cancellationToken = default) =>
-        _budgets.ListAsync(userId, page, limit, categoryId, cancellationToken);
+        int? page = null, int? limit = null, Guid? categoryId = null, CancellationToken cancellationToken = default) =>
+        _budgets.ListAsync(page, limit, categoryId, cancellationToken);
 
     /// <summary>
     /// HU-07: <c>POST /budgets</c>. A period that does not end after it starts, or
@@ -134,6 +134,6 @@ public sealed class TransactionsFacade
     }
 
     /// <summary>HU-07: <c>DELETE /budgets/{id}</c>, a physical delete (BR-06).</summary>
-    public Task DeleteBudgetAsync(Guid userId, Guid budgetId, CancellationToken cancellationToken = default) =>
-        _budgets.DeleteAsync(userId, budgetId, cancellationToken);
+    public Task DeleteBudgetAsync(Guid budgetId, CancellationToken cancellationToken = default) =>
+        _budgets.DeleteAsync(budgetId, cancellationToken);
 }

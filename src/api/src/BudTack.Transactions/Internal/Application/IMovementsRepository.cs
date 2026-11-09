@@ -7,7 +7,7 @@ internal interface IMovementsRepository
 {
     /// <summary>The owner's subcategories among <paramref name="subcategoryIds"/>; others are left out.</summary>
     Task<IReadOnlyDictionary<Guid, SubcategoryUse>> FindSubcategoryUsesAsync(
-        Guid owner, IReadOnlyCollection<Guid> subcategoryIds, CancellationToken cancellationToken);
+        IReadOnlyCollection<Guid> subcategoryIds, CancellationToken cancellationToken);
 
     /// <summary>Stores a movement and its lines in one database transaction: all of it or none.</summary>
     Task AddAsync(Movement movement, CancellationToken cancellationToken);
