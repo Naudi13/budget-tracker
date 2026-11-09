@@ -282,4 +282,67 @@ describe('CategoriesPage', () => {
 
     expect(text()).toContain('No pudimos guardar el cambio. Inténtalo de nuevo.');
   });
+
+  describe('renaming a category', () => {
+    function rename(to: string): void {
+      click('Editar');
+      type('#rename-category', to);
+      submit('form.rename-category');
+    }
+
+    it('saves the new name, keeps the list sorted and shows the banner', () => {
+      load([office, { ...office, id: 'c3', name: 'Publicidad' }]);
+      rename('Zapatos');
+
+      const request = expectCall('PATCH', '/api/v1/categories/c1');
+      expect(request.request.body).toEqual({ name: 'Zapatos' });
+      request.flush({ ...office, name: 'Zapatos' });
+
+      expect(text()).toContain('Categoría guardada.');
+      expect(page().querySelector('form.rename-category')).toBeNull();
+      expect(Array.from(page().querySelectorAll('.category .name')).map((n) => n.textContent)).toEqual(['Publicidad', 'Zapatos']);
+    });
+
+    it('sends nothing when the name did not change', () => {
+      load([office]);
+      rename('Oficina');
+
+      expect(page().querySelector('form.rename-category')).toBeNull();
+    });
+
+    it('refuses an empty name without calling the API', () => {
+      load([office]);
+      rename('   ');
+
+      expect(text()).toContain('Escribe un nombre.');
+    });
+
+    it('says a name is taken in that type, keeping what was typed', () => {
+      load([office]);
+      rename('Arriendo');
+
+      expectCall('PATCH', '/api/v1/categories/c1').flush({ error: 'CONFLICT', message: 'x' }, { status: 409, statusText: 'Conflict' });
+
+      expect(text()).toContain('Ya existe una categoría de gasto llamada Arriendo.');
+      expect((page().querySelector('#rename-category') as HTMLInputElement).value).toBe('Arriendo');
+    });
+
+    it('says when the name could not be saved', () => {
+      load([office]);
+      rename('Arriendo');
+
+      expectCall('PATCH', '/api/v1/categories/c1').flush({}, { status: 500, statusText: 'Error' });
+
+      expect(text()).toContain('No pudimos guardar el cambio. Inténtalo de nuevo.');
+      expect(page().querySelector('form.rename-category')).not.toBeNull();
+    });
+
+    it('goes back to the list on Cancelar', () => {
+      load([office]);
+      click('Editar');
+      click('Cancelar');
+
+      expect(page().querySelector('form.rename-category')).toBeNull();
+    });
+  });
 });

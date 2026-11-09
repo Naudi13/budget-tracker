@@ -174,19 +174,23 @@ input[aria-invalid='true'] {
   color: var(--color-danger);
 }
 
-.add-subcategory {
+.add-subcategory,
+.rename-category {
+  /* rename-category replaces the row in place. */
   display: flex;
   flex-wrap: wrap;
   gap: calc(var(--space-unit) * 2);
   margin-top: calc(var(--space-unit) * 3);
 }
 
-.add-subcategory input {
+.add-subcategory input,
+.rename-category input {
   flex: 1;
   min-width: 160px;
 }
 
-.add-subcategory .field-error {
+.add-subcategory .field-error,
+.rename-category .field-error {
   flex-basis: 100%;
 }
 

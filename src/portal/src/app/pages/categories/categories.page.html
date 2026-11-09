@@ -81,12 +81,36 @@
           <ul class="categories">
             @for (group of section.groups; track group.category.id) {
               <li class="panel category">
+                @if (renaming()?.id === group.category.id) {
+                  <form class="rename-category" (submit)="$event.preventDefault(); saveName()" novalidate>
+                    <label for="rename-category" class="visually-hidden">Nuevo nombre de {{ group.category.name }}</label>
+                    <input
+                      id="rename-category"
+                      #renameField
+                      type="text"
+                      maxlength="100"
+                      [formControl]="nameField"
+                      [attr.aria-invalid]="nameError() !== null"
+                      [attr.aria-describedby]="nameError() ? 'rename-category-error' : null"
+                    />
+                    <button type="submit" class="btn-primary" [disabled]="savingName()">
+                      {{ savingName() ? 'Guardando…' : 'Guardar' }}
+                    </button>
+                    <button type="button" class="btn-secondary" (click)="cancelRename()">Cancelar</button>
+                    @if (nameError(); as message) {
+                      <p id="rename-category-error" class="field-error" role="alert">{{ message }}</p>
+                    }
+                  </form>
+                } @else {
                 <div class="row">
                   <span class="name">{{ group.category.name }}</span>
                   <span class="badge" [class.off]="!group.category.isActive">
                     {{ group.category.isActive ? 'Activa' : 'Inactiva' }}
                   </span>
                   <span class="row-actions">
+                    <button type="button" class="link" (click)="openRename(group.category)">
+                      Editar <span class="visually-hidden">{{ group.category.name }}</span>
+                    </button>
                     <button type="button" class="link" (click)="toggle({ kind: 'category', category: group.category })">
                       {{ group.category.isActive ? 'Desactivar' : 'Activar' }}
                       <span class="visually-hidden">{{ group.category.name }}</span>
@@ -96,6 +120,7 @@
                     </button>
                   </span>
                 </div>
+                }
 
                 @if (group.subcategories.length > 0) {
                   <ul class="subcategories">
