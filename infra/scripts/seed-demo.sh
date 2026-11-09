@@ -5,9 +5,11 @@
 #
 # Usage: sh scripts/seed-demo.sh         (from the repository root, .env present)
 #
-# Creates the account DEMO_EMAIL / DEMO_PASSWORD (defaults below, local only),
-# then its categories, subcategories, 24 transactions from September to
-# November 2026, and budgets. Run it once: if the account exists it stops
+# Signs in as the seeded administrator, creates and activates the USER account
+# DEMO_EMAIL / DEMO_PASSWORD (defaults below, local only), and fills the business:
+# the administrator sets up categories, subcategories and budgets, and that user
+# records 24 transactions from September to November 2026. Run it once: if the
+# account exists it stops
 # without touching anything. To start over: `docker compose down
 # --volumes`, then up again.
 set -eu
@@ -19,6 +21,8 @@ BASE="http://localhost:${PORTAL_PORT:-8080}/api/v1"
 DEMO_NAME="${DEMO_NAME:-Papelería El Estudiante}"
 DEMO_EMAIL="${DEMO_EMAIL:-demo@budgettracker.test}"
 DEMO_PASSWORD="${DEMO_PASSWORD:-Demo-2026!}"
+ADMIN_EMAIL="${ADMIN_EMAIL:-admin@budgettracker.test}"
+ADMIN_PASSWORD="${ADMIN_PASSWORD:-Admin-2026!}"
 TOKEN=""
 
 # send METHOD PATH EXPECTED_STATUS — the JSON body comes on stdin, so accented
@@ -74,22 +78,35 @@ budget() {
     | send POST /budgets 201 >/dev/null
 }
 
-# --- The account ---------------------------------------------------------------
+# sign_in EMAIL PASSWORD — prints the bearer token.
+sign_in() {
+  session=$(printf '{"email":"%s","password":"%s"}' "$1" "$2" | send POST /sessions 201) || exit 1
+  token=$(printf '%s' "$session" | sed -n 's/.*"token":"\([^"]*\)".*/\1/p')
+  [ -n "$token" ] || { echo "no token in: $session" >&2; exit 1; }
+  printf '%s' "$token"
+}
 
-signup=$(curl -s -o /dev/null -w '%{http_code}' -X POST "$BASE/users" -H 'Content-Type: application/json' \
-  --data-binary @- <<EOF
-{"name":"$DEMO_NAME","email":"$DEMO_EMAIL","password":"$DEMO_PASSWORD"}
+# --- The account: the administrator creates it, its owner activates it ----------
+
+ADMIN_TOKEN=$(sign_in "$ADMIN_EMAIL" "$ADMIN_PASSWORD") || exit 1
+
+created=$(curl -s -w '\n%{http_code}' -X POST "$BASE/users" -H 'Content-Type: application/json' \
+  -H "Authorization: Bearer $ADMIN_TOKEN" --data-binary @- <<EOF
+{"name":"$DEMO_NAME","email":"$DEMO_EMAIL","role":"USER"}
 EOF
 ) || { echo "no answer from $BASE — is the stack up?" >&2; exit 1; }
-case "$signup" in
+status=$(printf '%s' "$created" | tail -n 1)
+case "$status" in
   201) ;;
   409) echo "$DEMO_EMAIL already exists: nothing seeded. Start over with 'docker compose down --volumes'."; exit 0 ;;
-  *) echo "POST /users: status $signup, expected 201" >&2; exit 1 ;;
+  *) echo "POST /users: status $status, expected 201" >&2; exit 1 ;;
 esac
 
-session=$(printf '{"email":"%s","password":"%s"}' "$DEMO_EMAIL" "$DEMO_PASSWORD" | send POST /sessions 201)
-TOKEN=$(printf '%s' "$session" | sed -n 's/.*"token":"\([^"]*\)".*/\1/p')
-[ -n "$TOKEN" ] || { echo "no token in: $session" >&2; exit 1; }
+link=$(printf '%s' "$created" | sed -n 's/.*"token":"\([^"]*\)".*/\1/p')
+[ -n "$link" ] || { echo "no activation link in: $created" >&2; exit 1; }
+printf '{"token":"%s","password":"%s"}' "$link" "$DEMO_PASSWORD" | send POST /account-links/confirm 204 >/dev/null
+DEMO_TOKEN=$(sign_in "$DEMO_EMAIL" "$DEMO_PASSWORD") || exit 1
+TOKEN=$ADMIN_TOKEN
 
 # --- Categories and subcategories (HU-02) --------------------------------------
 
@@ -116,7 +133,9 @@ papeleria=$(subcategory "$oficina" "Papelería interna")
 publicidad=$(category "Publicidad" expense)
 volantes=$(subcategory "$publicidad" "Volantes")
 
-# --- Transactions (HU-04), some with several lines -----------------------------
+# --- Transactions (HU-04), recorded by the user, some with several lines --------
+
+TOKEN=$DEMO_TOKEN
 
 transaction 2026-09-02 "Arriendo de septiembre"            "$local_" 1800000
 transaction 2026-09-05 "Surtido de regreso a clases"       "$cuadernos" 950000 "$utiles" 420000
@@ -146,6 +165,8 @@ transaction 2026-11-05 "Fotocopias e impresiones"          "$fotocopias" 265500.
 transaction 2026-11-06 "Aseo y papelería de la oficina"    "$aseo" 48300 "$papeleria" 35200
 
 # --- A category no longer used (HU-03, BR-05): kept in the history, not offered.
+
+TOKEN=$ADMIN_TOKEN
 
 printf '{"isActive":false}' | send PATCH "/categories/$publicidad" 200 >/dev/null
 

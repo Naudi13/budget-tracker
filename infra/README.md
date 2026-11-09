@@ -79,8 +79,11 @@ Created by the migrations. Local values only.
 
 | Role | Email | Password | Can do |
 |---|---|---|---|
-| `ADMIN` | `admin@budgettracker.test` | `Admin-2026!` | Everything a `USER` can, and list the accounts |
-| `USER` | `usuario@budgettracker.test` | `Usuario-2026!` | Manage only their own data |
+| `ADMIN` | `admin@budgettracker.test` | `Admin-2026!` | Create accounts and generate their links, manage categories, subcategories and budgets, and see every transaction |
+| `USER` | `usuario@budgettracker.test` | `Usuario-2026!` | Record, see and delete only their own transactions, and read the dashboard |
+
+Nobody signs up: an administrator creates each account in **Usuarios** and hands
+over the single-use link its owner activates it with.
 
 Both start with empty screens. To see the application with data, load the demo
 business once, using `sh` or Git's `sh.exe` as in step 4:
@@ -93,9 +96,9 @@ sh scripts/seed-demo.sh
 |---|---|---|
 | `USER` | `demo@budgettracker.test` | `Demo-2026!` |
 
-It adds a stationery shop with categories, 24 transactions from September to
-November 2026, an inactive category (BR-05) and budgets. If the account exists it
-changes nothing.
+The administrator sets up a stationery shop with categories, an inactive category
+(BR-05) and budgets from October to December 2026, and that user records 24
+transactions from September to November. If the account exists it changes nothing.
 
 ### 7. Run the tests
 
@@ -140,6 +143,7 @@ These are errors the team met and solved while building the project.
 | PowerShell says `sh` is not recognized | PowerShell has no `sh` | Run the script with `& "C:\Program Files\Git\bin\sh.exe" scripts/<name>.sh`, or open Git Bash |
 | Docker cannot find `../src/api` or another folder | A value in `.env` points elsewhere | Copy `.env.example` again, or set `DB_SOURCE`, `API_SOURCE` and `PORTAL_SOURCE` in `.env` to the real paths |
 | The `api` service never becomes healthy and its log says `AUTH_JWT_SECRET is not set` | `.env` was copied before that variable existed | Copy `.env.example` to `.env` again, then repeat step 4 |
+| The only administrator forgot the password | No administrator can generate a link | Run `sh scripts/admin-reset-link.sh admin@budgettracker.test` (or Git's `sh.exe`, as in step 4) and open the link it prints |
 | Sign-in refuses a test user with the right password | An older database volume or image from before the seed users and BCrypt | Run `docker compose down --volumes`, then repeat step 4 with `--build` |
 
 ## Reference
@@ -155,7 +159,7 @@ These are errors the team met and solved while building the project.
 
 Both images carry the same `APP_TAG` (`10-devops/ci-cd.md`). `verify-stack.sh`
 checks `/`, a deep link, `/health`, `/api/` and Swagger through the portal, `401`
-without a token, `200` as `ADMIN` and `403` as `USER`, that the API publishes no
+without a token and on a sign-up, `200` as `ADMIN` and `403` as `USER`, that the API publishes no
 port, and that the migrations created the module schemas.
 
 ### PostgreSQL alone
