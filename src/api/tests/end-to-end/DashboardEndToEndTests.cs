@@ -27,7 +27,7 @@ public sealed class DashboardEndToEndTests(PostgresFixture postgres)
     public async Task Dashboard_newAccount_isAllZeros_withNoRecentTransactions()
     {
         await using var api = new ApiFactory(postgres.DatabaseUrl);
-        using var client = await Accounts.SignedInAsync(api);
+        using var client = await Accounts.AdminAsync(api, postgres);
 
         var body = await Dashboard(client);
 
@@ -41,7 +41,7 @@ public sealed class DashboardEndToEndTests(PostgresFixture postgres)
     public async Task Dashboard_totalsAndRecentList_onRead_withinTwoSeconds() // TC-008, TC-010
     {
         await using var api = new ApiFactory(postgres.DatabaseUrl);
-        using var client = await Accounts.SignedInAsync(api);
+        using var client = await Accounts.AdminAsync(api, postgres);
         var store = await Subcategory(client, "Ventas", "income", "Tienda");
         var supplies = await Subcategory(client, "Oficina", "expense", "Papelería");
         await Record(client, "2026-11-01", "Venta", store, 1000m);

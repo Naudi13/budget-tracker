@@ -9,7 +9,6 @@ namespace BudTack.Unit.Tests.Transactions;
 public sealed class ManageCategoriesTests
 {
     private static readonly Guid Ana = Guid.Parse("00000000-0000-7000-8000-00000000000a");
-    private static readonly Guid Leo = Guid.Parse("00000000-0000-7000-8000-00000000000b");
 
     private readonly InMemoryCategories _tables = new();
     private readonly ManageCategories _categories;
@@ -27,7 +26,6 @@ public sealed class ManageCategoriesTests
         var category = await Create(Ana, " Oficina ");
 
         Assert.Equal(new Category(category.Id, "Oficina", "expense", IsActive: true), category);
-        Assert.Equal(Ana, Assert.Single(_tables.Categories).OwnedBy);
     }
 
     [Fact]
@@ -39,14 +37,13 @@ public sealed class ManageCategoriesTests
     }
 
     [Fact]
-    public async Task ListCategoriesAsync_onlyTheOwners_byTypeThenName_withTheTotal()
+    public async Task ListCategoriesAsync_byTypeThenName_withTheTotal()
     {
         await Create(Ana, "Viajes");
         await Create(Ana, "oficina");
         await Create(Ana, "Ventas", "income");
-        await Create(Leo, "Ajena");
 
-        var page = await _categories.ListCategoriesAsync(Ana, page: null, limit: null, type: null, Ct);
+        var page = await _categories.ListCategoriesAsync(page: null, limit: null, type: null, Ct);
 
         Assert.Equal(["oficina", "Viajes", "Ventas"], page.Data.Select(c => c.Name));
         Assert.Equal(new PageMeta(1, 20, 3), page.Meta);
@@ -60,7 +57,7 @@ public sealed class ManageCategoriesTests
         await Create(Ana, "C");
         await Create(Ana, "Ventas", "income");
 
-        var page = await _categories.ListCategoriesAsync(Ana, page: 2, limit: 2, type: "expense", Ct);
+        var page = await _categories.ListCategoriesAsync(page: 2, limit: 2, type: "expense", Ct);
 
         Assert.Equal(["C"], page.Data.Select(c => c.Name));
         Assert.Equal(new PageMeta(2, 2, 3), page.Meta);
@@ -70,7 +67,7 @@ public sealed class ManageCategoriesTests
     public async Task ListCategoriesAsync_badFilter_isAValidationError()
     {
         await Assert.ThrowsAsync<TransactionsValidationException>(
-            () => _categories.ListCategoriesAsync(Ana, null, null, "all", Ct));
+            () => _categories.ListCategoriesAsync(null, null, "all", Ct));
     }
 
     [Fact]
@@ -78,7 +75,7 @@ public sealed class ManageCategoriesTests
     {
         var category = await Create(Ana, "Oficina");
 
-        await _categories.DeleteCategoryAsync(Ana, category.Id, Ct);
+        await _categories.DeleteCategoryAsync(category.Id, Ct);
 
         Assert.Empty(_tables.Categories);
     }
@@ -89,19 +86,8 @@ public sealed class ManageCategoriesTests
         var category = await Create(Ana, "Oficina");
         await _categories.CreateSubcategoryAsync(Ana, category.Id, new NewSubcategory("Papelería"), Ct);
 
-        await Assert.ThrowsAsync<TransactionsConflictException>(() => _categories.DeleteCategoryAsync(Ana, category.Id, Ct));
+        await Assert.ThrowsAsync<TransactionsConflictException>(() => _categories.DeleteCategoryAsync(category.Id, Ct));
         Assert.True(Assert.Single(_tables.Categories).IsActive);
-    }
-
-    [Fact]
-    public async Task DeleteCategoryAsync_ofAnotherOwner_isNotFound_andKeepsIt()
-    {
-        var category = await Create(Leo, "Ajena");
-
-        var error = await Assert.ThrowsAsync<TransactionsNotFoundException>(
-            () => _categories.DeleteCategoryAsync(Ana, category.Id, Ct));
-        Assert.Equal(ManageCategories.CategoryNotFound, error.Message);
-        Assert.Single(_tables.Categories);
     }
 
     [Fact]
@@ -111,16 +97,6 @@ public sealed class ManageCategoriesTests
 
         Assert.False((await _categories.UpdateCategoryAsync(Ana, category.Id, new CategoryChanges(null, false), Ct)).IsActive);
         Assert.True((await _categories.UpdateCategoryAsync(Ana, category.Id, new CategoryChanges(null, true), Ct)).IsActive);
-    }
-
-    [Fact]
-    public async Task UpdateCategoryAsync_ofAnotherOwner_isNotFound()
-    {
-        var category = await Create(Leo, "Ajena");
-
-        await Assert.ThrowsAsync<TransactionsNotFoundException>(
-            () => _categories.UpdateCategoryAsync(Ana, category.Id, new CategoryChanges(null, false), Ct));
-        Assert.True(Assert.Single(_tables.Categories).IsActive);
     }
 
     [Fact]
@@ -143,16 +119,6 @@ public sealed class ManageCategoriesTests
     }
 
     [Fact]
-    public async Task CreateSubcategoryAsync_inAnotherOwnersCategory_isNotFound_andStoresNothing()
-    {
-        var category = await Create(Leo, "Ajena");
-
-        await Assert.ThrowsAsync<TransactionsNotFoundException>(
-            () => _categories.CreateSubcategoryAsync(Ana, category.Id, new NewSubcategory("x"), Ct));
-        Assert.Empty(_tables.Subcategories);
-    }
-
-    [Fact]
     public async Task CreateSubcategoryAsync_duplicateName_isAConflict() // TC-002
     {
         var category = await Create(Ana, "Oficina");
@@ -172,19 +138,10 @@ public sealed class ManageCategoriesTests
             await _categories.CreateSubcategoryAsync(Ana, category.Id, new NewSubcategory(name), Ct);
         }
 
-        var page = await _categories.ListSubcategoriesAsync(Ana, category.Id, page: 1, limit: 2, Ct);
+        var page = await _categories.ListSubcategoriesAsync(category.Id, page: 1, limit: 2, Ct);
 
         Assert.Equal(["Lápices", "papel"], page.Data.Select(s => s.Name));
         Assert.Equal(new PageMeta(1, 2, 3), page.Meta);
-    }
-
-    [Fact]
-    public async Task ListSubcategoriesAsync_ofAnotherOwnersCategory_isNotFound()
-    {
-        var category = await Create(Leo, "Ajena");
-
-        await Assert.ThrowsAsync<TransactionsNotFoundException>(
-            () => _categories.ListSubcategoriesAsync(Ana, category.Id, null, null, Ct));
     }
 
     [Fact]
@@ -193,8 +150,8 @@ public sealed class ManageCategoriesTests
         var category = await Create(Ana, "Oficina");
         var subcategory = await _categories.CreateSubcategoryAsync(Ana, category.Id, new NewSubcategory("Papelería"), Ct);
 
-        await _categories.DeleteSubcategoryAsync(Ana, category.Id, subcategory.Id, Ct);
-        await _categories.DeleteCategoryAsync(Ana, category.Id, Ct);
+        await _categories.DeleteSubcategoryAsync(category.Id, subcategory.Id, Ct);
+        await _categories.DeleteCategoryAsync(category.Id, Ct);
 
         Assert.Empty(_tables.Subcategories);
         Assert.Empty(_tables.Categories);
@@ -208,23 +165,12 @@ public sealed class ManageCategoriesTests
         _tables.UsedSubcategories.Add(subcategory.Id);
 
         await Assert.ThrowsAsync<TransactionsConflictException>(
-            () => _categories.DeleteSubcategoryAsync(Ana, category.Id, subcategory.Id, Ct));
+            () => _categories.DeleteSubcategoryAsync(category.Id, subcategory.Id, Ct));
         Assert.Single(_tables.Subcategories);
     }
 
     [Fact]
-    public async Task DeleteSubcategoryAsync_ofAnotherOwner_isNotFound()
-    {
-        var category = await Create(Leo, "Ajena");
-        var subcategory = await _categories.CreateSubcategoryAsync(Leo, category.Id, new NewSubcategory("x"), Ct);
-
-        var error = await Assert.ThrowsAsync<TransactionsNotFoundException>(
-            () => _categories.DeleteSubcategoryAsync(Ana, category.Id, subcategory.Id, Ct));
-        Assert.Equal(ManageCategories.SubcategoryNotFound, error.Message);
-    }
-
-    [Fact]
-    public async Task SetSubcategoryActiveAsync_deactivates_andRefusesAnotherOwner()
+    public async Task SetSubcategoryActiveAsync_deactivates()
     {
         var category = await Create(Ana, "Oficina");
         var subcategory = await _categories.CreateSubcategoryAsync(Ana, category.Id, new NewSubcategory("Papelería"), Ct);
@@ -232,7 +178,5 @@ public sealed class ManageCategoriesTests
         var updated = await _categories.SetSubcategoryActiveAsync(Ana, category.Id, subcategory.Id, new ActivationUpdate(false), Ct);
 
         Assert.False(updated.IsActive);
-        await Assert.ThrowsAsync<TransactionsNotFoundException>(
-            () => _categories.SetSubcategoryActiveAsync(Leo, category.Id, subcategory.Id, new ActivationUpdate(true), Ct));
     }
 }

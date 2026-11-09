@@ -18,7 +18,6 @@ namespace BudTack.ModuleIntegration.Tests.Transactions;
 public sealed class BudgetsFacadeTests(PostgresFixture database) : IAsyncLifetime, IDisposable
 {
     private static readonly Guid Ana = Guid.Parse("00000000-0000-7000-8000-00000000000a");
-    private static readonly Guid Leo = Guid.Parse("00000000-0000-7000-8000-00000000000b");
     private static readonly DateOnly Nov1 = new(2026, 11, 1);
     private static readonly DateOnly Nov30 = new(2026, 11, 30);
 
@@ -51,7 +50,7 @@ public sealed class BudgetsFacadeTests(PostgresFixture database) : IAsyncLifetim
         await Assert.ThrowsAsync<TransactionsBusinessRuleException>(
             () => Facade().CreateBudgetAsync(Ana, new NewBudget(_office.Id, 500m, Nov1, new DateOnly(2026, 10, 31)), Ct));
 
-        Assert.Equal(0L, (await Facade().ListBudgetsAsync(Ana, cancellationToken: Ct)).Meta.Total);
+        Assert.Equal(0L, (await Facade().ListBudgetsAsync(cancellationToken: Ct)).Meta.Total);
     }
 
     [Fact]
@@ -62,40 +61,40 @@ public sealed class BudgetsFacadeTests(PostgresFixture database) : IAsyncLifetim
         // 1. A change that breaks the period fails, and the row keeps its end.
         await Assert.ThrowsAsync<TransactionsBusinessRuleException>(
             () => Facade().UpdateBudgetAsync(Ana, budget.Id, new BudgetChanges(null, null, null, new DateOnly(2026, 10, 15)), Ct));
-        Assert.Equal(Nov30, (await Facade().ListBudgetsAsync(Ana, cancellationToken: Ct)).Data.Single().PeriodEnd);
+        Assert.Equal(Nov30, (await Facade().ListBudgetsAsync(cancellationToken: Ct)).Data.Single().PeriodEnd);
 
         // 2. Changing the amount succeeds.
         Assert.Equal(650m, (await Facade().UpdateBudgetAsync(Ana, budget.Id, new BudgetChanges(null, 650m, null, null), Ct)).Amount);
-        Assert.Equal(650m, (await Facade().ListBudgetsAsync(Ana, cancellationToken: Ct)).Data.Single().Amount);
+        Assert.Equal(650m, (await Facade().ListBudgetsAsync(cancellationToken: Ct)).Data.Single().Amount);
 
         // 3. The category cannot be deleted: it owns a budget (BR-05).
-        await Assert.ThrowsAsync<TransactionsConflictException>(() => Facade().DeleteCategoryAsync(Ana, _office.Id, Ct));
+        await Assert.ThrowsAsync<TransactionsConflictException>(() => Facade().DeleteCategoryAsync(_office.Id, Ct));
 
         // 4. The budget is deleted, physically (BR-06).
-        await Facade().DeleteBudgetAsync(Ana, budget.Id, Ct);
+        await Facade().DeleteBudgetAsync(budget.Id, Ct);
         await using (var command = database.DataSource.CreateCommand("SELECT count(*) FROM transactions.budgets"))
         {
             Assert.Equal(0L, (long)(await command.ExecuteScalarAsync(Ct))!);
         }
 
         // 5. Nothing else blocks the category now.
-        await Facade().DeleteCategoryAsync(Ana, _office.Id, Ct);
+        await Facade().DeleteCategoryAsync(_office.Id, Ct);
     }
 
     [Fact]
-    public async Task ListBudgetsAsync_byCategory_newestPeriodFirst_onlyTheOwners()
+    public async Task ListBudgetsAsync_byCategory_newestPeriodFirst()
     {
         var travel = await Facade().CreateCategoryAsync(Ana, new NewCategory("Viajes", "expense"), Ct);
         await Facade().CreateBudgetAsync(Ana, new NewBudget(_office.Id, 1m, Nov1, Nov30), Ct);
         await Facade().CreateBudgetAsync(Ana, new NewBudget(_office.Id, 2m, new DateOnly(2026, 12, 1), new DateOnly(2026, 12, 31)), Ct);
         await Facade().CreateBudgetAsync(Ana, new NewBudget(travel.Id, 3m, Nov1, Nov30), Ct);
 
-        var office = await Facade().ListBudgetsAsync(Ana, categoryId: _office.Id, cancellationToken: Ct);
-        var others = await Facade().ListBudgetsAsync(Leo, cancellationToken: Ct);
+        var office = await Facade().ListBudgetsAsync(categoryId: _office.Id, cancellationToken: Ct);
+        var all = await Facade().ListBudgetsAsync(cancellationToken: Ct);
 
         Assert.Equal([2m, 1m], office.Data.Select(b => b.Amount));
         Assert.Equal(2L, office.Meta.Total);
-        Assert.Equal(0L, others.Meta.Total);
+        Assert.Equal(3L, all.Meta.Total);
     }
 
     [Fact]
@@ -110,15 +109,4 @@ public sealed class BudgetsFacadeTests(PostgresFixture database) : IAsyncLifetim
             () => Facade().UpdateBudgetAsync(Ana, budget.Id, new BudgetChanges(null, 1m, null, null), Ct));
     }
 
-    [Fact]
-    public async Task AnotherOwner_cannotChangeOrDeleteMyBudget_norBudgetMyCategory()
-    {
-        var budget = await Facade().CreateBudgetAsync(Ana, new NewBudget(_office.Id, 500m, Nov1, Nov30), Ct);
-
-        await Assert.ThrowsAsync<TransactionsNotFoundException>(
-            () => Facade().UpdateBudgetAsync(Leo, budget.Id, new BudgetChanges(null, 1m, null, null), Ct));
-        await Assert.ThrowsAsync<TransactionsNotFoundException>(() => Facade().DeleteBudgetAsync(Leo, budget.Id, Ct));
-        await Assert.ThrowsAsync<TransactionsValidationException>(
-            () => Facade().CreateBudgetAsync(Leo, new NewBudget(_office.Id, 1m, Nov1, Nov30), Ct));
-    }
 }

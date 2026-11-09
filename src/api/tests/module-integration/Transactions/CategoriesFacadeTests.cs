@@ -44,42 +44,40 @@ public sealed class CategoriesFacadeTests(PostgresFixture database) : IAsyncLife
         Facade().CreateCategoryAsync(owner, new NewCategory(name, type), Ct);
 
     [Fact]
-    public async Task CreateCategoryAsync_isStoredForItsOwner_withAuditColumns()
+    public async Task CreateCategoryAsync_isStoredWithAuditColumns()
     {
         var category = await Create(Ana, "Oficina");
 
         await using var command = database.DataSource.CreateCommand(
-            "SELECT owned_by, created_by, updated_by, is_active FROM transactions.categories WHERE id = $1");
+            "SELECT created_by, updated_by, is_active FROM transactions.categories WHERE id = $1");
         command.Parameters.Add(new Npgsql.NpgsqlParameter { Value = category.Id });
         await using var row = await command.ExecuteReaderAsync(Ct);
         Assert.True(await row.ReadAsync(Ct));
         Assert.Equal(Ana, row.GetGuid(0));
         Assert.Equal(Ana, row.GetGuid(1));
-        Assert.Equal(Ana, row.GetGuid(2));
-        Assert.True(row.GetBoolean(3));
+        Assert.True(row.GetBoolean(2));
     }
 
     [Fact]
-    public async Task CreateCategoryAsync_sameNameAndType_inAnyCase_isAConflict_butNotForAnotherTypeOrOwner()
+    public async Task CreateCategoryAsync_sameNameAndType_inAnyCase_isAConflict_evenFromAnotherUser_butNotForAnotherType()
     {
         await Create(Ana, "Oficina");
 
         await Assert.ThrowsAsync<TransactionsConflictException>(() => Create(Ana, "OFICINA"));
         await Create(Ana, "Oficina", "income");
-        await Create(Leo, "Oficina");
-        Assert.Equal(3L, await CountAsync("transactions.categories"));
+        await Assert.ThrowsAsync<TransactionsConflictException>(() => Create(Leo, "Oficina"));
+        Assert.Equal(2L, await CountAsync("transactions.categories"));
     }
 
     [Fact]
-    public async Task ListCategoriesAsync_showsOnlyTheOwnersRows_inOrder_andPaged()
+    public async Task ListCategoriesAsync_inOrder_andPaged()
     {
         await Create(Ana, "Viajes");
         await Create(Ana, "oficina");
         await Create(Ana, "Ventas", "income");
-        await Create(Leo, "Ajena");
 
-        var all = await Facade().ListCategoriesAsync(Ana, cancellationToken: Ct);
-        var expenses = await Facade().ListCategoriesAsync(Ana, page: 2, limit: 1, type: "expense", cancellationToken: Ct);
+        var all = await Facade().ListCategoriesAsync(cancellationToken: Ct);
+        var expenses = await Facade().ListCategoriesAsync(page: 2, limit: 1, type: "expense", cancellationToken: Ct);
 
         Assert.Equal(["oficina", "Viajes", "Ventas"], all.Data.Select(c => c.Name));
         Assert.Equal(new PageMeta(1, 20, 3), all.Meta);
@@ -93,31 +91,10 @@ public sealed class CategoriesFacadeTests(PostgresFixture database) : IAsyncLife
         var category = await Create(Ana, "Oficina");
         await Facade().CreateSubcategoryAsync(Ana, category.Id, new NewSubcategory("Papelería"), Ct);
 
-        await Assert.ThrowsAsync<TransactionsConflictException>(() => Facade().DeleteCategoryAsync(Ana, category.Id, Ct));
+        await Assert.ThrowsAsync<TransactionsConflictException>(() => Facade().DeleteCategoryAsync(category.Id, Ct));
 
         Assert.Equal(1L, await CountAsync("transactions.categories"));
-        Assert.True((await Facade().ListCategoriesAsync(Ana, cancellationToken: Ct)).Data.Single().IsActive);
-    }
-
-    [Fact]
-    public async Task DeleteCategoryAsync_ofAnotherOwner_isNotFound_andKeepsTheRow()
-    {
-        var category = await Create(Leo, "Ajena");
-
-        await Assert.ThrowsAsync<TransactionsNotFoundException>(() => Facade().DeleteCategoryAsync(Ana, category.Id, Ct));
-        Assert.Equal(1L, await CountAsync("transactions.categories"));
-    }
-
-    [Fact]
-    public async Task UpdateCategoryAsync_onlyForItsOwner()
-    {
-        var category = await Create(Ana, "Oficina");
-
-        var off = await Facade().UpdateCategoryAsync(Ana, category.Id, new CategoryChanges(null, false), Ct);
-
-        Assert.False(off.IsActive);
-        await Assert.ThrowsAsync<TransactionsNotFoundException>(
-            () => Facade().UpdateCategoryAsync(Leo, category.Id, new CategoryChanges(null, true), Ct));
+        Assert.True((await Facade().ListCategoriesAsync(cancellationToken: Ct)).Data.Single().IsActive);
     }
 
     [Fact]
@@ -130,30 +107,13 @@ public sealed class CategoriesFacadeTests(PostgresFixture database) : IAsyncLife
         await Assert.ThrowsAsync<TransactionsConflictException>(
             () => Facade().CreateSubcategoryAsync(Ana, category.Id, new NewSubcategory("papelería"), Ct));
         var off = await Facade().SetSubcategoryActiveAsync(Ana, category.Id, paper.Id, new ActivationUpdate(false), Ct);
-        var page = await Facade().ListSubcategoriesAsync(Ana, category.Id, cancellationToken: Ct);
+        var page = await Facade().ListSubcategoriesAsync(category.Id, cancellationToken: Ct);
 
         Assert.False(off.IsActive);
         Assert.Equal(["Papelería", "Tinta"], page.Data.Select(s => s.Name));
         Assert.Equal(2L, page.Meta.Total);
 
-        await Facade().DeleteSubcategoryAsync(Ana, category.Id, paper.Id, Ct);
-        Assert.Equal(1L, await CountAsync("transactions.subcategories"));
-    }
-
-    [Fact]
-    public async Task Subcategories_ofAnotherOwnersCategory_areNotFound()
-    {
-        var category = await Create(Leo, "Ajena");
-        var subcategory = await Facade().CreateSubcategoryAsync(Leo, category.Id, new NewSubcategory("x"), Ct);
-
-        await Assert.ThrowsAsync<TransactionsNotFoundException>(
-            () => Facade().ListSubcategoriesAsync(Ana, category.Id, cancellationToken: Ct));
-        await Assert.ThrowsAsync<TransactionsNotFoundException>(
-            () => Facade().CreateSubcategoryAsync(Ana, category.Id, new NewSubcategory("y"), Ct));
-        await Assert.ThrowsAsync<TransactionsNotFoundException>(
-            () => Facade().DeleteSubcategoryAsync(Ana, category.Id, subcategory.Id, Ct));
-        await Assert.ThrowsAsync<TransactionsNotFoundException>(
-            () => Facade().SetSubcategoryActiveAsync(Ana, category.Id, subcategory.Id, new ActivationUpdate(false), Ct));
+        await Facade().DeleteSubcategoryAsync(category.Id, paper.Id, Ct);
         Assert.Equal(1L, await CountAsync("transactions.subcategories"));
     }
 

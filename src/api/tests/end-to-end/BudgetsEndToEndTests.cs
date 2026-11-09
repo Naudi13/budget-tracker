@@ -32,7 +32,7 @@ public sealed class BudgetsEndToEndTests(PostgresFixture postgres)
     public async Task Create_isCreatedWithItsLocation_andListedByCategory()
     {
         await using var api = new ApiFactory(postgres.DatabaseUrl);
-        using var client = await Accounts.SignedInAsync(api);
+        using var client = await Accounts.AdminAsync(api, postgres);
         var office = await Category(client, "Oficina");
         var travel = await Category(client, "Viajes");
 
@@ -55,7 +55,7 @@ public sealed class BudgetsEndToEndTests(PostgresFixture postgres)
     public async Task Create_periodEndingBeforeItStarts_is422_andAZeroAmount_is400() // TC-007
     {
         await using var api = new ApiFactory(postgres.DatabaseUrl);
-        using var client = await Accounts.SignedInAsync(api);
+        using var client = await Accounts.AdminAsync(api, postgres);
         var office = await Category(client, "Oficina");
 
         using var period = await client.PostAsJsonAsync(
@@ -75,7 +75,7 @@ public sealed class BudgetsEndToEndTests(PostgresFixture postgres)
     public async Task TC019_overHttp_changeRefused_changeAccepted_categoryBlocked_deleted_categoryFree()
     {
         await using var api = new ApiFactory(postgres.DatabaseUrl);
-        using var client = await Accounts.SignedInAsync(api);
+        using var client = await Accounts.AdminAsync(api, postgres);
         var office = await Category(client, "Oficina");
         using var created = await client.PostAsJsonAsync(
             "/api/v1/budgets", new { categoryId = office, amount = 500m, periodStart = "2026-11-01", periodEnd = "2026-11-30" }, Ct);
@@ -103,7 +103,7 @@ public sealed class BudgetsEndToEndTests(PostgresFixture postgres)
     public async Task Patch_withNothingToChange_is400()
     {
         await using var api = new ApiFactory(postgres.DatabaseUrl);
-        using var client = await Accounts.SignedInAsync(api);
+        using var client = await Accounts.AdminAsync(api, postgres);
         var office = await Category(client, "Oficina");
         using var created = await client.PostAsJsonAsync(
             "/api/v1/budgets", new { categoryId = office, amount = 500m, periodStart = "2026-11-01", periodEnd = "2026-11-30" }, Ct);
@@ -112,26 +112,6 @@ public sealed class BudgetsEndToEndTests(PostgresFixture postgres)
         using var empty = await client.PatchAsJsonAsync($"/api/v1/budgets/{id}", new { }, Ct);
 
         Assert.Equal(HttpStatusCode.BadRequest, empty.StatusCode);
-    }
-
-    [Fact]
-    public async Task AnotherBusiness_neverSeesOrTouchesMyBudgets()
-    {
-        await using var api = new ApiFactory(postgres.DatabaseUrl);
-        using var mine = await Accounts.SignedInAsync(api);
-        using var theirs = await Accounts.SignedInAsync(api);
-        var office = await Category(mine, "Oficina");
-        using var created = await mine.PostAsJsonAsync(
-            "/api/v1/budgets", new { categoryId = office, amount = 500m, periodStart = "2026-11-01", periodEnd = "2026-11-30" }, Ct);
-        var id = (await Json(created)).RootElement.GetProperty("id").GetGuid();
-
-        using var list = await theirs.GetAsync(new Uri("/api/v1/budgets", UriKind.Relative), Ct);
-        using var patch = await theirs.PatchAsJsonAsync($"/api/v1/budgets/{id}", new { amount = 1m }, Ct);
-        using var delete = await theirs.DeleteAsync(new Uri($"/api/v1/budgets/{id}", UriKind.Relative), Ct);
-
-        Assert.Equal(0, (await Json(list)).RootElement.GetProperty("meta").GetProperty("total").GetInt64());
-        Assert.Equal(HttpStatusCode.NotFound, patch.StatusCode);
-        Assert.Equal(HttpStatusCode.NotFound, delete.StatusCode);
     }
 
     private static async Task<Guid> Category(HttpClient client, string name)

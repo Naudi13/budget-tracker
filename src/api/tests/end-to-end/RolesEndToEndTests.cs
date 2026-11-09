@@ -96,32 +96,6 @@ public sealed class RolesEndToEndTests(PostgresFixture postgres)
         Assert.Equal("USER", await SignIn(client, email));
     }
 
-    [Fact]
-    public async Task AnAdmin_doesNotReachAnotherAccountsData() // HU-09
-    {
-        await using var api = new ApiFactory(postgres.DatabaseUrl);
-        using var owner = await Accounts.SignedInAsync(api);
-        using var category = await owner.PostAsJsonAsync("/api/v1/categories", new { name = "Oficina", type = "expense" }, Ct);
-        using var categoryBody = await Json(category);
-        using var budget = await owner.PostAsJsonAsync(
-            "/api/v1/budgets",
-            new
-            {
-                categoryId = categoryBody.RootElement.GetProperty("id").GetGuid(),
-                amount = 100,
-                periodStart = "2026-11-01",
-                periodEnd = "2026-11-30",
-            },
-            Ct);
-        using var budgetBody = await Json(budget);
-        using var admin = await AdminAsync(api);
-
-        using var response = await admin.DeleteAsync(
-            new Uri($"/api/v1/budgets/{budgetBody.RootElement.GetProperty("id").GetGuid()}", UriKind.Relative), Ct);
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-    }
-
     [Theory]
     [InlineData("http://localhost:8080", true)]
     [InlineData("https://evil.example", false)]
