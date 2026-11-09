@@ -5,6 +5,10 @@
   }
 </div>
 
+@if (notice(); as message) {
+  <p class="banner banner-success" role="status">{{ message }}</p>
+}
+
 @if (failure(); as message) {
   <p class="banner banner-error" role="alert">{{ message }}</p>
 }
@@ -107,10 +111,26 @@
               <td>{{ roleName(row) }}</td>
               <td>{{ statusName(row) }}</td>
               <td class="row-action">
-                <button type="button" class="link" (click)="generate(row)">
-                  {{ row.status === 'PENDING' ? 'Generar enlace' : 'Restablecer contraseña' }}
-                  <span class="visually-hidden">de {{ row.name }}</span>
-                </button>
+                @if (row.status === 'INACTIVE') {
+                  <button type="button" class="link" (click)="activate(row)">
+                    Activar <span class="visually-hidden">a {{ row.name }}</span>
+                  </button>
+                } @else {
+                  <button type="button" class="link" (click)="generate(row)">
+                    {{ row.status === 'PENDING' ? 'Generar enlace' : 'Restablecer contraseña' }}
+                    <span class="visually-hidden">de {{ row.name }}</span>
+                  </button>
+                }
+                @if (canInactivate(row)) {
+                  <button type="button" class="link danger" (click)="ask('inactivate', row)">
+                    Inactivar <span class="visually-hidden">a {{ row.name }}</span>
+                  </button>
+                }
+                @if (row.status === 'PENDING') {
+                  <button type="button" class="link danger" (click)="ask('delete', row)">
+                    Eliminar <span class="visually-hidden">a {{ row.name }}</span>
+                  </button>
+                }
               </td>
             </tr>
           }
@@ -128,6 +148,26 @@
       </nav>
     }
   }
+}
+
+@if (confirming(); as pending) {
+  <div class="backdrop">
+    <div class="dialog" role="alertdialog" aria-modal="true" aria-labelledby="confirm-message">
+      @if (pending.failed) {
+        <p id="confirm-message">No pudimos completar la acción. Inténtalo de nuevo.</p>
+      } @else if (pending.action === 'delete') {
+        <p id="confirm-message">¿Eliminar a {{ pending.user.name }}? No se puede deshacer.</p>
+      } @else {
+        <p id="confirm-message">¿Inactivar a {{ pending.user.name }}? No podrá entrar hasta que la actives de nuevo.</p>
+      }
+      <div class="actions">
+        <button type="button" class="btn-danger" #confirmButton [disabled]="busy()" (click)="confirm()">
+          {{ pending.failed ? 'Reintentar' : pending.action === 'delete' ? 'Eliminar' : 'Inactivar' }}
+        </button>
+        <button type="button" class="btn-secondary" [disabled]="busy()" (click)="closeDialogs()">Cancelar</button>
+      </div>
+    </div>
+  </div>
 }
 
 @if (link(); as shown) {

@@ -150,3 +150,13 @@ tbody tr:last-child td {
   border-radius: var(--space-unit);
   background: linear-gradient(90deg, #e9ecf2, #f4f6fa, #e9ecf2);
 }
+
+.link.danger {
+  color: var(--color-danger);
+}
+
+.banner-success {
+  margin-bottom: calc(var(--space-unit) * 4);
+  color: var(--color-success);
+  background: #eaf8f6;
+}

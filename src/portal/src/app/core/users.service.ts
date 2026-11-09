@@ -40,6 +40,15 @@ export class UsersService {
     return this.http.post<CreatedUser>('/api/v1/users', user);
   }
 
+  setActive(userId: string, isActive: boolean): Observable<User> {
+    return this.http.patch<User>(`/api/v1/users/${userId}`, { isActive });
+  }
+
+  /** Only an account that was never activated (BR-09). */
+  delete(userId: string): Observable<void> {
+    return this.http.delete<void>(`/api/v1/users/${userId}`);
+  }
+
   createActivationLink(userId: string): Observable<AccountLink> {
     return this.http.post<AccountLink>(`/api/v1/users/${userId}/activation-links`, null);
   }

@@ -13,13 +13,13 @@ import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angula
 import { Observable } from 'rxjs';
 
 import { ApiError } from '../../core/api-error';
-import { Role } from '../../core/auth-token.store';
+import { AuthTokenStore, Role } from '../../core/auth-token.store';
 import { User } from '../../core/identity.service';
 import { AccountLink, USERS_PAGE_SIZE, UsersService } from '../../core/users.service';
 import { emailShape, notBlank } from '../form-rules';
 
 const ROLE_NAMES: Record<Role, string> = { USER: 'Usuario', ADMIN: 'Administrador' };
-const STATUS_NAMES: Record<User['status'], string> = { PENDING: 'Pendiente', ACTIVE: 'Activa' };
+const STATUS_NAMES: Record<User['status'], string> = { PENDING: 'Pendiente', ACTIVE: 'Activa', INACTIVE: 'Inactiva' };
 
 type Field = 'name' | 'email' | 'role';
 
@@ -29,20 +29,29 @@ interface ShownLink {
   readonly name: string;
 }
 
-/** HU-09 and HU-10, 12-ux-ui/screens/users.md. */
+/** What the confirmation dialog is about to do. */
+interface Confirmation {
+  readonly action: 'inactivate' | 'delete';
+  readonly user: User;
+  readonly failed: boolean;
+}
+
+/** HU-09, HU-10 and HU-13, 12-ux-ui/screens/users.md. */
 @Component({
   selector: 'bt-users-page',
   imports: [ReactiveFormsModule],
   templateUrl: './users.page.html',
   styleUrl: './users.page.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { '(keydown.escape)': 'closeLink()' },
+  host: { '(keydown.escape)': 'closeDialogs()' },
 })
 export class UsersPage {
   private readonly users = inject(UsersService);
   private readonly injector = inject(Injector);
   private readonly firstField = viewChild<ElementRef<HTMLInputElement>>('firstField');
   private readonly copyButton = viewChild<ElementRef<HTMLButtonElement>>('copyButton');
+  private readonly confirmButton = viewChild<ElementRef<HTMLButtonElement>>('confirmButton');
+  private readonly ownId = inject(AuthTokenStore).userId;
 
   protected readonly state = signal<'loading' | 'error' | 'forbidden' | 'ready'>('loading');
   protected readonly rows = signal<readonly User[]>([]);
@@ -63,6 +72,10 @@ export class UsersPage {
 
   protected readonly link = signal<ShownLink | null>(null);
   protected readonly copied = signal(false);
+
+  protected readonly notice = signal<string | null>(null);
+  protected readonly confirming = signal<Confirmation | null>(null);
+  protected readonly busy = signal(false);
 
   constructor() {
     this.load(1);
@@ -149,6 +162,7 @@ export class UsersPage {
 
   protected generate(user: User): void {
     this.failure.set(null);
+    this.notice.set(null);
     const pending = user.status === 'PENDING';
     const request: Observable<AccountLink> = pending
       ? this.users.createActivationLink(user.id)
@@ -179,5 +193,66 @@ export class UsersPage {
 
   protected closeLink(): void {
     this.link.set(null);
+  }
+
+  protected closeDialogs(): void {
+    this.closeLink();
+    if (!this.busy()) {
+      this.confirming.set(null);
+    }
+  }
+
+  // --- Inactivate, activate, delete ----------------------------------------
+
+  /** Nobody can inactivate their own account (BR-09). */
+  protected canInactivate(user: User): boolean {
+    return user.status !== 'INACTIVE' && user.id !== this.ownId();
+  }
+
+  protected ask(action: Confirmation['action'], user: User): void {
+    this.notice.set(null);
+    this.failure.set(null);
+    this.confirming.set({ action, user, failed: false });
+    afterNextRender(() => this.confirmButton()?.nativeElement.focus(), { injector: this.injector });
+  }
+
+  protected confirm(): void {
+    const pending = this.confirming();
+    if (!pending) {
+      return;
+    }
+
+    const request: Observable<unknown> =
+      pending.action === 'delete' ? this.users.delete(pending.user.id) : this.users.setActive(pending.user.id, false);
+    this.busy.set(true);
+    request.subscribe({
+      next: () => this.finish(pending.action === 'delete' ? 'Usuario eliminado.' : 'Usuario inactivado.'),
+      error: (error: ApiError) => {
+        this.busy.set(false);
+        // The account changed meanwhile: the list catches up.
+        if (error.status === 404 || error.status === 409) {
+          this.confirming.set(null);
+          this.load();
+        } else {
+          this.confirming.set({ ...pending, failed: true });
+        }
+      },
+    });
+  }
+
+  private finish(notice: string): void {
+    this.busy.set(false);
+    this.confirming.set(null);
+    this.notice.set(notice);
+    this.load();
+  }
+
+  protected activate(user: User): void {
+    this.notice.set(null);
+    this.failure.set(null);
+    this.users.setActive(user.id, true).subscribe({
+      next: () => this.finish('Usuario activado.'),
+      error: () => this.failure.set('No pudimos activar el usuario. Inténtalo de nuevo.'),
+    });
   }
 }
