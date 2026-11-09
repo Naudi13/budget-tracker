@@ -25,7 +25,18 @@ internal static class MovementRules
             errors.Add(new FieldError("transactionDate", "is required"));
         }
 
-        var description = request.Description?.Trim() ?? string.Empty;
+        var description = ValidateDescription(request.Description, errors);
+        var lines = ValidateDetails(request.Details, errors);
+
+        return errors.Count == 0
+            ? (request.TransactionDate!.Value, description, lines)
+            : throw new TransactionsValidationException(errors);
+    }
+
+    /// <summary>The trimmed description; adds an error when it is empty or too long.</summary>
+    private static string ValidateDescription(string? value, List<FieldError> errors)
+    {
+        var description = value?.Trim() ?? string.Empty;
         if (description.Length == 0)
         {
             errors.Add(new FieldError("description", "is required"));
@@ -35,43 +46,48 @@ internal static class MovementRules
             errors.Add(new FieldError("description", $"must be at most {DescriptionMaxLength} characters"));
         }
 
+        return description;
+    }
+
+    /// <summary>The complete lines of a transaction; adds an error for a missing list and for each faulty line.</summary>
+    private static List<(Guid SubcategoryId, decimal Amount)> ValidateDetails(
+        IReadOnlyList<NewTransactionDetail?>? details, List<FieldError> errors)
+    {
         var lines = new List<(Guid, decimal)>();
-        if (request.Details is not { Count: > 0 })
+        if (details is not { Count: > 0 })
         {
             errors.Add(new FieldError("details", "must have at least one line"));
+            return lines;
         }
-        else
+
+        for (var i = 0; i < details.Count; i++)
         {
-            for (var i = 0; i < request.Details.Count; i++)
+            if (ValidateLine(details[i], i, errors) is { } line)
             {
-                var line = request.Details[i];
-                if (line?.SubcategoryId is not { } subcategoryId || subcategoryId == Guid.Empty)
-                {
-                    errors.Add(new FieldError($"details[{i}].subcategoryId", "is required"));
-                }
-
-                var amountError = AmountError(line?.Amount);
-                if (amountError is not null)
-                {
-                    errors.Add(new FieldError($"details[{i}].amount", amountError));
-                }
-
-                if (line?.SubcategoryId is { } id && line.Amount is { } amount)
-                {
-                    lines.Add((id, amount));
-                }
+                lines.Add(line);
             }
         }
 
-        return errors.Count == 0
-            ? (request.TransactionDate!.Value, description, lines)
-            : throw new TransactionsValidationException(errors);
+        return lines;
     }
 
-    /// <summary>
-    /// Gives each line its type and enforces BR-02 and BR-05. A subcategory missing
-    /// from <paramref name="uses"/> does not exist or belongs to someone else.
-    /// </summary>
+    /// <summary>One line, named by its position; null when its subcategory or amount is missing.</summary>
+    private static (Guid SubcategoryId, decimal Amount)? ValidateLine(NewTransactionDetail? line, int index, List<FieldError> errors)
+    {
+        if (line?.SubcategoryId is not { } subcategoryId || subcategoryId == Guid.Empty)
+        {
+            errors.Add(new FieldError($"details[{index}].subcategoryId", "is required"));
+        }
+
+        var amountError = AmountError(line?.Amount);
+        if (amountError is not null)
+        {
+            errors.Add(new FieldError($"details[{index}].amount", amountError));
+        }
+
+        return line?.SubcategoryId is { } id && line.Amount is { } amount ? (id, amount) : null;
+    }
+
     public const int ReasonMinLength = 3;
     public const int ReasonMaxLength = 200;
 
@@ -85,6 +101,10 @@ internal static class MovementRules
                 [new FieldError("reason", $"must be {ReasonMinLength} to {ReasonMaxLength} characters")]);
     }
 
+    /// <summary>
+    /// Gives each line its type and enforces BR-02 and BR-05. A subcategory missing
+    /// from <paramref name="uses"/> does not exist or belongs to someone else.
+    /// </summary>
     public static IReadOnlyList<MovementLine> Classify(
         IReadOnlyList<(Guid SubcategoryId, decimal Amount)> lines, IReadOnlyDictionary<Guid, SubcategoryUse> uses)
     {
