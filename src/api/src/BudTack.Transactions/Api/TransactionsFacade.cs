@@ -50,11 +50,11 @@ public sealed class TransactionsFacade
         _categories.DeleteCategoryAsync(userId, categoryId, cancellationToken);
 
     /// <summary>HU-03: <c>PATCH /categories/{id}</c> with <c>isActive</c> (BR-05).</summary>
-    public Task<Category> SetCategoryActiveAsync(
-        Guid userId, Guid categoryId, ActivationUpdate request, CancellationToken cancellationToken = default)
+    public Task<Category> UpdateCategoryAsync(
+        Guid userId, Guid categoryId, CategoryChanges request, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
-        return _categories.SetCategoryActiveAsync(userId, categoryId, request, cancellationToken);
+        return _categories.UpdateCategoryAsync(userId, categoryId, request, cancellationToken);
     }
 
     /// <summary>HU-02: <c>GET /categories/{id}/subcategories</c>.</summary>

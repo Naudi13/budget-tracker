@@ -34,6 +34,19 @@ internal static class CategoryRules
         return errors.Count == 0 ? name : throw new TransactionsValidationException(errors);
     }
 
+    /// <summary>What a category's <c>PATCH</c> changes: at least one field, and a valid name if it brings one.</summary>
+    public static (string? Name, bool? IsActive) Validate(CategoryChanges request)
+    {
+        var errors = new List<FieldError>();
+        if (request.Name is null && request.IsActive is null)
+        {
+            errors.Add(new FieldError("body", "send name or isActive"));
+        }
+
+        var name = request.Name is null ? null : Name(request.Name, errors);
+        return errors.Count == 0 ? (name, request.IsActive) : throw new TransactionsValidationException(errors);
+    }
+
     public static bool Validate(ActivationUpdate request) =>
         request.IsActive
         ?? throw new TransactionsValidationException([new FieldError("isActive", "is required: true or false")]);
