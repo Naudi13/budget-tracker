@@ -98,20 +98,31 @@ internal sealed class CategoriesRepository(NpgsqlDataSource dataSource) : ICateg
         }
     }
 
-    public async Task<DomainCategory?> SetCategoryActiveAsync(
-        Guid owner, Guid categoryId, bool isActive, CancellationToken cancellationToken)
+    public async Task<DomainCategory?> UpdateCategoryAsync(
+        Guid owner, Guid categoryId, string? name, bool? isActive, CancellationToken cancellationToken)
     {
         await using var command = dataSource.CreateCommand(
             """
-            UPDATE transactions.categories SET is_active = $3, updated_at = now(), updated_by = $2
+            UPDATE transactions.categories
+            SET name = COALESCE($3::text, name), is_active = COALESCE($4::boolean, is_active),
+                updated_at = now(), updated_by = $2
             WHERE id = $1 AND owned_by = $2
             RETURNING id, owned_by, name, type, is_active
             """);
         command.Parameters.Add(new NpgsqlParameter { Value = categoryId });
         command.Parameters.Add(new NpgsqlParameter { Value = owner });
-        command.Parameters.Add(new NpgsqlParameter { Value = isActive });
-        await using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
-        return await reader.ReadAsync(cancellationToken).ConfigureAwait(false) ? ReadCategory(reader) : null;
+        command.Parameters.Add(new NpgsqlParameter { Value = (object?)name ?? DBNull.Value });
+        command.Parameters.Add(new NpgsqlParameter { Value = (object?)isActive ?? DBNull.Value });
+
+        try
+        {
+            await using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+            return await reader.ReadAsync(cancellationToken).ConfigureAwait(false) ? ReadCategory(reader) : null;
+        }
+        catch (PostgresException exception) when (exception.SqlState == UniqueViolation)
+        {
+            throw new TransactionsConflictException("A category of this type with this name already exists.");
+        }
     }
 
     public async Task<(IReadOnlyList<DomainSubcategory> Rows, long Total)> ListSubcategoriesAsync(

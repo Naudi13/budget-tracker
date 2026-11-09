@@ -92,7 +92,7 @@ public sealed class MovementsFacadeTests(PostgresFixture database) : IAsyncLifet
     [Fact]
     public async Task RecordTransactionAsync_withAnInactiveCategory_isRefused() // BR-05
     {
-        await Facade().SetCategoryActiveAsync(Ana, _office.Id, new ActivationUpdate(false), Ct);
+        await Facade().UpdateCategoryAsync(Ana, _office.Id, new CategoryChanges(null, false), Ct);
 
         await Assert.ThrowsAsync<TransactionsBusinessRuleException>(
             () => Record(Ana, new DateOnly(2026, 11, 6), "Paper", (_supplies.Id, 5m)));

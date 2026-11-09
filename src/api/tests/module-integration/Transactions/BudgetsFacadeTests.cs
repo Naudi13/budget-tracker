@@ -102,7 +102,7 @@ public sealed class BudgetsFacadeTests(PostgresFixture database) : IAsyncLifetim
     public async Task Budgets_ofAnInactiveCategory_cannotBeSetOrChanged() // BR-05
     {
         var budget = await Facade().CreateBudgetAsync(Ana, new NewBudget(_office.Id, 500m, Nov1, Nov30), Ct);
-        await Facade().SetCategoryActiveAsync(Ana, _office.Id, new ActivationUpdate(false), Ct);
+        await Facade().UpdateCategoryAsync(Ana, _office.Id, new CategoryChanges(null, false), Ct);
 
         await Assert.ThrowsAsync<TransactionsBusinessRuleException>(
             () => Facade().CreateBudgetAsync(Ana, new NewBudget(_office.Id, 1m, Nov1, Nov30), Ct));

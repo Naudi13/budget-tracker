@@ -31,7 +31,7 @@ signs the bearer tokens.
 | `GET /api/v1/users` | Bearer, `ADMIN` | List the accounts (HU-09, `?page`, `?limit`): `401` without a token, `403` with another role |
 | `GET /swagger-ui.html` | none | Swagger UI; the document is `/swagger/v1/swagger.json` (ADR-008) |
 | `GET`, `POST /api/v1/categories` | Bearer | List (`?page`, `?limit`, `?type`) and create (HU-02): `201`, `400`, `409` name in use for that type |
-| `DELETE`, `PATCH /api/v1/categories/{id}` | Bearer | Delete (`204`, `409` while it owns a subcategory or budget, BR-05) and activate or deactivate (HU-03) |
+| `DELETE`, `PATCH /api/v1/categories/{id}` | Bearer | Delete (`204`, `409` while it owns a subcategory or budget, BR-05) and rename, activate or deactivate (HU-03, `409` name in use) |
 | `GET`, `POST /api/v1/categories/{id}/subcategories` | Bearer | List and create (HU-02): `409` name in use in that category |
 | `DELETE`, `PATCH /api/v1/categories/{id}/subcategories/{id}` | Bearer | Delete (`409` while a transaction uses it, BR-05) and activate or deactivate (HU-03) |
 | `GET`, `POST /api/v1/transactions` | Bearer | History newest first without deleted ones (HU-05), and record (HU-04): `201`; `400` per field; `422 BUSINESS_RULE_VIOLATED` when lines mix income and expense (BR-02) or use an inactive subcategory or category (BR-05). Each line's type comes from its category (BR-01); lines come back in the order they were entered |

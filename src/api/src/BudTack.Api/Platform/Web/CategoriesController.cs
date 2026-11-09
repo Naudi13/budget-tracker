@@ -32,8 +32,8 @@ internal sealed class CategoriesController(TransactionsFacade transactions) : Co
     }
 
     [HttpPatch("{categoryId:guid}")]
-    public Task<Category> SetActive(Guid categoryId, ActivationUpdate request, CancellationToken cancellationToken) =>
-        transactions.SetCategoryActiveAsync(User.UserId(), categoryId, request, cancellationToken);
+    public Task<Category> Update(Guid categoryId, CategoryChanges request, CancellationToken cancellationToken) =>
+        transactions.UpdateCategoryAsync(User.UserId(), categoryId, request, cancellationToken);
 
     [HttpGet("{categoryId:guid}/subcategories")]
     public Task<Page<Subcategory>> ListSubcategories(

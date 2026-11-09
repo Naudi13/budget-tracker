@@ -105,31 +105,31 @@ public sealed class ManageCategoriesTests
     }
 
     [Fact]
-    public async Task SetCategoryActiveAsync_deactivates_andReactivates()
+    public async Task UpdateCategoryAsync_deactivates_andReactivates()
     {
         var category = await Create(Ana, "Oficina");
 
-        Assert.False((await _categories.SetCategoryActiveAsync(Ana, category.Id, new ActivationUpdate(false), Ct)).IsActive);
-        Assert.True((await _categories.SetCategoryActiveAsync(Ana, category.Id, new ActivationUpdate(true), Ct)).IsActive);
+        Assert.False((await _categories.UpdateCategoryAsync(Ana, category.Id, new CategoryChanges(null, false), Ct)).IsActive);
+        Assert.True((await _categories.UpdateCategoryAsync(Ana, category.Id, new CategoryChanges(null, true), Ct)).IsActive);
     }
 
     [Fact]
-    public async Task SetCategoryActiveAsync_ofAnotherOwner_isNotFound()
+    public async Task UpdateCategoryAsync_ofAnotherOwner_isNotFound()
     {
         var category = await Create(Leo, "Ajena");
 
         await Assert.ThrowsAsync<TransactionsNotFoundException>(
-            () => _categories.SetCategoryActiveAsync(Ana, category.Id, new ActivationUpdate(false), Ct));
+            () => _categories.UpdateCategoryAsync(Ana, category.Id, new CategoryChanges(null, false), Ct));
         Assert.True(Assert.Single(_tables.Categories).IsActive);
     }
 
     [Fact]
-    public async Task SetCategoryActiveAsync_withoutIsActive_isAValidationError()
+    public async Task UpdateCategoryAsync_withoutIsActive_isAValidationError()
     {
         var category = await Create(Ana, "Oficina");
 
         await Assert.ThrowsAsync<TransactionsValidationException>(
-            () => _categories.SetCategoryActiveAsync(Ana, category.Id, new ActivationUpdate(null), Ct));
+            () => _categories.UpdateCategoryAsync(Ana, category.Id, new CategoryChanges(null, null), Ct));
     }
 
     [Fact]

@@ -64,8 +64,8 @@ internal sealed class InMemoryCategories : ICategoriesRepository
         return Task.FromResult(true);
     }
 
-    public Task<DomainCategory?> SetCategoryActiveAsync(
-        Guid owner, Guid categoryId, bool isActive, CancellationToken cancellationToken)
+    public Task<DomainCategory?> UpdateCategoryAsync(
+        Guid owner, Guid categoryId, string? name, bool? isActive, CancellationToken cancellationToken)
     {
         var index = Categories.FindIndex(c => c.Id == categoryId && c.OwnedBy == owner);
         if (index < 0)
@@ -73,7 +73,14 @@ internal sealed class InMemoryCategories : ICategoriesRepository
             return Task.FromResult<DomainCategory?>(null);
         }
 
-        Categories[index] = Categories[index] with { IsActive = isActive };
+        var current = Categories[index];
+        if (name is not null && Categories.Exists(c => c.Id != categoryId && c.OwnedBy == owner && c.Type == current.Type
+            && string.Equals(c.Name, name, StringComparison.OrdinalIgnoreCase)))
+        {
+            throw new TransactionsConflictException("name taken");
+        }
+
+        Categories[index] = current with { Name = name ?? current.Name, IsActive = isActive ?? current.IsActive };
         return Task.FromResult<DomainCategory?>(Categories[index]);
     }
 

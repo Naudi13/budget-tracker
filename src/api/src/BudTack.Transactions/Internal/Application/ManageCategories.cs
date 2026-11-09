@@ -7,7 +7,7 @@ using DomainSubcategory = BudTack.Transactions.Internal.Domain.Subcategory;
 namespace BudTack.Transactions.Internal.Application;
 
 /// <summary>
-/// HU-02 and HU-03: list, create, delete, and activate or deactivate categories
+/// HU-02 and HU-03: list, create, rename, delete, and activate or deactivate categories
 /// and their subcategories, always for one owner. Uniqueness and BR-05 are
 /// decided by the database (unique indexes, ON DELETE RESTRICT), so two requests
 /// at once cannot get around them.
@@ -46,13 +46,13 @@ internal sealed partial class ManageCategories(ICategoriesRepository repository,
         LogCategoryDeleted(logger, categoryId);
     }
 
-    public async Task<Api.Contracts.Category> SetCategoryActiveAsync(
-        Guid owner, Guid categoryId, ActivationUpdate request, CancellationToken cancellationToken)
+    public async Task<Api.Contracts.Category> UpdateCategoryAsync(
+        Guid owner, Guid categoryId, CategoryChanges request, CancellationToken cancellationToken)
     {
-        var isActive = CategoryRules.Validate(request);
-        var category = await repository.SetCategoryActiveAsync(owner, categoryId, isActive, cancellationToken).ConfigureAwait(false)
+        var (name, isActive) = CategoryRules.Validate(request);
+        var category = await repository.UpdateCategoryAsync(owner, categoryId, name, isActive, cancellationToken).ConfigureAwait(false)
             ?? throw new TransactionsNotFoundException(CategoryNotFound);
-        LogCategoryActivation(logger, categoryId, isActive);
+        LogCategoryUpdated(logger, categoryId);
         return ToContract(category);
     }
 
@@ -119,8 +119,8 @@ internal sealed partial class ManageCategories(ICategoriesRepository repository,
     [LoggerMessage(Level = LogLevel.Information, Message = "Category {CategoryId} deleted")]
     private static partial void LogCategoryDeleted(ILogger logger, Guid categoryId);
 
-    [LoggerMessage(Level = LogLevel.Information, Message = "Category {CategoryId} active: {IsActive}")]
-    private static partial void LogCategoryActivation(ILogger logger, Guid categoryId, bool isActive);
+    [LoggerMessage(Level = LogLevel.Information, Message = "Category {CategoryId} updated")]
+    private static partial void LogCategoryUpdated(ILogger logger, Guid categoryId);
 
     [LoggerMessage(Level = LogLevel.Information, Message = "Subcategory {SubcategoryId} created in category {CategoryId}")]
     private static partial void LogSubcategoryCreated(ILogger logger, Guid subcategoryId, Guid categoryId);

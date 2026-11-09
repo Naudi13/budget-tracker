@@ -19,7 +19,8 @@ internal interface ICategoriesRepository
     /// <summary>False when there was no such category; throws <c>TransactionsConflictException</c> when it is in use (BR-05).</summary>
     Task<bool> DeleteCategoryAsync(Guid owner, Guid categoryId, CancellationToken cancellationToken);
 
-    Task<Category?> SetCategoryActiveAsync(Guid owner, Guid categoryId, bool isActive, CancellationToken cancellationToken);
+    /// <summary>Changes the fields that are not null; throws <c>TransactionsConflictException</c> when the name is taken.</summary>
+    Task<Category?> UpdateCategoryAsync(Guid owner, Guid categoryId, string? name, bool? isActive, CancellationToken cancellationToken);
 
     Task<(IReadOnlyList<Subcategory> Rows, long Total)> ListSubcategoriesAsync(
         Guid categoryId, Paging paging, CancellationToken cancellationToken);
