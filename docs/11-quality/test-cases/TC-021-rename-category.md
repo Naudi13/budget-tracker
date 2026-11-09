@@ -11,7 +11,7 @@
 
 ## Preconditions
 
-- The account owns the expense categories `Oficina` and `Arriendo`.
+- An `ADMIN` is signed in, and the expense categories `Oficina` and `Arriendo` exist.
 
 ## Steps
 
@@ -19,7 +19,7 @@
 2. `PATCH` the same category with `{ "name": "Arriendo" }`.
 3. `PATCH` the same category with `{ "name": "   " }`.
 4. `PATCH` the same category with `{}`.
-5. `PATCH` the same category from another account.
+5. `PATCH` the same category as a `USER`.
 
 ## Expected result
 
@@ -27,7 +27,7 @@
 2. `409 CONFLICT`; the name does not change.
 3. `400 VALIDATION_ERROR` on `name`.
 4. `400 VALIDATION_ERROR`.
-5. `404 NOT_FOUND`.
+5. `403 FORBIDDEN`.
 
 ---
 
