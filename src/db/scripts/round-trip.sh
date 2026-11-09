@@ -286,6 +286,10 @@ refused "two links with the same hash are refused" \
 refused "a link for an account that does not exist is refused" \
   "INSERT INTO identity.account_tokens (id, user_id, purpose, token_hash, expires_at, created_by) VALUES (gen_random_uuid(), '$ana', 'ACTIVATION', 'ccc', now(), '$ana');"
 
+# Identity005_AddUserIsActive (HU-13).
+check "accounts are active by default, and always say so"   "SELECT column_default = 'true' AND is_nullable = 'NO' FROM information_schema.columns WHERE table_schema = 'identity' AND table_name = 'users' AND column_name = 'is_active'"
+check "the seed users are active"   "SELECT bool_and(is_active) FROM identity.users WHERE id::text LIKE '00000000-0000-4000-8000-%'"
+
 migrate down
 check "down removes identity.users and every transactions table" \
   "SELECT to_regclass('identity.users') IS NULL AND to_regclass('transactions.categories') IS NULL
