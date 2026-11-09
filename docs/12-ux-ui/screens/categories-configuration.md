@@ -5,7 +5,7 @@
 | Field | Value |
 |---|---|
 | Screen | Configuration › Categories (with subcategories) |
-| Serves | `HU-02` (create) and `HU-03` (delete) — see `../../04-requirements/user-stories.md` |
+| Serves | `HU-02` (create) and `HU-03` (rename and delete) — see `../../04-requirements/user-stories.md` |
 | Wireframe | Flow "Configuración › Categorías" in `Budget-Tracker-Diagramas.pdf`, page 5 (not yet exported to the repository) |
 
 ## States
@@ -16,6 +16,16 @@
 | Loading | List skeleton while categories are requested |
 | Error | "No pudimos cargar las categorías." with *Reintentar* |
 | Populated | Categories grouped by type, each with its subcategories and an *Activa* / *Inactiva* label |
+
+## Rename flow
+
+| Step | What the user sees |
+|---|---|
+| 1. Select *Editar* on a category | The name becomes a field, focused and filled in, with *Guardar* and *Cancelar* |
+| 2a. *Cancelar*, or a name that did not change | Back to the list; nothing is sent |
+| 2b. *Guardar* | The new name in its place; success banner "Categoría guardada." |
+| 2c. *Guardar* — name taken in that type | Inline under the field: "Ya existe una categoría de *gasto* llamada *nombre*."; the field keeps what was typed |
+| 2d. *Guardar* — network or `500` | Banner "No pudimos guardar el cambio. Inténtalo de nuevo."; the field keeps what was typed |
 
 ## Delete flow
 
