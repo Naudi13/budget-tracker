@@ -35,7 +35,7 @@ public sealed class TransactionsEndToEndTests(PostgresFixture postgres)
     public async Task Record_expense_isCreated_withItsLocation_andTypedLines()
     {
         await using var api = new ApiFactory(postgres.DatabaseUrl);
-        using var client = await Accounts.SignedInAsync(api);
+        using var client = await Accounts.AdminAsync(api, postgres);
         var (supplies, _) = await Subcategories(client);
 
         using var created = await client.PostAsJsonAsync("/api/v1/transactions", new
@@ -59,7 +59,7 @@ public sealed class TransactionsEndToEndTests(PostgresFixture postgres)
     public async Task Record_typeSentByTheClient_isIgnored() // BR-01
     {
         await using var api = new ApiFactory(postgres.DatabaseUrl);
-        using var client = await Accounts.SignedInAsync(api);
+        using var client = await Accounts.AdminAsync(api, postgres);
         var (supplies, _) = await Subcategories(client);
 
         using var created = await client.PostAsJsonAsync("/api/v1/transactions", new
@@ -76,7 +76,7 @@ public sealed class TransactionsEndToEndTests(PostgresFixture postgres)
     public async Task Record_mixingIncomeAndExpense_is422_namingTheLine() // BR-02, TC-004
     {
         await using var api = new ApiFactory(postgres.DatabaseUrl);
-        using var client = await Accounts.SignedInAsync(api);
+        using var client = await Accounts.AdminAsync(api, postgres);
         var (supplies, store) = await Subcategories(client);
 
         using var response = await client.PostAsJsonAsync("/api/v1/transactions", new
@@ -98,7 +98,7 @@ public sealed class TransactionsEndToEndTests(PostgresFixture postgres)
     public async Task Record_badFields_is400_perField()
     {
         await using var api = new ApiFactory(postgres.DatabaseUrl);
-        using var client = await Accounts.SignedInAsync(api);
+        using var client = await Accounts.AdminAsync(api, postgres);
         var (supplies, _) = await Subcategories(client);
 
         using var response = await client.PostAsJsonAsync("/api/v1/transactions", new
@@ -118,7 +118,7 @@ public sealed class TransactionsEndToEndTests(PostgresFixture postgres)
     public async Task Record_notADate_is400()
     {
         await using var api = new ApiFactory(postgres.DatabaseUrl);
-        using var client = await Accounts.SignedInAsync(api);
+        using var client = await Accounts.AdminAsync(api, postgres);
 
         using var response = await client.PostAsJsonAsync(
             "/api/v1/transactions", new { transactionDate = "06/11/2026", description = "x", details = Array.Empty<object>() }, Ct);
@@ -131,7 +131,7 @@ public sealed class TransactionsEndToEndTests(PostgresFixture postgres)
     public async Task History_newestFirst_paged_andADeletedOneIsGone_thenDeletingAgainIs404() // TC-005, HU-06
     {
         await using var api = new ApiFactory(postgres.DatabaseUrl);
-        using var client = await Accounts.SignedInAsync(api);
+        using var client = await Accounts.AdminAsync(api, postgres);
         var (supplies, _) = await Subcategories(client);
         var ids = new Dictionary<string, Guid>();
         foreach (var (date, description) in new[] { ("2026-10-01", "A"), ("2026-10-20", "C"), ("2026-10-15", "B") })
@@ -162,10 +162,10 @@ public sealed class TransactionsEndToEndTests(PostgresFixture postgres)
     }
 
     [Fact]
-    public async Task AnotherBusiness_neverSeesOrDeletesMyTransactions_norUsesMySubcategories()
+    public async Task AnotherUser_neverSeesOrDeletesMyTransactions_butSharesTheCatalog()
     {
         await using var api = new ApiFactory(postgres.DatabaseUrl);
-        using var mine = await Accounts.SignedInAsync(api);
+        using var mine = await Accounts.AdminAsync(api, postgres);
         using var theirs = await Accounts.SignedInAsync(api);
         var (supplies, _) = await Subcategories(mine);
         using var created = await mine.PostAsJsonAsync("/api/v1/transactions", new
@@ -187,7 +187,7 @@ public sealed class TransactionsEndToEndTests(PostgresFixture postgres)
 
         Assert.Equal(0, (await Json(list)).RootElement.GetProperty("meta").GetProperty("total").GetInt64());
         Assert.Equal(HttpStatusCode.NotFound, delete.StatusCode);
-        Assert.Equal(HttpStatusCode.BadRequest, borrow.StatusCode);
+        Assert.Equal(HttpStatusCode.Created, borrow.StatusCode);
     }
 
     /// <summary>An expense subcategory and an income one, for the signed-in account.</summary>

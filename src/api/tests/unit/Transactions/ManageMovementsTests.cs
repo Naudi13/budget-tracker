@@ -56,15 +56,6 @@ public sealed class ManageMovementsTests
     }
 
     [Fact]
-    public async Task RecordAsync_anotherOwnersSubcategory_isAValidationError_andStoresNothing()
-    {
-        await Assert.ThrowsAsync<TransactionsValidationException>(
-            () => Record(new DateOnly(2026, 11, 6), "Not mine", (LeosSubcategory, 5m)));
-
-        Assert.Empty(_tables.Movements);
-    }
-
-    [Fact]
     public async Task ListAsync_newestFirst_withoutDeleted_andPaged() // HU-05, TC-005
     {
         var first = await Record(new DateOnly(2026, 10, 1), "A", (Supplies, 1m));

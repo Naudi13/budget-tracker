@@ -8,7 +8,7 @@ namespace BudTack.Unit.Tests.Transactions;
 
 /// <summary>
 /// transactions.categories and .subcategories in memory, with the database's
-/// behaviour: rows seen through their owner, unique names ignoring case, and
+/// behaviour: unique names ignoring case, and
 /// ON DELETE RESTRICT from subcategories.
 /// </summary>
 internal sealed class InMemoryCategories : ICategoriesRepository
@@ -21,10 +21,10 @@ internal sealed class InMemoryCategories : ICategoriesRepository
     public HashSet<Guid> UsedSubcategories { get; } = [];
 
     public Task<(IReadOnlyList<DomainCategory> Rows, long Total)> ListCategoriesAsync(
-        Guid owner, string? type, Paging paging, CancellationToken cancellationToken)
+        string? type, Paging paging, CancellationToken cancellationToken)
     {
         var all = Categories
-            .Where(c => c.OwnedBy == owner && (type is null || c.Type == type))
+            .Where(c => (type is null || c.Type == type))
             .OrderBy(c => c.Type, StringComparer.Ordinal)
             .ThenBy(c => c.Name, StringComparer.OrdinalIgnoreCase)
             .ToList();
@@ -32,12 +32,12 @@ internal sealed class InMemoryCategories : ICategoriesRepository
             ([.. all.Skip(paging.Offset).Take(paging.Limit)], all.Count));
     }
 
-    public Task<DomainCategory?> FindCategoryAsync(Guid owner, Guid categoryId, CancellationToken cancellationToken) =>
-        Task.FromResult(Categories.Find(c => c.Id == categoryId && c.OwnedBy == owner));
+    public Task<DomainCategory?> FindCategoryAsync(Guid categoryId, CancellationToken cancellationToken) =>
+        Task.FromResult(Categories.Find(c => c.Id == categoryId));
 
-    public Task AddCategoryAsync(DomainCategory category, CancellationToken cancellationToken)
+    public Task AddCategoryAsync(DomainCategory category, Guid actor, CancellationToken cancellationToken)
     {
-        if (Categories.Exists(c => c.OwnedBy == category.OwnedBy && c.Type == category.Type
+        if (Categories.Exists(c => c.Type == category.Type
             && string.Equals(c.Name, category.Name, StringComparison.OrdinalIgnoreCase)))
         {
             throw new TransactionsConflictException("name taken");
@@ -47,9 +47,9 @@ internal sealed class InMemoryCategories : ICategoriesRepository
         return Task.CompletedTask;
     }
 
-    public Task<bool> DeleteCategoryAsync(Guid owner, Guid categoryId, CancellationToken cancellationToken)
+    public Task<bool> DeleteCategoryAsync(Guid categoryId, CancellationToken cancellationToken)
     {
-        var category = Categories.Find(c => c.Id == categoryId && c.OwnedBy == owner);
+        var category = Categories.Find(c => c.Id == categoryId);
         if (category is null)
         {
             return Task.FromResult(false);
@@ -65,16 +65,16 @@ internal sealed class InMemoryCategories : ICategoriesRepository
     }
 
     public Task<DomainCategory?> UpdateCategoryAsync(
-        Guid owner, Guid categoryId, string? name, bool? isActive, CancellationToken cancellationToken)
+        Guid actor, Guid categoryId, string? name, bool? isActive, CancellationToken cancellationToken)
     {
-        var index = Categories.FindIndex(c => c.Id == categoryId && c.OwnedBy == owner);
+        var index = Categories.FindIndex(c => c.Id == categoryId);
         if (index < 0)
         {
             return Task.FromResult<DomainCategory?>(null);
         }
 
         var current = Categories[index];
-        if (name is not null && Categories.Exists(c => c.Id != categoryId && c.OwnedBy == owner && c.Type == current.Type
+        if (name is not null && Categories.Exists(c => c.Id != categoryId && c.Type == current.Type
             && string.Equals(c.Name, name, StringComparison.OrdinalIgnoreCase)))
         {
             throw new TransactionsConflictException("name taken");
@@ -93,7 +93,7 @@ internal sealed class InMemoryCategories : ICategoriesRepository
             ([.. all.Skip(paging.Offset).Take(paging.Limit)], all.Count));
     }
 
-    public Task AddSubcategoryAsync(DomainSubcategory subcategory, Guid owner, CancellationToken cancellationToken)
+    public Task AddSubcategoryAsync(DomainSubcategory subcategory, Guid actor, CancellationToken cancellationToken)
     {
         if (Subcategories.Exists(s => s.CategoryId == subcategory.CategoryId
             && string.Equals(s.Name, subcategory.Name, StringComparison.OrdinalIgnoreCase)))
@@ -106,9 +106,9 @@ internal sealed class InMemoryCategories : ICategoriesRepository
     }
 
     public Task<bool> DeleteSubcategoryAsync(
-        Guid owner, Guid categoryId, Guid subcategoryId, CancellationToken cancellationToken)
+        Guid categoryId, Guid subcategoryId, CancellationToken cancellationToken)
     {
-        var subcategory = Owned(owner, categoryId, subcategoryId);
+        var subcategory = Owned(categoryId, subcategoryId);
         if (subcategory is null)
         {
             return Task.FromResult(false);
@@ -124,9 +124,9 @@ internal sealed class InMemoryCategories : ICategoriesRepository
     }
 
     public Task<DomainSubcategory?> SetSubcategoryActiveAsync(
-        Guid owner, Guid categoryId, Guid subcategoryId, bool isActive, CancellationToken cancellationToken)
+        Guid actor, Guid categoryId, Guid subcategoryId, bool isActive, CancellationToken cancellationToken)
     {
-        var subcategory = Owned(owner, categoryId, subcategoryId);
+        var subcategory = Owned(categoryId, subcategoryId);
         if (subcategory is null)
         {
             return Task.FromResult<DomainSubcategory?>(null);
@@ -137,8 +137,8 @@ internal sealed class InMemoryCategories : ICategoriesRepository
         return Task.FromResult<DomainSubcategory?>(updated);
     }
 
-    private DomainSubcategory? Owned(Guid owner, Guid categoryId, Guid subcategoryId) =>
-        Categories.Exists(c => c.Id == categoryId && c.OwnedBy == owner)
+    private DomainSubcategory? Owned(Guid categoryId, Guid subcategoryId) =>
+        Categories.Exists(c => c.Id == categoryId)
             ? Subcategories.Find(s => s.Id == subcategoryId && s.CategoryId == categoryId)
             : null;
 }

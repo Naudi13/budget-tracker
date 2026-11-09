@@ -13,10 +13,10 @@ internal sealed class InMemoryMovements : IMovementsRepository
     public HashSet<Guid> Deleted { get; } = [];
 
     public Task<IReadOnlyDictionary<Guid, SubcategoryUse>> FindSubcategoryUsesAsync(
-        Guid owner, IReadOnlyCollection<Guid> subcategoryIds, CancellationToken cancellationToken) =>
+        IReadOnlyCollection<Guid> subcategoryIds, CancellationToken cancellationToken) =>
         Task.FromResult<IReadOnlyDictionary<Guid, SubcategoryUse>>(
             subcategoryIds
-                .Where(id => Subcategories.TryGetValue(id, out var s) && s.Owner == owner)
+                .Where(id => Subcategories.ContainsKey(id))
                 .ToDictionary(id => id, id => Subcategories[id].Use));
 
     public Task AddAsync(Movement movement, CancellationToken cancellationToken)

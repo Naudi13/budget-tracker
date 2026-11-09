@@ -8,6 +8,26 @@ namespace BudTack.EndToEnd.Tests.Support;
 /// <summary>Brand-new accounts for end-to-end tests, signed in over HTTP like a real user.</summary>
 internal static class Accounts
 {
+    /// <summary>
+    /// A client carrying the token of a new ADMIN, with an empty catalog: names are
+    /// unique across the whole business now (ADR-009).
+    /// </summary>
+    public static async Task<HttpClient> AdminAsync(ApiFactory api, PostgresFixture postgres)
+    {
+        await postgres.ScalarAsync(
+            "TRUNCATE transactions.budgets, transactions.transaction_details, transactions.transactions, transactions.subcategories, transactions.categories");
+        var ct = TestContext.Current.CancellationToken;
+        var client = api.CreateClient();
+        var email = $"admin-{Guid.NewGuid():N}@example.com";
+        (await client.PostAsJsonAsync("/api/v1/users", new { name = "Admin", email, password = "Str0ngPass!23" }, ct)).Dispose();
+        await postgres.ScalarAsync("UPDATE identity.users SET role = 'ADMIN' WHERE email = $1 RETURNING id", email);
+        using var session = await client.PostAsJsonAsync("/api/v1/sessions", new { email, password = "Str0ngPass!23" }, ct);
+        using var body = await JsonDocument.ParseAsync(await session.Content.ReadAsStreamAsync(ct), cancellationToken: ct);
+        client.DefaultRequestHeaders.Authorization =
+            new AuthenticationHeaderValue("Bearer", body.RootElement.GetProperty("token").GetString());
+        return client;
+    }
+
     /// <summary>A client carrying the bearer token of a new account.</summary>
     public static async Task<HttpClient> SignedInAsync(ApiFactory api)
     {

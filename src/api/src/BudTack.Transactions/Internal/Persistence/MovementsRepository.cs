@@ -16,16 +16,15 @@ internal sealed class MovementsRepository(NpgsqlDataSource dataSource) : IMoveme
     private const string ForeignKeyViolation = "23503";
 
     public async Task<IReadOnlyDictionary<Guid, SubcategoryUse>> FindSubcategoryUsesAsync(
-        Guid owner, IReadOnlyCollection<Guid> subcategoryIds, CancellationToken cancellationToken)
+        IReadOnlyCollection<Guid> subcategoryIds, CancellationToken cancellationToken)
     {
         await using var command = dataSource.CreateCommand(
             """
             SELECT s.id, c.type, s.is_active AND c.is_active
             FROM transactions.subcategories s JOIN transactions.categories c ON c.id = s.category_id
-            WHERE s.id = ANY($1) AND c.owned_by = $2
+            WHERE s.id = ANY($1)
             """);
         command.Parameters.Add(new NpgsqlParameter { Value = subcategoryIds.ToArray() });
-        command.Parameters.Add(new NpgsqlParameter { Value = owner });
 
         var uses = new Dictionary<Guid, SubcategoryUse>();
         await using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
@@ -142,7 +141,7 @@ internal sealed class MovementsRepository(NpgsqlDataSource dataSource) : IMoveme
         await using var command = dataSource.CreateCommand(
             """
             UPDATE transactions.transactions
-            SET deleted_at = now(), deleted_by = $2, updated_at = now(), updated_by = $2
+            SET deleted_at = now(), deleted_by = $2, deletion_reason = 'Sin razón registrada', updated_at = now(), updated_by = $2
             WHERE id = $1 AND owned_by = $2 AND deleted_at IS NULL
             """);
         command.Parameters.Add(new NpgsqlParameter { Value = movementId });

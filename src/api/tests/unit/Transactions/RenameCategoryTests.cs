@@ -9,7 +9,6 @@ namespace BudTack.Unit.Tests.Transactions;
 public sealed class RenameCategoryTests
 {
     private static readonly Guid Ana = Guid.Parse("0193a1b2-0000-7000-8000-00000000000a");
-    private static readonly Guid Leo = Guid.Parse("0193a1b2-0000-7000-8000-00000000000b");
 
     private static CancellationToken Ct => TestContext.Current.CancellationToken;
 
@@ -70,12 +69,4 @@ public sealed class RenameCategoryTests
         Assert.Equal(field, Assert.Single(error.Errors).Field);
     }
 
-    [Fact]
-    public async Task UpdateCategoryAsync_anotherOwner_isNotFound()
-    {
-        var category = await Create("Oficina");
-
-        await Assert.ThrowsAsync<TransactionsNotFoundException>(
-            () => _categories.UpdateCategoryAsync(Leo, category.Id, new CategoryChanges("Mía", null), Ct));
-    }
 }

@@ -12,7 +12,7 @@ public sealed class BudgetRulesTests
     private static readonly DateOnly Nov30 = new(2026, 11, 30);
 
     private static readonly BudgetRow Current =
-        new(Guid.Parse("00000000-0000-7000-8000-0000000000b1"), Guid.Empty, Office, 500m, Nov1, Nov30);
+        new(Guid.Parse("00000000-0000-7000-8000-0000000000b1"), Office, 500m, Nov1, Nov30);
 
     [Fact]
     public void Validate_validBudget_keepsEveryField()
@@ -90,7 +90,7 @@ public sealed class BudgetRulesTests
     {
         Assert.Throws<TransactionsValidationException>(() => BudgetRules.RequireUsable(null));
         Assert.Throws<TransactionsBusinessRuleException>(
-            () => BudgetRules.RequireUsable(new Category(Office, Guid.Empty, "Oficina", "expense", IsActive: false)));
-        BudgetRules.RequireUsable(new Category(Office, Guid.Empty, "Oficina", "expense", IsActive: true));
+            () => BudgetRules.RequireUsable(new Category(Office, "Oficina", "expense", IsActive: false)));
+        BudgetRules.RequireUsable(new Category(Office, "Oficina", "expense", IsActive: true));
     }
 }

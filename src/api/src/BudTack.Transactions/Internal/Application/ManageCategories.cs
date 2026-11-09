@@ -8,7 +8,7 @@ namespace BudTack.Transactions.Internal.Application;
 
 /// <summary>
 /// HU-02 and HU-03: list, create, rename, delete, and activate or deactivate categories
-/// and their subcategories, always for one owner. Uniqueness and BR-05 are
+/// and their subcategories, shared by the whole business (ADR-009). Uniqueness and BR-05 are
 /// decided by the database (unique indexes, ON DELETE RESTRICT), so two requests
 /// at once cannot get around them.
 /// </summary>
@@ -18,27 +18,27 @@ internal sealed partial class ManageCategories(ICategoriesRepository repository,
     public const string SubcategoryNotFound = "The subcategory does not exist.";
 
     public async Task<Page<Api.Contracts.Category>> ListCategoriesAsync(
-        Guid owner, int? page, int? limit, string? type, CancellationToken cancellationToken)
+        int? page, int? limit, string? type, CancellationToken cancellationToken)
     {
         var paging = CategoryRules.Validate(page, limit);
         var filter = CategoryRules.ValidateFilter(type);
-        var (rows, total) = await repository.ListCategoriesAsync(owner, filter, paging, cancellationToken).ConfigureAwait(false);
+        var (rows, total) = await repository.ListCategoriesAsync(filter, paging, cancellationToken).ConfigureAwait(false);
         return new Page<Api.Contracts.Category>([.. rows.Select(ToContract)], new PageMeta(paging.Page, paging.Limit, total));
     }
 
     public async Task<Api.Contracts.Category> CreateCategoryAsync(
-        Guid owner, NewCategory request, CancellationToken cancellationToken)
+        Guid actor, NewCategory request, CancellationToken cancellationToken)
     {
         var (name, type) = CategoryRules.Validate(request);
-        var category = new DomainCategory(Guid.CreateVersion7(), owner, name, type, IsActive: true);
-        await repository.AddCategoryAsync(category, cancellationToken).ConfigureAwait(false);
+        var category = new DomainCategory(Guid.CreateVersion7(), name, type, IsActive: true);
+        await repository.AddCategoryAsync(category, actor, cancellationToken).ConfigureAwait(false);
         LogCategoryCreated(logger, category.Id, category.Type);
         return ToContract(category);
     }
 
-    public async Task DeleteCategoryAsync(Guid owner, Guid categoryId, CancellationToken cancellationToken)
+    public async Task DeleteCategoryAsync(Guid categoryId, CancellationToken cancellationToken)
     {
-        if (!await repository.DeleteCategoryAsync(owner, categoryId, cancellationToken).ConfigureAwait(false))
+        if (!await repository.DeleteCategoryAsync(categoryId, cancellationToken).ConfigureAwait(false))
         {
             throw new TransactionsNotFoundException(CategoryNotFound);
         }
@@ -47,39 +47,39 @@ internal sealed partial class ManageCategories(ICategoriesRepository repository,
     }
 
     public async Task<Api.Contracts.Category> UpdateCategoryAsync(
-        Guid owner, Guid categoryId, CategoryChanges request, CancellationToken cancellationToken)
+        Guid actor, Guid categoryId, CategoryChanges request, CancellationToken cancellationToken)
     {
         var (name, isActive) = CategoryRules.Validate(request);
-        var category = await repository.UpdateCategoryAsync(owner, categoryId, name, isActive, cancellationToken).ConfigureAwait(false)
+        var category = await repository.UpdateCategoryAsync(actor, categoryId, name, isActive, cancellationToken).ConfigureAwait(false)
             ?? throw new TransactionsNotFoundException(CategoryNotFound);
         LogCategoryUpdated(logger, categoryId);
         return ToContract(category);
     }
 
     public async Task<Page<Api.Contracts.Subcategory>> ListSubcategoriesAsync(
-        Guid owner, Guid categoryId, int? page, int? limit, CancellationToken cancellationToken)
+        Guid categoryId, int? page, int? limit, CancellationToken cancellationToken)
     {
         var paging = CategoryRules.Validate(page, limit);
-        await RequireCategoryAsync(owner, categoryId, cancellationToken).ConfigureAwait(false);
+        await RequireCategoryAsync(categoryId, cancellationToken).ConfigureAwait(false);
         var (rows, total) = await repository.ListSubcategoriesAsync(categoryId, paging, cancellationToken).ConfigureAwait(false);
         return new Page<Api.Contracts.Subcategory>([.. rows.Select(ToContract)], new PageMeta(paging.Page, paging.Limit, total));
     }
 
     public async Task<Api.Contracts.Subcategory> CreateSubcategoryAsync(
-        Guid owner, Guid categoryId, NewSubcategory request, CancellationToken cancellationToken)
+        Guid actor, Guid categoryId, NewSubcategory request, CancellationToken cancellationToken)
     {
         var name = CategoryRules.Validate(request);
-        await RequireCategoryAsync(owner, categoryId, cancellationToken).ConfigureAwait(false);
+        await RequireCategoryAsync(categoryId, cancellationToken).ConfigureAwait(false);
         var subcategory = new DomainSubcategory(Guid.CreateVersion7(), categoryId, name, IsActive: true);
-        await repository.AddSubcategoryAsync(subcategory, owner, cancellationToken).ConfigureAwait(false);
+        await repository.AddSubcategoryAsync(subcategory, actor, cancellationToken).ConfigureAwait(false);
         LogSubcategoryCreated(logger, subcategory.Id, categoryId);
         return ToContract(subcategory);
     }
 
     public async Task DeleteSubcategoryAsync(
-        Guid owner, Guid categoryId, Guid subcategoryId, CancellationToken cancellationToken)
+        Guid categoryId, Guid subcategoryId, CancellationToken cancellationToken)
     {
-        if (!await repository.DeleteSubcategoryAsync(owner, categoryId, subcategoryId, cancellationToken).ConfigureAwait(false))
+        if (!await repository.DeleteSubcategoryAsync(categoryId, subcategoryId, cancellationToken).ConfigureAwait(false))
         {
             throw new TransactionsNotFoundException(SubcategoryNotFound);
         }
@@ -88,20 +88,20 @@ internal sealed partial class ManageCategories(ICategoriesRepository repository,
     }
 
     public async Task<Api.Contracts.Subcategory> SetSubcategoryActiveAsync(
-        Guid owner, Guid categoryId, Guid subcategoryId, ActivationUpdate request, CancellationToken cancellationToken)
+        Guid actor, Guid categoryId, Guid subcategoryId, ActivationUpdate request, CancellationToken cancellationToken)
     {
         var isActive = CategoryRules.Validate(request);
         var subcategory = await repository
-                .SetSubcategoryActiveAsync(owner, categoryId, subcategoryId, isActive, cancellationToken)
+                .SetSubcategoryActiveAsync(actor, categoryId, subcategoryId, isActive, cancellationToken)
                 .ConfigureAwait(false)
             ?? throw new TransactionsNotFoundException(SubcategoryNotFound);
         LogSubcategoryActivation(logger, subcategoryId, isActive);
         return ToContract(subcategory);
     }
 
-    private async Task RequireCategoryAsync(Guid owner, Guid categoryId, CancellationToken cancellationToken)
+    private async Task RequireCategoryAsync(Guid categoryId, CancellationToken cancellationToken)
     {
-        if (await repository.FindCategoryAsync(owner, categoryId, cancellationToken).ConfigureAwait(false) is null)
+        if (await repository.FindCategoryAsync(categoryId, cancellationToken).ConfigureAwait(false) is null)
         {
             throw new TransactionsNotFoundException(CategoryNotFound);
         }

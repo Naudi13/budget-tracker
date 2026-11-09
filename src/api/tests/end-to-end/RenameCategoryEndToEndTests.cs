@@ -26,7 +26,7 @@ public sealed class RenameCategoryEndToEndTests(PostgresFixture postgres)
     public async Task Patch_followsTheCase() // TC-021
     {
         await using var api = new ApiFactory(postgres.DatabaseUrl);
-        using var client = await Accounts.SignedInAsync(api);
+        using var client = await Accounts.AdminAsync(api, postgres);
         using var other = await Accounts.SignedInAsync(api);
         var id = await Create(client, "Oficina");
         await Create(client, "Arriendo");
@@ -50,7 +50,7 @@ public sealed class RenameCategoryEndToEndTests(PostgresFixture postgres)
         using var empty = await client.PatchAsJsonAsync(url, new { }, Ct);
         Assert.Equal(HttpStatusCode.BadRequest, empty.StatusCode);
 
-        using var notTheirs = await other.PatchAsJsonAsync(url, new { name = "Mía" }, Ct);
-        Assert.Equal(HttpStatusCode.NotFound, notTheirs.StatusCode);
+        using var aUser = await other.PatchAsJsonAsync(url, new { name = "Mía" }, Ct);
+        Assert.Equal(HttpStatusCode.Forbidden, aUser.StatusCode);
     }
 }

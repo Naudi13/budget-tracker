@@ -44,7 +44,7 @@ public sealed class CategoriesEndToEndTests(PostgresFixture postgres)
     public async Task CreateCategory_isCreatedWithItsLocation_andListed()
     {
         await using var api = new ApiFactory(postgres.DatabaseUrl);
-        using var client = await SignedIn(api);
+        using var client = await Accounts.AdminAsync(api, postgres);
 
         using var created = await client.PostAsJsonAsync("/api/v1/categories", new { name = " Oficina ", type = "expense" }, Ct);
 
@@ -68,7 +68,7 @@ public sealed class CategoriesEndToEndTests(PostgresFixture postgres)
     public async Task CreateCategory_sameNameAndType_isConflict_otherTypeIsNot()
     {
         await using var api = new ApiFactory(postgres.DatabaseUrl);
-        using var client = await SignedIn(api);
+        using var client = await Accounts.AdminAsync(api, postgres);
         (await client.PostAsJsonAsync("/api/v1/categories", new { name = "Otros", type = "expense" }, Ct)).Dispose();
 
         using var duplicate = await client.PostAsJsonAsync("/api/v1/categories", new { name = "OTROS", type = "expense" }, Ct);
@@ -85,7 +85,7 @@ public sealed class CategoriesEndToEndTests(PostgresFixture postgres)
     public async Task CreateCategory_invalid_isValidationError_perField()
     {
         await using var api = new ApiFactory(postgres.DatabaseUrl);
-        using var client = await SignedIn(api);
+        using var client = await Accounts.AdminAsync(api, postgres);
 
         using var response = await client.PostAsJsonAsync("/api/v1/categories", new { name = " ", type = "savings" }, Ct);
 
@@ -102,7 +102,7 @@ public sealed class CategoriesEndToEndTests(PostgresFixture postgres)
     public async Task ListCategories_badQuery_isValidationError(string query, string field)
     {
         await using var api = new ApiFactory(postgres.DatabaseUrl);
-        using var client = await SignedIn(api);
+        using var client = await Accounts.AdminAsync(api, postgres);
 
         using var response = await client.GetAsync(new Uri("/api/v1/categories" + query, UriKind.Relative), Ct);
 
@@ -111,31 +111,10 @@ public sealed class CategoriesEndToEndTests(PostgresFixture postgres)
     }
 
     [Fact]
-    public async Task AnotherBusiness_neverSeesOrTouchesMyCategories()
-    {
-        await using var api = new ApiFactory(postgres.DatabaseUrl);
-        using var mine = await SignedIn(api);
-        using var theirs = await SignedIn(api);
-        using var created = await mine.PostAsJsonAsync("/api/v1/categories", new { name = "Privada", type = "expense" }, Ct);
-        var id = (await Json(created)).RootElement.GetProperty("id").GetGuid();
-
-        using var list = await theirs.GetAsync(new Uri("/api/v1/categories", UriKind.Relative), Ct);
-        using var delete = await theirs.DeleteAsync(new Uri($"/api/v1/categories/{id}", UriKind.Relative), Ct);
-        using var patch = await theirs.PatchAsJsonAsync($"/api/v1/categories/{id}", new { isActive = false }, Ct);
-        using var subcategory = await theirs.PostAsJsonAsync($"/api/v1/categories/{id}/subcategories", new { name = "x" }, Ct);
-
-        Assert.Equal(0, (await Json(list)).RootElement.GetProperty("meta").GetProperty("total").GetInt64());
-        Assert.Equal(HttpStatusCode.NotFound, delete.StatusCode);
-        Assert.Equal(HttpStatusCode.NotFound, patch.StatusCode);
-        Assert.Equal(HttpStatusCode.NotFound, subcategory.StatusCode);
-        Assert.Equal("NOT_FOUND", (await Json(delete)).RootElement.GetProperty("error").GetString());
-    }
-
-    [Fact]
     public async Task DeleteCategory_withASubcategory_isConflict_thenDeactivate_thenDeleteBoth() // TC-003
     {
         await using var api = new ApiFactory(postgres.DatabaseUrl);
-        using var client = await SignedIn(api);
+        using var client = await Accounts.AdminAsync(api, postgres);
         using var created = await client.PostAsJsonAsync("/api/v1/categories", new { name = "Oficina", type = "expense" }, Ct);
         var categoryId = (await Json(created)).RootElement.GetProperty("id").GetGuid();
         using var sub = await client.PostAsJsonAsync(
@@ -170,7 +149,7 @@ public sealed class CategoriesEndToEndTests(PostgresFixture postgres)
     public async Task CreateSubcategory_duplicateName_isConflict() // TC-002
     {
         await using var api = new ApiFactory(postgres.DatabaseUrl);
-        using var client = await SignedIn(api);
+        using var client = await Accounts.AdminAsync(api, postgres);
         using var created = await client.PostAsJsonAsync("/api/v1/categories", new { name = "Oficina", type = "expense" }, Ct);
         var categoryId = (await Json(created)).RootElement.GetProperty("id").GetGuid();
         (await client.PostAsJsonAsync($"/api/v1/categories/{categoryId}/subcategories", new { name = "Papelería" }, Ct)).Dispose();
@@ -185,7 +164,7 @@ public sealed class CategoriesEndToEndTests(PostgresFixture postgres)
     public async Task PatchCategory_withoutIsActive_isValidationError_andABadId_isNotFound()
     {
         await using var api = new ApiFactory(postgres.DatabaseUrl);
-        using var client = await SignedIn(api);
+        using var client = await Accounts.AdminAsync(api, postgres);
         using var created = await client.PostAsJsonAsync("/api/v1/categories", new { name = "Oficina", type = "expense" }, Ct);
         var id = (await Json(created)).RootElement.GetProperty("id").GetGuid();
 

@@ -18,7 +18,7 @@ internal sealed partial class ManageMovements(IMovementsRepository repository, I
     {
         var (date, description, lines) = MovementRules.Validate(request);
         var ids = lines.Select(line => line.SubcategoryId).Distinct().ToList();
-        var uses = await repository.FindSubcategoryUsesAsync(owner, ids, cancellationToken).ConfigureAwait(false);
+        var uses = await repository.FindSubcategoryUsesAsync(ids, cancellationToken).ConfigureAwait(false);
         var classified = MovementRules.Classify(lines, uses);
 
         var movement = new Movement(Guid.CreateVersion7(), owner, date, description, classified);

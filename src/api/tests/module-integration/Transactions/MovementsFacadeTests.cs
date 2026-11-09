@@ -99,13 +99,6 @@ public sealed class MovementsFacadeTests(PostgresFixture database) : IAsyncLifet
     }
 
     [Fact]
-    public async Task RecordTransactionAsync_withAnotherOwnersSubcategory_isAValidationError()
-    {
-        await Assert.ThrowsAsync<TransactionsValidationException>(
-            () => Record(Leo, new DateOnly(2026, 11, 6), "Not mine", (_supplies.Id, 5m)));
-    }
-
-    [Fact]
     public async Task ListTransactionsAsync_newestFirst_withoutDeletedOnes_onlyTheOwners() // TC-005
     {
         var oldest = await Record(Ana, new DateOnly(2026, 10, 1), "A", (_supplies.Id, 1m));
@@ -156,8 +149,8 @@ public sealed class MovementsFacadeTests(PostgresFixture database) : IAsyncLifet
         await Facade().DeleteTransactionAsync(Ana, transaction.Id, Ct);
 
         await Assert.ThrowsAsync<TransactionsConflictException>(
-            () => Facade().DeleteSubcategoryAsync(Ana, _office.Id, _supplies.Id, Ct));
-        await Facade().DeleteSubcategoryAsync(Ana, _office.Id, _rent.Id, Ct);
+            () => Facade().DeleteSubcategoryAsync(_office.Id, _supplies.Id, Ct));
+        await Facade().DeleteSubcategoryAsync(_office.Id, _rent.Id, Ct);
     }
 
     private async Task<T> ScalarAsync<T>(string sql)

@@ -8,27 +8,26 @@ namespace BudTack.Transactions.Internal.Persistence;
 
 /// <summary>
 /// transactions.budgets over the shared <see cref="NpgsqlDataSource"/>, as
-/// bud_tack_app. Every statement carries the owner. The database's own checks
+/// bud_tack_app. The database's own checks
 /// (amount, period) stand behind the rules; a category deleted in between
 /// surfaces as its foreign key.
 /// </summary>
 internal sealed class BudgetsRepository(NpgsqlDataSource dataSource) : IBudgetsRepository
 {
     private const string ForeignKeyViolation = "23503";
-    private const string Columns = "id, owned_by, category_id, amount, period_start, period_end";
+    private const string Columns = "id, category_id, amount, period_start, period_end";
 
     public async Task<(IReadOnlyList<BudgetRow> Rows, long Total)> ListAsync(
-        Guid owner, Guid? categoryId, Paging paging, CancellationToken cancellationToken)
+        Guid? categoryId, Paging paging, CancellationToken cancellationToken)
     {
-        const string Where = "WHERE owned_by = $1 AND ($2::uuid IS NULL OR category_id = $2)";
+        const string Where = "WHERE ($1::uuid IS NULL OR category_id = $1)";
         var rows = new List<BudgetRow>();
         await using (var command = dataSource.CreateCommand(
             $"""
             SELECT {Columns} FROM transactions.budgets {Where}
-            ORDER BY period_start DESC, created_at DESC, id DESC LIMIT $3 OFFSET $4
+            ORDER BY period_start DESC, created_at DESC, id DESC LIMIT $2 OFFSET $3
             """))
         {
-            command.Parameters.Add(new NpgsqlParameter { Value = owner });
             command.Parameters.Add(CategoryFilter(categoryId));
             command.Parameters.Add(new NpgsqlParameter { Value = paging.Limit });
             command.Parameters.Add(new NpgsqlParameter { Value = paging.Offset });
@@ -40,50 +39,47 @@ internal sealed class BudgetsRepository(NpgsqlDataSource dataSource) : IBudgetsR
         }
 
         await using var count = dataSource.CreateCommand($"SELECT count(*) FROM transactions.budgets {Where}");
-        count.Parameters.Add(new NpgsqlParameter { Value = owner });
         count.Parameters.Add(CategoryFilter(categoryId));
         var total = (long)(await count.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false))!;
         return (rows, total);
     }
 
-    public async Task<BudgetRow?> FindAsync(Guid owner, Guid budgetId, CancellationToken cancellationToken)
+    public async Task<BudgetRow?> FindAsync(Guid budgetId, CancellationToken cancellationToken)
     {
         await using var command = dataSource.CreateCommand(
-            $"SELECT {Columns} FROM transactions.budgets WHERE id = $1 AND owned_by = $2");
+            $"SELECT {Columns} FROM transactions.budgets WHERE id = $1");
         command.Parameters.Add(new NpgsqlParameter { Value = budgetId });
-        command.Parameters.Add(new NpgsqlParameter { Value = owner });
         await using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
         return await reader.ReadAsync(cancellationToken).ConfigureAwait(false) ? Read(reader) : null;
     }
 
-    public async Task AddAsync(BudgetRow budget, CancellationToken cancellationToken)
+    public async Task AddAsync(BudgetRow budget, Guid actor, CancellationToken cancellationToken)
     {
         await using var command = dataSource.CreateCommand(
             """
-            INSERT INTO transactions.budgets (id, owned_by, category_id, amount, period_start, period_end, created_by, updated_by)
-            VALUES ($1, $2, $3, $4, $5, $6, $2, $2)
+            INSERT INTO transactions.budgets (id, category_id, amount, period_start, period_end, created_by, updated_by)
+            VALUES ($1, $3, $4, $5, $6, $2, $2)
             """);
-        AddFields(command, budget);
+        AddFields(command, budget, actor);
         await ExecuteAsync(command, cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task<bool> UpdateAsync(BudgetRow budget, CancellationToken cancellationToken)
+    public async Task<bool> UpdateAsync(BudgetRow budget, Guid actor, CancellationToken cancellationToken)
     {
         await using var command = dataSource.CreateCommand(
             """
             UPDATE transactions.budgets
             SET category_id = $3, amount = $4, period_start = $5, period_end = $6, updated_at = now(), updated_by = $2
-            WHERE id = $1 AND owned_by = $2
+            WHERE id = $1
             """);
-        AddFields(command, budget);
+        AddFields(command, budget, actor);
         return await ExecuteAsync(command, cancellationToken).ConfigureAwait(false) == 1;
     }
 
-    public async Task<bool> DeleteAsync(Guid owner, Guid budgetId, CancellationToken cancellationToken)
+    public async Task<bool> DeleteAsync(Guid budgetId, CancellationToken cancellationToken)
     {
-        await using var command = dataSource.CreateCommand("DELETE FROM transactions.budgets WHERE id = $1 AND owned_by = $2");
+        await using var command = dataSource.CreateCommand("DELETE FROM transactions.budgets WHERE id = $1");
         command.Parameters.Add(new NpgsqlParameter { Value = budgetId });
-        command.Parameters.Add(new NpgsqlParameter { Value = owner });
         return await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false) == 1;
     }
 
@@ -100,10 +96,10 @@ internal sealed class BudgetsRepository(NpgsqlDataSource dataSource) : IBudgetsR
         }
     }
 
-    private static void AddFields(NpgsqlCommand command, BudgetRow budget)
+    private static void AddFields(NpgsqlCommand command, BudgetRow budget, Guid actor)
     {
         command.Parameters.Add(new NpgsqlParameter { Value = budget.Id });
-        command.Parameters.Add(new NpgsqlParameter { Value = budget.OwnedBy });
+        command.Parameters.Add(new NpgsqlParameter { Value = actor });
         command.Parameters.Add(new NpgsqlParameter { Value = budget.CategoryId });
         command.Parameters.Add(new NpgsqlParameter { Value = budget.Amount });
         command.Parameters.Add(new NpgsqlParameter { Value = budget.PeriodStart });
@@ -117,8 +113,7 @@ internal sealed class BudgetsRepository(NpgsqlDataSource dataSource) : IBudgetsR
         new(
             reader.GetGuid(0),
             reader.GetGuid(1),
-            reader.GetGuid(2),
-            reader.GetDecimal(3),
-            reader.GetFieldValue<DateOnly>(4),
-            reader.GetFieldValue<DateOnly>(5));
+            reader.GetDecimal(2),
+            reader.GetFieldValue<DateOnly>(3),
+            reader.GetFieldValue<DateOnly>(4));
 }

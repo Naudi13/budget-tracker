@@ -29,6 +29,7 @@ signs the bearer tokens.
 | `POST /api/v1/users` | none | Sign-up (HU-01): `201` + `Location`, `400` per field, `409` email in use |
 | `POST /api/v1/sessions` | none | Sign-in (HU-01): `201` with `{ token, tokenType, expiresIn, role }`, `401` wrong email or password |
 | `GET /api/v1/users` | Bearer, `ADMIN` | List the accounts (HU-09, `?page`, `?limit`): `401` without a token, `403` with another role |
+| Writes on categories and subcategories; all of `/api/v1/budgets` | Bearer, `ADMIN` | `403` with another role (HU-12) |
 | `GET /swagger-ui.html` | none | Swagger UI; the document is `/swagger/v1/swagger.json` (ADR-008) |
 | `GET`, `POST /api/v1/categories` | Bearer | List (`?page`, `?limit`, `?type`) and create (HU-02): `201`, `400`, `409` name in use for that type |
 | `DELETE`, `PATCH /api/v1/categories/{id}` | Bearer | Delete (`204`, `409` while it owns a subcategory or budget, BR-05) and rename, activate or deactivate (HU-03, `409` name in use) |
