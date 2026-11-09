@@ -1,4 +1,4 @@
-# HU-03 — Delete or Deactivate a Category or Subcategory
+# HU-03 — Rename, Delete or Deactivate a Category or Subcategory
 
 ## Story
 
@@ -9,6 +9,18 @@
 ## Acceptance criteria
 
 ```gherkin
+Scenario: Rename a category
+  Given the category "Office" exists
+  When  I change its name to "Stationery" and save
+  Then  it appears as "Stationery"
+  And   existing transactions and budgets show "Stationery"
+
+Scenario: Refuse a name already taken in the type
+  Given the expense categories "Office" and "Rent" exist
+  When  I change the name of "Office" to "Rent"
+  Then  it is not changed
+  And   I see "Ya existe una categoría de gasto llamada Rent."
+
 Scenario: Delete an unused subcategory
   Given the subcategory "Supplies" is referenced by no transaction detail
   When  I delete "Supplies" and confirm
@@ -48,7 +60,7 @@ Scenario: Reactivate a deactivated subcategory
 | Repositories | `bud-tack-docs`, `-db`, `-api`, `-portal` |
 | Contract | [`categories.yaml`](../../07-api/contracts/openapi/categories.yaml) — `DELETE` and `PATCH` on `/categories/{categoryId}` and its subcategories |
 | Screen | [`categories-configuration.md`](../../12-ux-ui/screens/categories-configuration.md) |
-| Test case | `TC-003` |
+| Test case | `TC-003`, `TC-021` |
 | Blocked by | `HU-02`; the "in use by a transaction" scenarios also need `HU-04`, and "owns a budget" needs `HU-07` |
 
 ## Definition of ready

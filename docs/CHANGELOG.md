@@ -18,6 +18,8 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) | [SemVer](http
 - `ADR-008`: BCrypt, a CORS allow-list and Swagger at `/swagger-ui.html`
 - MVP sheet and "Overview & tech" at the start of the README, with the course guide's Spring Boot items mapped to ASP.NET Core
 
+- A category can be renamed: `name` in `PATCH /categories/{categoryId}`, `TC-021`, and HU-03 and its screen extended to match
+
 ### Changed
 - `budgets.yaml` bounds a budget's amount like a transaction's: above zero, at most two
   decimals, below 10^12, stored as `numeric(14,2)`

@@ -11,7 +11,7 @@ even for a story that gets dropped before it ships.
 |---|---|---|---|---|
 | [HU-01](./stories/HU-01-sign-in.md) | Sign in to a business account | `identity` | ⭐ | — |
 | [HU-02](./stories/HU-02-create-category-or-subcategory.md) | Create a category or subcategory | `transactions` | ⭐ | HU-01 |
-| [HU-03](./stories/HU-03-delete-or-deactivate-category.md) | Delete or deactivate a category or subcategory | `transactions` | ⭐ | HU-02 |
+| [HU-03](./stories/HU-03-delete-or-deactivate-category.md) | Rename, delete or deactivate a category or subcategory | `transactions` | ⭐ | HU-02 |
 | [HU-04](./stories/HU-04-register-transaction.md) | Register an income or expense transaction | `transactions` | ⭐ | HU-02 |
 | [HU-05](./stories/HU-05-view-transaction-history.md) | View transaction history | `transactions` | ⭐ | HU-04 |
 | [HU-06](./stories/HU-06-delete-transaction.md) | Delete a transaction | `transactions` | ⭐ | HU-05 |

@@ -100,17 +100,19 @@ paths:
         '500':
           $ref: './common.yaml#/components/responses/InternalError'
     patch:
-      operationId: updateCategoryStatus
-      summary: Activate or deactivate a category
+      operationId: updateCategory
+      summary: Rename, activate or deactivate a category
       description: >
-        Implements BR-05. Setting isActive to false hides the category from new
-        transactions and budgets; existing links are kept.
+        Implements HU-03. Changes only the fields sent; at least one is required.
+        A name already used by another category of the same type is a conflict.
+        Setting isActive to false (BR-05) hides the category from new transactions
+        and budgets; existing links are kept. The type never changes.
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ActivationUpdate'
+              $ref: '#/components/schemas/CategoryChanges'
       responses:
         '200':
           description: Category updated
@@ -124,6 +126,8 @@ paths:
           $ref: './common.yaml#/components/responses/Unauthorized'
         '404':
           $ref: './common.yaml#/components/responses/NotFound'
+        '409':
+          $ref: './common.yaml#/components/responses/Conflict'
         '500':
           $ref: './common.yaml#/components/responses/InternalError'
 
@@ -257,6 +261,13 @@ components:
         id: { type: string, format: uuid }
         name: { type: string }
         type: { type: string, enum: [income, expense] }
+        isActive: { type: boolean }
+
+    CategoryChanges:
+      type: object
+      minProperties: 1
+      properties:
+        name: { type: string, minLength: 1, maxLength: 100 }
         isActive: { type: boolean }
 
     ActivationUpdate:
