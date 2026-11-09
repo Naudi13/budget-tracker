@@ -6,22 +6,22 @@ namespace BudTack.Identity.Internal.Application;
 
 /// <summary>
 /// HU-01, sign-in: a valid email and password get a bearer token. An unknown
-/// email and a wrong password fail the same way and take the same time, so a
+/// email, a pending account and a wrong password fail the same way and take the same time, so a
 /// caller cannot learn which emails have an account.
 /// </summary>
 internal sealed partial class SignIn(
     IUsersRepository users, PasswordHasher hasher, TokenService tokens, ILogger<SignIn> logger)
 {
-    // Verified against when the email is unknown, so both failures cost one hash.
+    // Verified against when there is no hash to check, so every failure costs one hash.
     private readonly Lazy<string> _decoy = new(() => hasher.Hash(Guid.NewGuid().ToString()));
 
     public async Task<Session> HandleAsync(Credentials request, CancellationToken cancellationToken)
     {
-        var (email, password) = SignUpRules.Validate(request);
+        var (email, password) = AccountRules.Validate(request);
 
         var user = await users.FindByEmailAsync(email, cancellationToken).ConfigureAwait(false);
         var matches = PasswordHasher.Verify(password, user?.PasswordHash ?? _decoy.Value);
-        if (user is null || !matches)
+        if (user?.PasswordHash is null || !matches)
         {
             LogRefused(logger);
             throw new InvalidCredentialsException();

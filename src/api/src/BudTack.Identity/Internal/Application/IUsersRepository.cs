@@ -6,7 +6,9 @@ namespace BudTack.Identity.Internal.Application;
 internal interface IUsersRepository
 {
     /// <summary>Stores a new account; throws <c>EmailAlreadyInUseException</c> when the email is taken.</summary>
-    Task AddAsync(User user, CancellationToken cancellationToken);
+    Task AddAsync(User user, Guid actor, CancellationToken cancellationToken);
+
+    Task<User?> FindByIdAsync(Guid id, CancellationToken cancellationToken);
 
     Task<User?> FindByEmailAsync(string email, CancellationToken cancellationToken);
 

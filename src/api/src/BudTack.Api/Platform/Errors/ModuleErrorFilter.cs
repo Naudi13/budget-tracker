@@ -23,6 +23,10 @@ internal sealed class ModuleErrorFilter : IExceptionFilter
                     [.. e.Errors.Select(error => new ApiErrorDetail(error.Field, error.Message))])),
             EmailAlreadyInUseException e => Respond(
                 StatusCodes.Status409Conflict, new ApiError(ErrorCodes.Conflict, e.Message)),
+            AccountStateConflictException e => Respond(
+                StatusCodes.Status409Conflict, new ApiError(ErrorCodes.Conflict, e.Message)),
+            UserNotFoundException e => Respond(
+                StatusCodes.Status404NotFound, new ApiError(ErrorCodes.NotFound, e.Message)),
             InvalidCredentialsException e => Respond(
                 StatusCodes.Status401Unauthorized, new ApiError(ErrorCodes.Unauthorized, e.Message)),
             TransactionsContracts.TransactionsValidationException e => Respond(

@@ -25,10 +25,17 @@ public static class IdentityModule
         services.AddSingleton<PasswordHasher>();
         services.AddSingleton(provider => new TokenService(settings, provider.GetRequiredService<TimeProvider>()));
         services.AddScoped<IUsersRepository, UsersRepository>();
-        services.AddScoped(provider => new SignUp(
+        services.AddScoped<IAccountTokensRepository, AccountTokensRepository>();
+        services.AddScoped(provider => new AccountLinks(
             provider.GetRequiredService<IUsersRepository>(),
+            provider.GetRequiredService<IAccountTokensRepository>(),
             provider.GetRequiredService<PasswordHasher>(),
-            provider.GetRequiredService<ILogger<SignUp>>()));
+            provider.GetRequiredService<TimeProvider>(),
+            provider.GetRequiredService<ILogger<AccountLinks>>()));
+        services.AddScoped(provider => new CreateUser(
+            provider.GetRequiredService<IUsersRepository>(),
+            provider.GetRequiredService<AccountLinks>(),
+            provider.GetRequiredService<ILogger<CreateUser>>()));
         services.AddScoped(provider => new SignIn(
             provider.GetRequiredService<IUsersRepository>(),
             provider.GetRequiredService<PasswordHasher>(),
@@ -36,7 +43,8 @@ public static class IdentityModule
             provider.GetRequiredService<ILogger<SignIn>>()));
         services.AddScoped(provider => new ListUsers(provider.GetRequiredService<IUsersRepository>()));
         services.AddScoped(provider => new IdentityFacade(
-            provider.GetRequiredService<SignUp>(),
+            provider.GetRequiredService<CreateUser>(),
+            provider.GetRequiredService<AccountLinks>(),
             provider.GetRequiredService<SignIn>(),
             provider.GetRequiredService<TokenService>(),
             provider.GetRequiredService<ListUsers>()));
