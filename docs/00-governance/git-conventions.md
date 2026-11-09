@@ -1,5 +1,10 @@
 # 00 — Git Conventions
 
+> **Single repository.** This project now lives in one repository. Where this document names
+> `bud-tack-api`, `-portal`, `-db`, `-infra` or `-docs`, read `src/api`, `src/portal`, `src/db`,
+> `infra/` or `docs/`. `main` is the only permanent branch; `develop` and `qa` applied to
+> the five separate repositories, whose history was imported here.
+
 This document is normative — a pull request that violates it is a request for
 changes, not a suggestion.
 

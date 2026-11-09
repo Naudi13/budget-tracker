@@ -1,0 +1,16 @@
+# Local values only, never committed (docs/00-governance/security-policy.md)
+.env
+
+# Build output and dependencies
+bin/
+obj/
+publish/
+dist/
+node_modules/
+.angular/
+.vs/
+*.user
+
+# Test output
+TestResults/
+coverage/

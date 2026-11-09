@@ -1,0 +1,226 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+# One job per part of the repository, each with the stages of
+# docs/10-devops/ci-cd.md, plus the whole application through the portal.
+jobs:
+  api:
+    name: API - build, boundary check, test and package
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: src/api
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: src/api/global.json
+
+      - name: build
+        run: dotnet build -c Release
+
+      - name: Vulnerable dependencies
+        run: |
+          dotnet list package --vulnerable --include-transitive | tee vulnerable.txt
+          ! grep -q -E "Critical|High" vulnerable.txt
+
+      - name: boundary check
+        run: dotnet test --project tests/boundary -c Release --no-build
+
+      - name: test (unit, with coverage)
+        run: >
+          dotnet test --project tests/unit -c Release --no-build
+          --results-directory TestResults
+          --coverage --coverage-output-format cobertura --coverage-output unit.cobertura.xml
+
+      - name: test (module-integration, with coverage, against a throwaway PostgreSQL)
+        run: >
+          dotnet test --project tests/module-integration -c Release --no-build
+          --results-directory TestResults
+          --coverage --coverage-output-format cobertura --coverage-output module-integration.cobertura.xml
+
+      - name: coverage gate (NFR-07, unit and module-integration together)
+        run: python3 scripts/coverage-gate.py TestResults/unit.cobertura.xml TestResults/module-integration.cobertura.xml
+
+      - name: test (end-to-end, against a throwaway PostgreSQL)
+        run: dotnet test --project tests/end-to-end -c Release --no-build
+
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-coverage
+          path: src/api/TestResults/*.cobertura.xml
+          if-no-files-found: ignore
+
+      - name: package
+        run: docker build -t "bud-tack-api:${GITHUB_SHA::7}" .
+
+  db:
+    name: Database - build and migration round trip
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: src/db
+
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres-ci-only
+          POSTGRES_DB: app_dev
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d app_dev"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      PG_CONTAINER: ${{ job.services.postgres.id }}
+      MIGRATOR_DATABASE_URL: postgresql://bud_tack_migrator:ci@localhost:5432/app_dev
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: src/db/global.json
+
+      # Same roles as infra/init/01-roles.sh, the source of truth.
+      # A service container cannot mount that script, so CI recreates them.
+      - name: Create the migrator and app roles
+        run: |
+          docker exec -i "$PG_CONTAINER" psql -v ON_ERROR_STOP=1 -U postgres -d app_dev <<'EOSQL'
+          CREATE ROLE bud_tack_migrator LOGIN PASSWORD 'ci' NOSUPERUSER NOCREATEDB NOCREATEROLE;
+          CREATE ROLE bud_tack_app LOGIN PASSWORD 'ci' NOSUPERUSER NOCREATEDB NOCREATEROLE;
+          ALTER DATABASE app_dev OWNER TO bud_tack_migrator;
+          REVOKE ALL ON DATABASE app_dev FROM PUBLIC;
+          GRANT CONNECT ON DATABASE app_dev TO bud_tack_app;
+          REVOKE CREATE ON SCHEMA public FROM PUBLIC;
+          EOSQL
+
+      - name: Build
+        run: dotnet build -c Release
+
+      - name: Vulnerable dependencies
+        run: |
+          dotnet list package --vulnerable --include-transitive | tee vulnerable.txt
+          ! grep -q -E "Critical|High" vulnerable.txt
+
+      - name: Migrate up, down to zero, and up again
+        run: sh scripts/round-trip.sh
+
+  portal:
+    name: Portal - lint, test, build and package
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: src/portal
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: src/portal/package-lock.json
+
+      - name: npm ci
+        run: npm ci --no-audit --no-fund
+
+      - name: Vulnerable dependencies
+        run: npm audit --omit=dev --audit-level=high
+
+      - name: ng lint
+        run: npx ng lint
+
+      - name: ng test (with coverage, 80 % minimum - NFR-07)
+        run: npx ng test --watch=false --coverage
+
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: portal-coverage
+          path: src/portal/coverage/bud-tack-portal/cobertura-coverage.xml
+          if-no-files-found: ignore
+
+      - name: ng build
+        run: npx ng build --configuration production
+
+      - name: docker build
+        run: docker build -t "bud-tack-portal:${GITHUB_SHA::7}" .
+
+  local-postgres:
+    name: Local PostgreSQL and roles
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: infra
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use the example environment
+        run: cp .env.example .env
+
+      - name: Validate the Compose file
+        run: docker compose config --quiet
+
+      - name: Start PostgreSQL and wait until healthy
+        run: docker compose up -d --wait --wait-timeout 120 postgres
+
+      - name: Verify the migrator and app roles
+        run: sh scripts/verify-roles.sh
+
+      - name: Show PostgreSQL logs on failure
+        if: failure()
+        run: docker compose logs postgres
+
+      - name: Stop and remove the stack
+        if: always()
+        run: docker compose down --volumes
+
+  full-stack:
+    name: Whole application through the portal
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: infra
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use the example environment and one tag for both images
+        run: |
+          cp .env.example .env
+          sed -i -e "s/^APP_TAG=.*/APP_TAG=${GITHUB_SHA::7}/" .env
+
+      - name: Build and start the whole application
+        run: docker compose up -d --build --wait --wait-timeout 600
+
+      - name: GET / and GET /health through the portal
+        run: sh scripts/verify-stack.sh
+
+      - name: Show logs on failure
+        if: failure()
+        run: docker compose logs
+
+      - name: Stop and remove the stack
+        if: always()
+        run: docker compose down --volumes

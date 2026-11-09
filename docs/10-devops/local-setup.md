@@ -4,10 +4,10 @@
 
 | Tool | Why | Verify with |
 |---|---|---|
-| Git | Clone `bud-tack-infra`, `-db`, `-api` and `-portal` | `git --version` |
-| Docker with Compose | Runs the local PostgreSQL from `bud-tack-infra` — see [`database-conventions.md`](../06-data/database-conventions.md) | `docker compose version` |
+| Git | Clone the repository | `git --version` |
+| Docker with Compose | Runs the local PostgreSQL from `infra/` — see [`database-conventions.md`](../06-data/database-conventions.md) | `docker compose version` |
 | .NET SDK | Build and run the application and its migrations — see [`_stacks/csharp-aspnet.md`](../_stacks/csharp-aspnet.md) for the exact version | `dotnet --version` |
-| Node.js LTS and npm | Angular's own toolchain, for `bud-tack-portal` only; the version is the one its `package.json` `engines` field names (22.12 or later) | `node --version` |
+| Node.js LTS and npm | Angular's own toolchain, for `src/portal` only; the version is the one its `package.json` `engines` field names (22.12 or later) | `node --version` |
 | An IDE with MSBuild 18 (optional) | Visual Studio 2026, VS Code with C# Dev Kit, or Rider 2025.3+. Visual Studio 2022 cannot open the .NET 10 projects | — |
 
 No Java runtime is needed: the migrations are a .NET project
@@ -16,21 +16,20 @@ A PostgreSQL installed on the machine works too, in place of step 2.
 
 ## Steps
 
-1. Clone `bud-tack-infra`, `bud-tack-db`, `bud-tack-api` and `bud-tack-portal`
-   side by side. In each, copy its `.env.example` to `.env`; the defaults, the
+1. Clone the repository. In each of `infra/`, `src/db` and `src/api`, copy its `.env.example` to `.env`; the defaults, the
    same as this repository's [`.env.example`](../.env.example), match the local
    database and need no edits to start.
-2. In `bud-tack-infra`, start PostgreSQL alone with `docker compose up -d postgres`. It
+2. In `infra/`, start PostgreSQL alone with `docker compose up -d postgres`. It
    creates the database named in `DATABASE_URL`, the application's role and the
    migrator role from [`security-policy.md`](../00-governance/security-policy.md).
-3. In `bud-tack-db`, apply the pending migrations with
+3. In `src/db`, apply the pending migrations with
    `dotnet run --project src/BudTack.Db.Migrations -- up` — see
    [`migrations.md`](../06-data/migrations.md).
-4. In `bud-tack-api`, run `dotnet run --project src/BudTack.Api` (or F5 in the
+4. In `src/api`, run `dotnet run --project src/BudTack.Api` (or F5 in the
    IDE) — the `local` command in [`csharp-aspnet.md`](../_stacks/csharp-aspnet.md).
    It listens on port 3000, the port every example URL and API contract uses,
    set by `ASPNETCORE_URLS` in `.env` and in the versioned launch profile.
-5. In `bud-tack-portal`, run `npm ci`, then `npm start`. The Angular dev server
+5. In `src/portal`, run `npm ci`, then `npm start`. The Angular dev server
    listens on `http://localhost:4200` and its `proxy.conf.json` forwards `/api/`
    and `/health` to `localhost:3000`, so the browser sees one origin and no CORS
    is needed — see [`environments.md`](./environments.md).
@@ -49,9 +48,8 @@ screen loads.
 
 ## The whole application in containers
 
-To run what `staging` runs instead of steps 3 to 5, in `bud-tack-infra` set
-`DB_SOURCE`, `API_SOURCE` and `PORTAL_SOURCE` in `.env` if your clones are not
-side by side, then:
+To run what `staging` runs instead of steps 3 to 5, in `infra/` copy
+`.env.example` to `.env`, then:
 
 ```bash
 docker compose up -d --build --wait
