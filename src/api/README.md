@@ -41,7 +41,7 @@ signs the bearer tokens.
 | `POST /api/v1/transactions/{id}/deletion` | Bearer | Soft delete with a reason (HU-06, BR-04): `204`, `400` without one, `404` someone else's or already deleted |
 | `GET`, `POST /api/v1/budgets` | Bearer | List newest period first (`?page`, `?limit`, `?categoryId`) and set (HU-07): `201` with `Location`; `400` per field; `422 BUSINESS_RULE_VIOLATED` when the period does not end after it starts or the category is inactive (TC-007, BR-05) |
 | `PATCH`, `DELETE /api/v1/budgets/{id}` | Bearer | Change only the fields sent, held to the same rules (`200`, `422`), and delete physically (`204`, then `404`) (BR-06, TC-019) |
-| `GET /api/v1/dashboard` | Bearer | HU-08: total income, total expenses and net balance computed on read (BR-03) without deleted transactions (BR-04), and the five most recent transactions |
+| `GET /api/v1/dashboard` | Bearer | HU-08 and HU-11, globally or with `?categoryId=`: budget, spent and available, total income, total expenses and net balance computed on read (BR-03) without deleted transactions (BR-04), and the five most recent transactions |
 | Every other controller action | `Authorization: Bearer <token>` | `401 UNAUTHORIZED` without a valid token (NFR-05) |
 
 Contracts: `07-api/contracts/openapi/` in `bud-tack-docs`. Passwords are stored as

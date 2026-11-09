@@ -14,10 +14,10 @@ internal interface IMovementsRepository
 
     /// <summary>Movements that are not deleted (BR-04), or only the deleted ones, newest first, with their lines.</summary>
     Task<(IReadOnlyList<Movement> Rows, long Total)> ListAsync(
-        Guid? owner, bool deleted, Paging paging, CancellationToken cancellationToken);
+        Guid? owner, bool deleted, Guid? categoryId, Paging paging, CancellationToken cancellationToken);
 
     /// <summary>Income and expense sums over undeleted movements (BR-03, BR-04).</summary>
-    Task<(decimal Income, decimal Expenses)> TotalsAsync(Guid? owner, CancellationToken cancellationToken);
+    Task<(decimal Income, decimal Expenses)> TotalsAsync(Guid? owner, Guid? categoryId, CancellationToken cancellationToken);
 
     /// <summary>Sets deleted_at, deleted_by and the reason (BR-04); false when there is no such undeleted movement.</summary>
     Task<bool> SoftDeleteAsync(Guid actor, Guid? owner, Guid movementId, string reason, CancellationToken cancellationToken);

@@ -15,7 +15,7 @@ internal sealed class TransactionsController(TransactionsFacade transactions) : 
 {
     [HttpGet]
     public Task<Page<Transaction>> List(int? page, int? limit, bool? deleted, CancellationToken cancellationToken) =>
-        transactions.ListTransactionsAsync(User.Viewer(), page, limit, deleted ?? false, cancellationToken);
+        transactions.ListTransactionsAsync(User.Viewer(), page, limit, deleted ?? false, cancellationToken: cancellationToken);
 
     [HttpPost]
     public async Task<ActionResult<Transaction>> Record(NewTransaction request, CancellationToken cancellationToken)

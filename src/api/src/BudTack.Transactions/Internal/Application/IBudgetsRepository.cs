@@ -9,6 +9,13 @@ internal interface IBudgetsRepository
     Task<(IReadOnlyList<BudgetRow> Rows, long Total)> ListAsync(
         Guid? categoryId, Paging paging, CancellationToken cancellationToken);
 
+    /// <summary>
+    /// The budgets in force on <paramref name="today"/> and what was spent inside their
+    /// periods, from every account (BR-08): one category's, or every expense category's.
+    /// </summary>
+    Task<(int Budgets, decimal Amount, decimal Spent)> ProgressAsync(
+        Guid? categoryId, DateOnly today, CancellationToken cancellationToken);
+
     Task<BudgetRow?> FindAsync(Guid budgetId, CancellationToken cancellationToken);
 
     Task AddAsync(BudgetRow budget, Guid actor, CancellationToken cancellationToken);

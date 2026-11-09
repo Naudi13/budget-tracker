@@ -3,6 +3,7 @@ using BudTack.Transactions.Api;
 using BudTack.Transactions.Internal.Application;
 using BudTack.Transactions.Internal.Persistence;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 
 namespace BudTack.Transactions;
@@ -18,6 +19,7 @@ public static class TransactionsModule
     public static IServiceCollection AddTransactionsModule(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
+        services.TryAddSingleton(TimeProvider.System);
         services.AddScoped<ICategoriesRepository, CategoriesRepository>();
         services.AddScoped(provider => new ManageCategories(
             provider.GetRequiredService<ICategoriesRepository>(),
@@ -32,6 +34,7 @@ public static class TransactionsModule
         services.AddScoped(provider => new ManageBudgets(
             provider.GetRequiredService<IBudgetsRepository>(),
             provider.GetRequiredService<ICategoriesRepository>(),
+            provider.GetRequiredService<TimeProvider>(),
             provider.GetRequiredService<ILogger<ManageBudgets>>()));
         services.AddScoped(provider => new TransactionsFacade(
             provider.GetRequiredService<IdentityFacade>(),

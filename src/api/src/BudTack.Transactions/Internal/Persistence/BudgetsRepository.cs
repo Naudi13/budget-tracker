@@ -44,6 +44,30 @@ internal sealed class BudgetsRepository(NpgsqlDataSource dataSource) : IBudgetsR
         return (rows, total);
     }
 
+    public async Task<(int Budgets, decimal Amount, decimal Spent)> ProgressAsync(
+        Guid? categoryId, DateOnly today, CancellationToken cancellationToken)
+    {
+        await using var command = dataSource.CreateCommand(
+            """
+            SELECT count(*)::int, coalesce(sum(b.amount), 0), coalesce(sum((
+                       SELECT coalesce(sum(d.amount), 0)
+                       FROM transactions.transaction_details d
+                       JOIN transactions.subcategories s ON s.id = d.subcategory_id
+                       JOIN transactions.transactions t ON t.id = d.transaction_id
+                       WHERE s.category_id = b.category_id AND t.deleted_at IS NULL
+                         AND t.transaction_date BETWEEN b.period_start AND b.period_end)), 0)
+            FROM transactions.budgets b
+            JOIN transactions.categories c ON c.id = b.category_id
+            WHERE $2 BETWEEN b.period_start AND b.period_end
+              AND (($1::uuid IS NULL AND c.type = 'expense') OR b.category_id = $1)
+            """);
+        command.Parameters.Add(CategoryFilter(categoryId));
+        command.Parameters.Add(new NpgsqlParameter { Value = today });
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+        await reader.ReadAsync(cancellationToken).ConfigureAwait(false);
+        return (reader.GetInt32(0), reader.GetDecimal(1), reader.GetDecimal(2));
+    }
+
     public async Task<BudgetRow?> FindAsync(Guid budgetId, CancellationToken cancellationToken)
     {
         await using var command = dataSource.CreateCommand(

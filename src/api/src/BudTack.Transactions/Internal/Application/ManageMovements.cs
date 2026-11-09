@@ -31,8 +31,12 @@ internal sealed partial class ManageMovements(
         return ToContract(movement);
     }
 
+    public Task<Page<Transaction>> ListAsync(
+        Viewer viewer, int? page, int? limit, bool deleted, CancellationToken cancellationToken) =>
+        ListAsync(viewer, page, limit, deleted, categoryId: null, cancellationToken);
+
     public async Task<Page<Transaction>> ListAsync(
-        Viewer viewer, int? page, int? limit, bool deleted, CancellationToken cancellationToken)
+        Viewer viewer, int? page, int? limit, bool deleted, Guid? categoryId, CancellationToken cancellationToken)
     {
         if (deleted && !viewer.IsAdmin)
         {
@@ -40,16 +44,19 @@ internal sealed partial class ManageMovements(
         }
 
         var paging = Paging.From(page, limit);
-        var (rows, total) = await repository.ListAsync(Scope(viewer), deleted, paging, cancellationToken).ConfigureAwait(false);
+        var (rows, total) = await repository.ListAsync(Scope(viewer), deleted, categoryId, paging, cancellationToken).ConfigureAwait(false);
         var names = viewer.IsAdmin ? await NamesAsync(rows, cancellationToken).ConfigureAwait(false) : null;
         return new Page<Transaction>(
             [.. rows.Select(row => names is null ? ToContract(row) : ToAdminContract(row, names))],
             new PageMeta(paging.Page, paging.Limit, total));
     }
 
-    public async Task<Totals> TotalsAsync(Viewer viewer, CancellationToken cancellationToken)
+    public Task<Totals> TotalsAsync(Viewer viewer, CancellationToken cancellationToken) =>
+        TotalsAsync(viewer, categoryId: null, cancellationToken);
+
+    public async Task<Totals> TotalsAsync(Viewer viewer, Guid? categoryId, CancellationToken cancellationToken)
     {
-        var (income, expenses) = await repository.TotalsAsync(Scope(viewer), cancellationToken).ConfigureAwait(false);
+        var (income, expenses) = await repository.TotalsAsync(Scope(viewer), categoryId, cancellationToken).ConfigureAwait(false);
         return new Totals(income, expenses);
     }
 
