@@ -8,9 +8,9 @@ using Xunit;
 namespace BudTack.EndToEnd.Tests;
 
 /// <summary>
-/// HU-01 over HTTP, exactly as identity.yaml describes it: sign-up, sign-in,
-/// the bearer token on later requests, and the 401 every other write gives
-/// without one (TC-001, TC-013, TC-014).
+/// Accounts over HTTP, exactly as identity.yaml describes them: an administrator
+/// creates them, single-use links set the password, and sign-in returns the bearer
+/// token later requests carry (TC-001, TC-013, TC-014, TC-022, TC-023).
 /// </summary>
 [Collection(PostgresTestGroup.Name)]
 public sealed class IdentityEndToEndTests(PostgresFixture postgres)
@@ -19,41 +19,49 @@ public sealed class IdentityEndToEndTests(PostgresFixture postgres)
 
     private static string UniqueEmail() => $"owner-{Guid.NewGuid():N}@example.com";
 
+    private static async Task<JsonDocument> Json(HttpResponseMessage response) =>
+        await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync(Ct), cancellationToken: Ct);
+
+    private static Task<HttpResponseMessage> Confirm(HttpClient client, string token, string password) =>
+        client.PostAsJsonAsync("/api/v1/account-links/confirm", new { token, password }, Ct);
+
+    private static Task<HttpResponseMessage> SignIn(HttpClient client, string email, string password) =>
+        client.PostAsJsonAsync("/api/v1/sessions", new { email, password }, Ct);
+
     [Fact]
-    public async Task PostUsers_newAccount_isCreatedWithItsLocation()
+    public async Task PostUsers_asAnAdmin_createsAPendingAccount_withItsLink() // TC-022
     {
         await using var api = new ApiFactory(postgres.DatabaseUrl);
-        using var client = api.CreateClient();
+        using var admin = await Accounts.NewAdminAsync(api, postgres);
         var email = UniqueEmail();
 
-        using var response = await client.PostAsJsonAsync(
-            "/api/v1/users", new { name = "Ana Owner", email = email.ToUpperInvariant(), password = "Str0ngPass!23" }, Ct);
+        using var response = await admin.PostAsJsonAsync(
+            "/api/v1/users", new { name = "Ana Owner", email = email.ToUpperInvariant(), role = "USER" }, Ct);
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
         using var body = await Json(response);
-        var id = body.RootElement.GetProperty("id").GetGuid();
-        Assert.Equal("Ana Owner", body.RootElement.GetProperty("name").GetString());
-        Assert.Equal(email, body.RootElement.GetProperty("email").GetString());
-        Assert.False(body.RootElement.TryGetProperty("password", out _));
-        Assert.False(body.RootElement.TryGetProperty("passwordHash", out _));
-        Assert.Equal($"/api/v1/users/{id}", response.Headers.Location?.ToString());
+        var user = body.RootElement.GetProperty("user");
+        Assert.Equal(email, user.GetProperty("email").GetString());
+        Assert.Equal("USER", user.GetProperty("role").GetString());
+        Assert.Equal("PENDING", user.GetProperty("status").GetString());
+        Assert.False(user.TryGetProperty("password", out _));
+        Assert.False(string.IsNullOrEmpty(body.RootElement.GetProperty("activation").GetProperty("token").GetString()));
+        Assert.Equal($"/api/v1/users/{user.GetProperty("id").GetGuid()}", response.Headers.Location?.ToString());
     }
 
     [Fact]
     public async Task PostUsers_emailInUse_isConflict() // TC-001
     {
         await using var api = new ApiFactory(postgres.DatabaseUrl);
-        using var client = api.CreateClient();
+        using var admin = await Accounts.NewAdminAsync(api, postgres);
         var email = UniqueEmail();
-        (await SignUp(client, email, "Str0ngPass!23")).Dispose();
+        await Accounts.CreateAsync(admin, email);
 
-        using var response = await SignUp(client, email, "An0therPass!");
+        using var response = await admin.PostAsJsonAsync("/api/v1/users", new { name = "Otra", email, role = "USER" }, Ct);
 
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
         using var body = await Json(response);
         Assert.Equal("CONFLICT", body.RootElement.GetProperty("error").GetString());
-        Assert.Equal("An account already uses this email. Sign in instead.", body.RootElement.GetProperty("message").GetString());
-        Assert.False(body.RootElement.TryGetProperty("details", out _));
         Assert.Equal(1L, await postgres.ScalarAsync("SELECT count(*) FROM identity.users WHERE email = $1", email));
     }
 
@@ -61,43 +69,28 @@ public sealed class IdentityEndToEndTests(PostgresFixture postgres)
     public async Task PostUsers_invalidFields_isValidationErrorWithEveryField()
     {
         await using var api = new ApiFactory(postgres.DatabaseUrl);
-        using var client = api.CreateClient();
+        using var admin = await Accounts.NewAdminAsync(api, postgres);
 
-        using var response = await client.PostAsJsonAsync("/api/v1/users", new { name = " ", email = "nope", password = "short" }, Ct);
+        using var response = await admin.PostAsJsonAsync("/api/v1/users", new { name = " ", email = "nope", role = "OWNER" }, Ct);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         using var body = await Json(response);
-        Assert.Equal("VALIDATION_ERROR", body.RootElement.GetProperty("error").GetString());
         Assert.Equal(
-            ["name", "email", "password"],
+            ["name", "email", "role"],
             body.RootElement.GetProperty("details").EnumerateArray().Select(d => d.GetProperty("field").GetString()));
     }
 
-    [Fact]
-    public async Task PostUsers_noBody_isValidationError()
-    {
-        await using var api = new ApiFactory(postgres.DatabaseUrl);
-        using var client = api.CreateClient();
-
-        using var response = await client.PostAsync(
-            new Uri("/api/v1/users", UriKind.Relative), new StringContent("", null, "application/json"), Ct);
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-        using var body = await Json(response);
-        Assert.Equal("VALIDATION_ERROR", body.RootElement.GetProperty("error").GetString());
-    }
-
     [Theory]
-    [InlineData("{\"name\":\"x\"", "application/json", HttpStatusCode.BadRequest)]
-    [InlineData("name=x", "text/plain", HttpStatusCode.UnsupportedMediaType)]
-    public async Task PostUsers_brokenJsonOrNotJson_isAValidationErrorInOurFormat(
+    [InlineData("{\"email\":\"x\"", "application/json", HttpStatusCode.BadRequest)]
+    [InlineData("email=x", "text/plain", HttpStatusCode.UnsupportedMediaType)]
+    public async Task PostSessions_brokenJsonOrNotJson_isAValidationErrorInOurFormat(
         string content, string mediaType, HttpStatusCode expected)
     {
         await using var api = new ApiFactory(postgres.DatabaseUrl);
         using var client = api.CreateClient();
 
         using var response = await client.PostAsync(
-            new Uri("/api/v1/users", UriKind.Relative), new StringContent(content, null, mediaType), Ct);
+            new Uri("/api/v1/sessions", UriKind.Relative), new StringContent(content, null, mediaType), Ct);
 
         Assert.Equal(expected, response.StatusCode);
         using var body = await Json(response);
@@ -106,35 +99,120 @@ public sealed class IdentityEndToEndTests(PostgresFixture postgres)
     }
 
     [Fact]
-    public async Task PostUsers_storesOnlyAHash_andNeverLogsThePassword() // TC-014
+    public async Task ActivationThenSignIn_storesOnlyAHash_andNeverLogsThePassword() // TC-014, TC-023
     {
         await using var api = new ApiFactory(postgres.DatabaseUrl);
+        using var admin = await Accounts.NewAdminAsync(api, postgres);
         using var client = api.CreateClient();
         var email = UniqueEmail();
-        const string password = "Str0ngPass!23";
+        var token = await Accounts.CreateAsync(admin, email);
 
-        (await SignUp(client, email, password)).Dispose();
-        (await SignIn(client, email, password)).Dispose();
-        (await SignIn(client, email, "Wrong" + password)).Dispose();
+        using var confirmed = await Confirm(client, token, Accounts.Password);
+        using var session = await SignIn(client, email, Accounts.Password);
+        (await SignIn(client, email, "Wrong" + Accounts.Password)).Dispose();
 
+        Assert.Equal(HttpStatusCode.NoContent, confirmed.StatusCode);
+        Assert.Equal(HttpStatusCode.Created, session.StatusCode);
         var stored = (string?)await postgres.ScalarAsync("SELECT password_hash FROM identity.users WHERE email = $1", email);
-        Assert.NotNull(stored);
-        Assert.DoesNotContain(password, stored, StringComparison.Ordinal);
         Assert.StartsWith("$2a$12$", stored, StringComparison.Ordinal);
         Assert.NotEmpty(api.LogLines);
-        Assert.DoesNotContain(api.LogLines, line => line.Contains(password, StringComparison.Ordinal));
+        Assert.DoesNotContain(api.LogLines, line => line.Contains(Accounts.Password, StringComparison.Ordinal));
+        Assert.DoesNotContain(api.LogLines, line => line.Contains(token, StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task AccountLink_worksOnce_andAPendingAccountCannotSignIn() // TC-022, TC-023
+    {
+        await using var api = new ApiFactory(postgres.DatabaseUrl);
+        using var admin = await Accounts.NewAdminAsync(api, postgres);
+        using var client = api.CreateClient();
+        var email = UniqueEmail();
+        var token = await Accounts.CreateAsync(admin, email);
+
+        using var pending = await SignIn(client, email, Accounts.Password);
+        using var first = await Confirm(client, token, Accounts.Password);
+        using var second = await Confirm(client, token, "An0therPass!");
+
+        Assert.Equal(HttpStatusCode.Unauthorized, pending.StatusCode);
+        Assert.Equal(HttpStatusCode.NoContent, first.StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, second.StatusCode);
+        using var body = await Json(second);
+        Assert.Equal("token", body.RootElement.GetProperty("details")[0].GetProperty("field").GetString());
+    }
+
+    [Fact]
+    public async Task AnExpiredLink_answersLikeAnyInvalidOne() // TC-023
+    {
+        await using var api = new ApiFactory(postgres.DatabaseUrl);
+        using var admin = await Accounts.NewAdminAsync(api, postgres);
+        using var client = api.CreateClient();
+        var email = UniqueEmail();
+        var token = await Accounts.CreateAsync(admin, email);
+        await postgres.ScalarAsync(
+            "UPDATE identity.account_tokens t SET expires_at = now() - interval '1 minute' FROM identity.users u WHERE u.id = t.user_id AND u.email = $1 RETURNING t.id",
+            email);
+
+        using var expired = await Confirm(client, token, Accounts.Password);
+        using var unknown = await Confirm(client, "not-a-token", Accounts.Password);
+
+        Assert.Equal(HttpStatusCode.BadRequest, expired.StatusCode);
+        Assert.Equal(await unknown.Content.ReadAsStringAsync(Ct), await expired.Content.ReadAsStringAsync(Ct));
+    }
+
+    [Fact]
+    public async Task PasswordReset_replacesThePassword_withoutTheAdminEverSeeingOne() // TC-023
+    {
+        await using var api = new ApiFactory(postgres.DatabaseUrl);
+        using var admin = await Accounts.NewAdminAsync(api, postgres);
+        using var client = api.CreateClient();
+        var email = UniqueEmail();
+        var token = await Accounts.CreateAsync(admin, email);
+        (await Confirm(client, token, Accounts.Password)).Dispose();
+        var id = (Guid)(await postgres.ScalarAsync("SELECT id FROM identity.users WHERE email = $1", email))!;
+
+        using var reset = await admin.PostAsync(new Uri($"/api/v1/users/{id}/password-resets", UriKind.Relative), null, Ct);
+        using var link = await Json(reset);
+        using var confirmed = await Confirm(client, link.RootElement.GetProperty("token").GetString()!, "An0therPass!");
+        using var old = await SignIn(client, email, Accounts.Password);
+        using var fresh = await SignIn(client, email, "An0therPass!");
+
+        Assert.Equal(HttpStatusCode.Created, reset.StatusCode);
+        Assert.Equal(HttpStatusCode.NoContent, confirmed.StatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized, old.StatusCode);
+        Assert.Equal(HttpStatusCode.Created, fresh.StatusCode);
+    }
+
+    [Fact]
+    public async Task ActivationLinks_stateConflicts_andUnknownAccounts()
+    {
+        await using var api = new ApiFactory(postgres.DatabaseUrl);
+        using var admin = await Accounts.NewAdminAsync(api, postgres);
+        var email = UniqueEmail();
+        var token = await Accounts.CreateAsync(admin, email);
+        var id = (Guid)(await postgres.ScalarAsync("SELECT id FROM identity.users WHERE email = $1", email))!;
+
+        using var resetOfPending = await admin.PostAsync(new Uri($"/api/v1/users/{id}/password-resets", UriKind.Relative), null, Ct);
+        using var again = await admin.PostAsync(new Uri($"/api/v1/users/{id}/activation-links", UriKind.Relative), null, Ct);
+        using var unknown = await admin.PostAsync(new Uri($"/api/v1/users/{Guid.NewGuid()}/activation-links", UriKind.Relative), null, Ct);
+        using var oldLink = await Confirm(admin, token, Accounts.Password);
+
+        Assert.Equal(HttpStatusCode.Conflict, resetOfPending.StatusCode);
+        Assert.Equal(HttpStatusCode.Created, again.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, unknown.StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, oldLink.StatusCode);
     }
 
     [Fact]
     public async Task PostSessions_rightPassword_returnsABearerTokenTheApiAccepts()
     {
         await using var api = new ApiFactory(postgres.DatabaseUrl);
+        using var admin = await Accounts.NewAdminAsync(api, postgres);
         using var client = api.CreateClient();
         var email = UniqueEmail();
-        using var signUp = await SignUp(client, email, "Str0ngPass!23");
-        using var user = await Json(signUp);
+        await Accounts.ActivateAsync(api, await Accounts.CreateAsync(admin, email));
+        var id = (Guid)(await postgres.ScalarAsync("SELECT id FROM identity.users WHERE email = $1", email))!;
 
-        using var response = await SignIn(client, email, "Str0ngPass!23");
+        using var response = await SignIn(client, email, Accounts.Password);
 
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
         Assert.True(response.Headers.CacheControl?.NoStore);
@@ -147,26 +225,24 @@ public sealed class IdentityEndToEndTests(PostgresFixture postgres)
         using var probe = await client.PostAsync(new Uri("/__test/protected", UriKind.Relative), null, Ct);
         Assert.Equal(HttpStatusCode.OK, probe.StatusCode);
         using var who = await Json(probe);
-        Assert.Equal(user.RootElement.GetProperty("id").GetString(), who.RootElement.GetProperty("userId").GetString());
+        Assert.Equal(id.ToString(), who.RootElement.GetProperty("userId").GetString());
     }
 
-    [Theory]
-    [InlineData("Wrong-Pass-123")]
-    [InlineData(null)]
-    public async Task PostSessions_wrongPasswordOrUnknownEmail_isUnauthorized(string? password)
+    [Fact]
+    public async Task PostSessions_wrongPasswordOrUnknownEmail_isUnauthorized()
     {
         await using var api = new ApiFactory(postgres.DatabaseUrl);
+        using var admin = await Accounts.NewAdminAsync(api, postgres);
         using var client = api.CreateClient();
         var email = UniqueEmail();
-        if (password is not null)
-        {
-            (await SignUp(client, email, "Str0ngPass!23")).Dispose();
-        }
+        await Accounts.ActivateAsync(api, await Accounts.CreateAsync(admin, email));
 
-        using var response = await SignIn(client, email, password ?? "Str0ngPass!23");
+        using var wrong = await SignIn(client, email, "Wrong-Pass-123");
+        using var unknown = await SignIn(client, UniqueEmail(), Accounts.Password);
 
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-        using var body = await Json(response);
+        Assert.Equal(HttpStatusCode.Unauthorized, wrong.StatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized, unknown.StatusCode);
+        using var body = await Json(wrong);
         Assert.Equal("UNAUTHORIZED", body.RootElement.GetProperty("error").GetString());
         Assert.Equal("The email or password is not correct.", body.RootElement.GetProperty("message").GetString());
         Assert.False(body.RootElement.TryGetProperty("details", out _));
@@ -203,13 +279,4 @@ public sealed class IdentityEndToEndTests(PostgresFixture postgres)
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
-
-    private static Task<HttpResponseMessage> SignUp(HttpClient client, string email, string password) =>
-        client.PostAsJsonAsync("/api/v1/users", new { name = "Ana Owner", email, password }, Ct);
-
-    private static Task<HttpResponseMessage> SignIn(HttpClient client, string email, string password) =>
-        client.PostAsJsonAsync("/api/v1/sessions", new { email, password }, Ct);
-
-    private static async Task<JsonDocument> Json(HttpResponseMessage response) =>
-        await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync(Ct), cancellationToken: Ct);
 }

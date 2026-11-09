@@ -34,7 +34,7 @@ public sealed class PermissionsEndToEndTests(PostgresFixture postgres)
     public async Task AUser_isForbidden_andNothingChanges(string method, string path)
     {
         await using var api = new ApiFactory(postgres.DatabaseUrl);
-        using var client = await Accounts.SignedInAsync(api);
+        using var client = await Accounts.UserAsync(api, postgres);
         using var request = new HttpRequestMessage(new HttpMethod(method), path.Replace("{id}", Unknown.ToString(), StringComparison.Ordinal))
         {
             Content = method is "GET" or "DELETE" ? null : JsonContent.Create(new { name = "X" }),
@@ -50,7 +50,7 @@ public sealed class PermissionsEndToEndTests(PostgresFixture postgres)
     {
         await using var api = new ApiFactory(postgres.DatabaseUrl);
         using var admin = await Accounts.AdminAsync(api, postgres);
-        using var user = await Accounts.SignedInAsync(api);
+        using var user = await Accounts.UserAsync(api, postgres);
         using var category = await admin.PostAsJsonAsync("/api/v1/categories", new { name = "Oficina", type = "expense" }, Ct);
         var id = await Id(category);
         (await admin.PostAsJsonAsync($"/api/v1/categories/{id}/subcategories", new { name = "Papelería" }, Ct)).Dispose();
