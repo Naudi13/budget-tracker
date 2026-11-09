@@ -47,6 +47,10 @@ status_with() {
 
 admin=$(token admin@budgettracker.test 'Admin-2026!')
 user=$(token usuario@budgettracker.test 'Usuario-2026!')
+signup=$(curl -s -o /dev/null -w '%{http_code}' -X POST "$BASE/api/v1/users" -H 'Content-Type: application/json' \
+  -d '{"name":"Eve","email":"eve@example.com","role":"ADMIN"}' || true)
+if [ "$signup" = "401" ]; then pass "nobody signs up without an administrator"; else fail "nobody signs up without an administrator (status $signup)"; fi
+
 if [ -n "$admin" ] && [ "$(status_with "$admin")" = "200" ]; then pass "the seeded ADMIN lists the accounts"; else fail "the seeded ADMIN lists the accounts"; fi
 if [ -n "$user" ] && [ "$(status_with "$user")" = "403" ]; then pass "the seeded USER gets 403"; else fail "the seeded USER gets 403"; fi
 
