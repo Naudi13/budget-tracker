@@ -4,7 +4,7 @@
 
 | Field | Value |
 |---|---|
-| Screen | List the accounts (route `/settings/users`) |
+| Screen | Create and list the accounts (route `/settings/users`) |
 | Serves | [`HU-09`](../../04-requirements/stories/HU-09-list-accounts-as-admin.md) |
 | Wireframe | Inline sketch below — no design file exists for this screen |
 
@@ -19,7 +19,14 @@
 ```
 
 Only the role `ADMIN` sees the "Usuarios" link. Any other role opening the route
-is sent to the dashboard. The screen only reads: it has no form and no actions.
+is sent to the dashboard.
+
+Each row also shows the state (*Pendiente* or *Activa*) and one action: *Generar
+enlace* on a pending account, *Restablecer contraseña* on an active one.
+
+*Nuevo usuario* opens a form with name, email and role. On saving, and for either
+action, a dialog shows the link once, with *Copiar enlace* and the warning "Copia
+este enlace ahora: no se volverá a mostrar."
 
 ## States
 
@@ -32,7 +39,11 @@ is sent to the dashboard. The screen only reads: it has no form and no actions.
 
 ## Validation rules
 
-The screen has no input to validate.
+| Field | Rule | Message shown |
+|---|---|---|
+| Name (*Nombre*) | Required, 1 to 100 characters | "Escribe el nombre." / over 100: "Usa máximo 100 caracteres." |
+| Email (*Correo electrónico*) | Required, a valid email address; unique | "Escribe un correo válido, por ejemplo ana@example.com." / `409`: "Ya existe una cuenta con este correo." |
+| Role (*Rol*) | Required: Usuario or Administrador | "Elige un rol." |
 
 ---
 

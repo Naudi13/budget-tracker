@@ -5,6 +5,7 @@
 | Field | Value |
 |---|---|
 | Screen | Configuration › Categories (with subcategories) |
+| Access | `ADMIN` only (`HU-12`); any other role goes to the dashboard |
 | Serves | `HU-02` (create) and `HU-03` (rename and delete) — see `../../04-requirements/user-stories.md` |
 | Wireframe | Flow "Configuración › Categorías" in `Budget-Tracker-Diagramas.pdf`, page 5 (not yet exported to the repository) |
 

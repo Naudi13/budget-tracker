@@ -22,13 +22,13 @@ the screens, and each one calls the single backend API directly.
 |---|---|---|
 | [design-system.md](./design-system.md) | What visual and interaction rules do screens share? | ⭐ |
 | [screens/sign-in.md](./screens/sign-in.md) | How does the owner sign in, and what does a failure say? | ⭐ |
-| [screens/sign-up.md](./screens/sign-up.md) | How is the business account created? | ⭐ |
+| [screens/activate-account.md](./screens/activate-account.md) | How does a person choose their password? | ⭐ |
 | [screens/dashboard.md](./screens/dashboard.md) | What does the dashboard show, and in which states? | ⭐ |
 | [screens/new-record.md](./screens/new-record.md) | How is a transaction recorded, and what does validation say? | ⭐ |
 | [screens/transaction-history.md](./screens/transaction-history.md) | How are transactions listed and deleted? | ⭐ |
 | [screens/categories-configuration.md](./screens/categories-configuration.md) | How are categories and subcategories created, deactivated and deleted? | ⭐ |
 | [screens/budgets.md](./screens/budgets.md) | How is a budget set and listed? | — |
-| [screens/users.md](./screens/users.md) | How does an administrator list the accounts? | ⭐ |
+| [screens/users.md](./screens/users.md) | How does an administrator create and list the accounts? | ⭐ |
 | [_template-screen.md](./_template-screen.md) | Template — copy it once per screen | — |
 
 ## Out of scope

@@ -5,6 +5,7 @@
 | Field | Value |
 |---|---|
 | Screen | Configuration › Budgets |
+| Access | `ADMIN` only (`HU-12`); any other role goes to the dashboard |
 | Serves | [`HU-07`](../../04-requirements/stories/HU-07-set-budget.md) |
 | Wireframe | Inline sketch below — no design file exists for this screen |
 
