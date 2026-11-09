@@ -1,4 +1,4 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, computed, signal } from '@angular/core';
 
 const TOKEN_KEY = 'bud-tack.token';
 const ROLE_KEY = 'bud-tack.role';
@@ -19,6 +19,8 @@ export class AuthTokenStore {
 
   readonly token = this.current.asReadonly();
   readonly role = this.currentRole.asReadonly();
+  /** Who signed in, from the token's `sub`; only decides what the portal offers. */
+  readonly userId = computed(() => subjectOf(this.current()));
 
   set(token: string, role: Role | null = null): void {
     this.current.set(token);
@@ -32,6 +34,15 @@ export class AuthTokenStore {
     this.currentRole.set(null);
     write(TOKEN_KEY, null);
     write(ROLE_KEY, null);
+  }
+}
+
+function subjectOf(token: string | null): string | null {
+  try {
+    const payload = token?.split('.')[1]?.replace(/-/g, '+').replace(/_/g, '/');
+    return payload ? ((JSON.parse(atob(payload)) as { sub?: string }).sub ?? null) : null;
+  } catch {
+    return null;
   }
 }
 

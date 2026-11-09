@@ -3,6 +3,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 
+import { AuthTokenStore } from '../../core/auth-token.store';
 import { errorInterceptor } from '../../core/error.interceptor';
 import { User } from '../../core/identity.service';
 import { UsersPage } from './users.page';
@@ -181,5 +182,80 @@ describe('UsersPage', () => {
     backend.expectOne((r) => r.url === '/api/v1/users/u1/password-resets').flush(null, { status: 500, statusText: 'Error' });
 
     expect(text()).toContain('No pudimos generar el enlace. Inténtalo de nuevo.');
+  });
+
+  describe('inactivating and deleting', () => {
+    const inactive: User = { ...ana, status: 'INACTIVE' };
+    const dialog = () => page().querySelector('[role="alertdialog"]');
+    const confirmIn = () => dialog()!.querySelector<HTMLButtonElement>('.btn-danger')!.click();
+
+    it('asks, inactivates and reloads', () => {
+      respond([admin]);
+      click('Inactivar');
+      expect(dialog()?.textContent).toContain('¿Inactivar a Admin?');
+      confirmIn();
+      fixture.detectChanges();
+
+      const request = backend.expectOne((r) => r.method === 'PATCH' && r.url === '/api/v1/users/u1');
+      expect(request.request.body).toEqual({ isActive: false });
+      request.flush({ ...admin, status: 'INACTIVE' });
+      respond([{ ...admin, status: 'INACTIVE' }]);
+
+      expect(text()).toContain('Usuario inactivado.');
+      expect(text()).toContain('Inactiva');
+    });
+
+    it('activates an inactive account without asking', () => {
+      respond([inactive]);
+      click('Activar');
+
+      const request = backend.expectOne((r) => r.method === 'PATCH');
+      expect(request.request.body).toEqual({ isActive: true });
+      request.flush(ana);
+      respond([ana]);
+      expect(text()).toContain('Usuario activado.');
+    });
+
+    it('deletes only a pending account, after asking', () => {
+      respond([admin, ana]);
+      expect(Array.from(page().querySelectorAll('tbody tr'))[0].textContent).not.toContain('Eliminar');
+      click('Eliminar');
+      expect(dialog()?.textContent).toContain('¿Eliminar a Ana? No se puede deshacer.');
+      confirmIn();
+      fixture.detectChanges();
+
+      backend.expectOne((r) => r.method === 'DELETE' && r.url === '/api/v1/users/u2').flush(null, { status: 204, statusText: 'No Content' });
+      respond([admin]);
+      expect(text()).toContain('Usuario eliminado.');
+    });
+
+    it('changes nothing when cancelled', () => {
+      respond([admin]);
+      click('Inactivar');
+      click('Cancelar');
+
+      expect(dialog()).toBeNull();
+    });
+
+    it('keeps the dialog with a retry when it fails', () => {
+      respond([admin]);
+      click('Inactivar');
+      confirmIn();
+      fixture.detectChanges();
+      backend.expectOne((r) => r.method === 'PATCH').flush(null, { status: 500, statusText: 'Error' });
+
+      expect(text()).toContain('No pudimos completar la acción.');
+      click('Cancelar');
+    });
+
+    it('does not offer inactivating your own account', () => {
+      TestBed.inject(AuthTokenStore).set(`h.${btoa(JSON.stringify({ sub: 'u1' }))}.s`, 'ADMIN');
+      respond([admin, { ...admin, id: 'u9', name: 'Otro' }]);
+
+      const rows = Array.from(page().querySelectorAll('tbody tr'));
+      expect(rows[0].textContent).not.toContain('Inactivar');
+      expect(rows[1].textContent).toContain('Inactivar');
+      sessionStorage.clear();
+    });
   });
 });

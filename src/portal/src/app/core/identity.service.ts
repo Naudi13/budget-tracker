@@ -15,7 +15,7 @@ export interface User {
   readonly name: string;
   readonly email: string;
   readonly role: Role;
-  readonly status: 'PENDING' | 'ACTIVE';
+  readonly status: 'PENDING' | 'ACTIVE' | 'INACTIVE';
 }
 
 export interface Session {
