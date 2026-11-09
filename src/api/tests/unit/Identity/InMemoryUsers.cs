@@ -23,6 +23,25 @@ internal sealed class InMemoryUsers : IUsersRepository
         Task.FromResult<IReadOnlyDictionary<Guid, string>>(
             Rows.Where(row => ids.Contains(row.Id)).ToDictionary(row => row.Id, row => row.Name));
 
+    public Task<bool> IsActiveAsync(Guid id, CancellationToken cancellationToken) =>
+        Task.FromResult(Rows.Exists(row => row.Id == id && row.IsActive));
+
+    public Task<BudTack.Identity.Internal.Domain.User?> SetActiveAsync(
+        Guid actor, Guid id, bool isActive, CancellationToken cancellationToken)
+    {
+        var index = Rows.FindIndex(row => row.Id == id);
+        if (index < 0)
+        {
+            return Task.FromResult<BudTack.Identity.Internal.Domain.User?>(null);
+        }
+
+        Rows[index] = Rows[index] with { IsActive = isActive };
+        return Task.FromResult<BudTack.Identity.Internal.Domain.User?>(Rows[index]);
+    }
+
+    public Task<bool> DeleteNeverActivatedAsync(Guid id, CancellationToken cancellationToken) =>
+        Task.FromResult(Rows.RemoveAll(row => row.Id == id && row.PasswordHash is null) == 1);
+
     public Task<BudTack.Identity.Internal.Domain.User?> FindByIdAsync(Guid id, CancellationToken cancellationToken) =>
         Task.FromResult(Rows.Find(row => row.Id == id));
 

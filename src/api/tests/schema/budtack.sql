@@ -1,12 +1,12 @@
 -- The database schema the tests run against: bud-tack-db after every migration
--- up to Transactions008_AddDeletionReason (202611092102). Generated, never edited by hand:
+-- up to Identity005_AddUserIsActive (202611092200). Generated, never edited by hand:
 --   docker exec bud-tack-postgres-1 pg_dump --schema-only --no-owner --no-privileges \n--     --no-comments --schema=identity --schema=transactions -U postgres app_dev
 -- Regenerate it in the pull request that needs a newer migration.
 
 --
 -- PostgreSQL database dump
 --
-\restrict xeDHhZpdmdHV9y19wbGZTM5QgYLPDG9nac5Ai11Q6wiqfBACMSmYi4M6ciWtrYc
+\restrict uFAdlp5qVpKDdaclcf5iDqUC8va8Dni8myfaM7nkX9MPVV95xmKGU1TJmL2oFPD
 -- Dumped from database version 17.11
 -- Dumped by pg_dump version 17.11
 SET statement_timeout = 0;
@@ -57,6 +57,7 @@ CREATE TABLE identity.users (
     created_by uuid,
     updated_by uuid,
     role character varying(10) DEFAULT 'USER'::character varying NOT NULL,
+    is_active boolean DEFAULT true NOT NULL,
     CONSTRAINT ck_users_email_lowercase CHECK (((email)::text = lower((email)::text))),
     CONSTRAINT ck_users_name_not_blank CHECK ((btrim((name)::text) <> ''::text)),
     CONSTRAINT ck_users_role CHECK (((role)::text = ANY ((ARRAY['USER'::character varying, 'ADMIN'::character varying])::text[])))
@@ -244,4 +245,4 @@ ALTER TABLE ONLY transactions.transaction_details
 --
 -- PostgreSQL database dump complete
 --
-\unrestrict xeDHhZpdmdHV9y19wbGZTM5QgYLPDG9nac5Ai11Q6wiqfBACMSmYi4M6ciWtrYc
+\unrestrict uFAdlp5qVpKDdaclcf5iDqUC8va8Dni8myfaM7nkX9MPVV95xmKGU1TJmL2oFPD
