@@ -45,6 +45,9 @@ creates in those schemas automatically (default privileges, `Platform001`).
 | `202611061710` | `Transactions006_CreateBudgets` | HU-07 | `transactions.budgets`: an owner, a category, an amount `numeric(14,2)` above zero and a period that ends after it starts, both checked so a change can never break them (BR-06); deleted physically; its key to the category is `ON DELETE RESTRICT`, so a category with a budget cannot be deleted (BR-05) |
 | `202611082300` | `Identity002_AddUserRole` | HU-09 | `role` on `identity.users`: `USER` or `ADMIN`, `USER` by default (ADR-007) |
 | `202611082301` | `Identity003_SeedUsers` | HU-09 | One test user per role, with BCrypt hashes (ADR-008) |
+| `202611092100` | `Identity004_AddAccountTokens` | HU-10 | `identity.account_tokens`: single-use links, only their hash (ADR-010); `password_hash` optional until an account is activated |
+| `202611092101` | `Transactions007_ShareCatalog` | HU-12 | Removes `owned_by` from categories and budgets; a category name is unique per type (ADR-009) |
+| `202611092102` | `Transactions008_AddDeletionReason` | HU-06 | `deletion_reason`, set together with `deleted_at` (BR-04) |
 
 ## Seed users
 
