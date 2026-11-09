@@ -4,7 +4,7 @@
 
 | Term | Definition | Forbidden synonyms |
 |---|---|---|
-| User | The entity that signs in and owns a business's data — table `identity.users`, schema `User`; V1 has exactly one per business, with the role `USER` or `ADMIN` | Owner; not "Account" — that word is kept for the product-facing capability of signing in and owning data, e.g. "business account", never the entity or table itself |
+| User | The entity that signs in and owns a business's data — table `identity.users`, schema `User`; created by an administrator, with the role `USER` or `ADMIN` | Owner; not "Account" — that word is kept for the product-facing capability of signing in and owning data, e.g. "business account", never the entity or table itself |
 | Income | The classification a subcategory carries when its category's type is income | Revenue (use only in reporting-specific context), Earning |
 | Expense | The classification a subcategory carries when its category's type is expense | Cost, Outflow |
 | Transaction | A recorded movement of money, identified by a date and a description, made of one or more transaction details | Entry, Movement, Record |

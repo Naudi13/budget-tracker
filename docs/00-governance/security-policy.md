@@ -41,12 +41,15 @@ pull request that adds the dependency.
 - **Password storage:** a password is stored only as a BCrypt hash (cost 12, over
   a SHA-384 digest of the password, so nothing past BCrypt's 72 bytes is ignored)
   and is never logged — **NFR-06**, [`ADR-008`](../05-architecture/decisions/records/ADR-008-bcrypt-cors-and-swagger.md).
-- **Authorization:** V1 has one account per business and two roles, `USER` and
-  `ADMIN` ([`ADR-007`](../05-architecture/decisions/records/ADR-007-two-roles-in-the-token.md));
+- **Authorization:** two roles, `USER` and `ADMIN`
+  ([`ADR-009`](../05-architecture/decisions/records/ADR-009-one-business-with-a-shared-catalog.md));
   a write endpoint that accepts an unauthenticated request is a bug — **NFR-05**.
   A role is checked at the edge of the request, by a named authorization policy
-  on the endpoint. A role never widens data access: every read and write stays
-  filtered by `owned_by`.
+  on the endpoint. A `USER` only reaches transactions they recorded.
+- **Account links:** activation and password reset use a random single-use token,
+  and only its hash is stored
+  ([`ADR-010`](../05-architecture/decisions/records/ADR-010-single-use-account-links.md)).
+  No administrator sees or sets a password.
 - **Least privilege:** the application's own database user cannot `DROP` or
   `ALTER` tables; migrations from `bud-tack-db` run under a separate, more
   privileged role.
