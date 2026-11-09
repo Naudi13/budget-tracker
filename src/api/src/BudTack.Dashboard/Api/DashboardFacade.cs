@@ -1,5 +1,6 @@
 using BudTack.Dashboard.Api.Contracts;
 using BudTack.Transactions.Api;
+using BudTack.Transactions.Api.Contracts;
 
 namespace BudTack.Dashboard.Api;
 
@@ -23,14 +24,14 @@ public sealed class DashboardFacade
 
     /// <summary>
     /// HU-08: <c>GET /dashboard</c>. Totals and the recent list come from two
-    /// reads of the signed-in user's transactions; deleted ones count in neither
+    /// reads of the transactions the viewer reaches; deleted ones count in neither
     /// (BR-04).
     /// </summary>
-    public async Task<DashboardView> GetDashboardAsync(Guid userId, CancellationToken cancellationToken = default)
+    public async Task<DashboardView> GetDashboardAsync(Viewer viewer, CancellationToken cancellationToken = default)
     {
-        var totals = await Transactions.GetTotalsAsync(userId, cancellationToken).ConfigureAwait(false);
+        var totals = await Transactions.GetTotalsAsync(viewer, cancellationToken).ConfigureAwait(false);
         var recent = await Transactions
-            .ListTransactionsAsync(userId, page: 1, limit: RecentCount, cancellationToken)
+            .ListTransactionsAsync(viewer, page: 1, limit: RecentCount, cancellationToken: cancellationToken)
             .ConfigureAwait(false);
         return new DashboardView(totals.Income, totals.Expenses, totals.Income - totals.Expenses, recent.Data);
     }

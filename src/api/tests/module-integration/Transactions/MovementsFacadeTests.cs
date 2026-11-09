@@ -73,7 +73,7 @@ public sealed class MovementsFacadeTests(PostgresFixture database) : IAsyncLifet
         decimal[] amounts = [9m, 2m, 7m, 1m, 8m, 3m, 6m, 4m, 5m, 10m];
         await Record(Ana, new DateOnly(2026, 11, 6), "Many lines", [.. amounts.Select(a => (_supplies.Id, a))]);
 
-        var page = await Facade().ListTransactionsAsync(Ana, cancellationToken: Ct);
+        var page = await Facade().ListTransactionsAsync(new Viewer(Ana, false), cancellationToken: Ct);
 
         Assert.Equal(amounts, page.Data.Single().Details.Select(d => d.Amount));
     }
@@ -104,10 +104,10 @@ public sealed class MovementsFacadeTests(PostgresFixture database) : IAsyncLifet
         var oldest = await Record(Ana, new DateOnly(2026, 10, 1), "A", (_supplies.Id, 1m));
         await Record(Ana, new DateOnly(2026, 10, 20), "C", (_supplies.Id, 2m), (_rent.Id, 3m));
         await Record(Ana, new DateOnly(2026, 10, 15), "B", (_store.Id, 4m));
-        await Facade().DeleteTransactionAsync(Ana, oldest.Id, Ct);
+        await Facade().DeleteTransactionAsync(new Viewer(Ana, false), oldest.Id, new TransactionDeletion("Monto equivocado"), Ct);
 
-        var page = await Facade().ListTransactionsAsync(Ana, cancellationToken: Ct);
-        var others = await Facade().ListTransactionsAsync(Leo, cancellationToken: Ct);
+        var page = await Facade().ListTransactionsAsync(new Viewer(Ana, false), cancellationToken: Ct);
+        var others = await Facade().ListTransactionsAsync(new Viewer(Leo, false), cancellationToken: Ct);
 
         Assert.Equal(["C", "B"], page.Data.Select(t => t.Description));
         Assert.Equal(2L, page.Meta.Total);
@@ -121,15 +121,16 @@ public sealed class MovementsFacadeTests(PostgresFixture database) : IAsyncLifet
     {
         var transaction = await Record(Ana, new DateOnly(2026, 11, 6), "Printer paper", (_supplies.Id, 85.50m));
 
-        await Facade().DeleteTransactionAsync(Ana, transaction.Id, Ct);
+        await Facade().DeleteTransactionAsync(new Viewer(Ana, false), transaction.Id, new TransactionDeletion("Monto equivocado"), Ct);
 
         await using var command = database.DataSource.CreateCommand(
-            "SELECT deleted_by, deleted_at > now() - interval '1 minute' FROM transactions.transactions WHERE id = $1");
+            "SELECT deleted_by, deleted_at > now() - interval '1 minute', deletion_reason FROM transactions.transactions WHERE id = $1");
         command.Parameters.Add(new NpgsqlParameter { Value = transaction.Id });
         await using var row = await command.ExecuteReaderAsync(Ct);
         Assert.True(await row.ReadAsync(Ct));
         Assert.Equal(Ana, row.GetGuid(0));
         Assert.True(row.GetBoolean(1));
+        Assert.Equal("Monto equivocado", row.GetString(2));
     }
 
     [Fact]
@@ -137,16 +138,16 @@ public sealed class MovementsFacadeTests(PostgresFixture database) : IAsyncLifet
     {
         var transaction = await Record(Ana, new DateOnly(2026, 11, 6), "Printer paper", (_supplies.Id, 85.50m));
 
-        await Assert.ThrowsAsync<TransactionsNotFoundException>(() => Facade().DeleteTransactionAsync(Leo, transaction.Id, Ct));
-        await Facade().DeleteTransactionAsync(Ana, transaction.Id, Ct);
-        await Assert.ThrowsAsync<TransactionsNotFoundException>(() => Facade().DeleteTransactionAsync(Ana, transaction.Id, Ct));
+        await Assert.ThrowsAsync<TransactionsNotFoundException>(() => Facade().DeleteTransactionAsync(new Viewer(Leo, false), transaction.Id, new TransactionDeletion("Monto equivocado"), Ct));
+        await Facade().DeleteTransactionAsync(new Viewer(Ana, false), transaction.Id, new TransactionDeletion("Monto equivocado"), Ct);
+        await Assert.ThrowsAsync<TransactionsNotFoundException>(() => Facade().DeleteTransactionAsync(new Viewer(Ana, false), transaction.Id, new TransactionDeletion("Monto equivocado"), Ct));
     }
 
     [Fact]
     public async Task DeleteSubcategoryAsync_usedByATransaction_isAConflict_evenAfterTheTransactionIsDeleted() // BR-05
     {
         var transaction = await Record(Ana, new DateOnly(2026, 11, 6), "Printer paper", (_supplies.Id, 85.50m));
-        await Facade().DeleteTransactionAsync(Ana, transaction.Id, Ct);
+        await Facade().DeleteTransactionAsync(new Viewer(Ana, false), transaction.Id, new TransactionDeletion("Monto equivocado"), Ct);
 
         await Assert.ThrowsAsync<TransactionsConflictException>(
             () => Facade().DeleteSubcategoryAsync(_office.Id, _supplies.Id, Ct));

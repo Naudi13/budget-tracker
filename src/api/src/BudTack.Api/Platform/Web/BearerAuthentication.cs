@@ -2,6 +2,7 @@ using System.Security.Claims;
 using System.Text.Encodings.Web;
 using BudTack.Identity.Api;
 using BudTack.Identity.Api.Contracts;
+using BudTack.Transactions.Api.Contracts;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Options;
@@ -41,6 +42,9 @@ internal static class BearerAuthentication
     public static Guid UserId(this ClaimsPrincipal user) =>
         Guid.Parse(user.FindFirstValue(ClaimTypes.NameIdentifier)
             ?? throw new InvalidOperationException("The request is not authenticated."));
+
+    /// <summary>The signed-in user as the transactions module sees them.</summary>
+    public static Viewer Viewer(this ClaimsPrincipal user) => new(user.UserId(), user.IsInRole(Roles.Admin));
 
     private sealed class Handler(
         IOptionsMonitor<AuthenticationSchemeOptions> options,

@@ -15,14 +15,16 @@ public sealed class IdentityFacade
     private readonly SignIn _signIn;
     private readonly TokenService _tokens;
     private readonly ListUsers _listUsers;
+    private readonly IUsersRepository _users;
 
-    internal IdentityFacade(CreateUser createUser, AccountLinks links, SignIn signIn, TokenService tokens, ListUsers listUsers)
+    internal IdentityFacade(CreateUser createUser, AccountLinks links, SignIn signIn, TokenService tokens, ListUsers listUsers, IUsersRepository users)
     {
         _createUser = createUser;
         _links = links;
         _signIn = signIn;
         _tokens = tokens;
         _listUsers = listUsers;
+        _users = users;
     }
 
     /// <summary>
@@ -66,6 +68,11 @@ public sealed class IdentityFacade
     /// </summary>
     public Task<UserPage> ListUsersAsync(int? page, int? limit, CancellationToken cancellationToken = default) =>
         _listUsers.HandleAsync(page, limit, cancellationToken);
+
+    /// <summary>The names of these accounts, for another module to show who did something.</summary>
+    public Task<IReadOnlyDictionary<Guid, string>> NamesOfAsync(
+        IReadOnlyCollection<Guid> userIds, CancellationToken cancellationToken = default) =>
+        _users.NamesOfAsync(userIds, cancellationToken);
 
     /// <summary>Who a bearer token stands for, or null when it is not one of ours or has expired.</summary>
     public Task<AuthenticatedUser?> AuthenticateAsync(string token)

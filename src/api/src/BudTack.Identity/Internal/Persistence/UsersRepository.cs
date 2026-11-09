@@ -36,6 +36,21 @@ internal sealed class UsersRepository(NpgsqlDataSource dataSource) : IUsersRepos
         }
     }
 
+    public async Task<IReadOnlyDictionary<Guid, string>> NamesOfAsync(
+        IReadOnlyCollection<Guid> ids, CancellationToken cancellationToken)
+    {
+        var names = new Dictionary<Guid, string>();
+        await using var command = dataSource.CreateCommand("SELECT id, name FROM identity.users WHERE id = ANY($1)");
+        command.Parameters.Add(new NpgsqlParameter { Value = ids.ToArray() });
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+        while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
+        {
+            names[reader.GetGuid(0)] = reader.GetString(1);
+        }
+
+        return names;
+    }
+
     public async Task<Domain.User?> FindByIdAsync(Guid id, CancellationToken cancellationToken)
     {
         await using var command = dataSource.CreateCommand(

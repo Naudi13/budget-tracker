@@ -19,6 +19,10 @@ internal sealed class InMemoryUsers : IUsersRepository
         return Task.CompletedTask;
     }
 
+    public Task<IReadOnlyDictionary<Guid, string>> NamesOfAsync(IReadOnlyCollection<Guid> ids, CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyDictionary<Guid, string>>(
+            Rows.Where(row => ids.Contains(row.Id)).ToDictionary(row => row.Id, row => row.Name));
+
     public Task<BudTack.Identity.Internal.Domain.User?> FindByIdAsync(Guid id, CancellationToken cancellationToken) =>
         Task.FromResult(Rows.Find(row => row.Id == id));
 

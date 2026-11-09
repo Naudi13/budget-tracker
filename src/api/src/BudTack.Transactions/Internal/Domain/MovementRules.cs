@@ -72,6 +72,19 @@ internal static class MovementRules
     /// Gives each line its type and enforces BR-02 and BR-05. A subcategory missing
     /// from <paramref name="uses"/> does not exist or belongs to someone else.
     /// </summary>
+    public const int ReasonMinLength = 3;
+    public const int ReasonMaxLength = 200;
+
+    /// <summary>Why a transaction is deleted (BR-04), trimmed.</summary>
+    public static string Validate(TransactionDeletion request)
+    {
+        var reason = request.Reason?.Trim() ?? string.Empty;
+        return reason.Length is >= ReasonMinLength and <= ReasonMaxLength
+            ? reason
+            : throw new TransactionsValidationException(
+                [new FieldError("reason", $"must be {ReasonMinLength} to {ReasonMaxLength} characters")]);
+    }
+
     public static IReadOnlyList<MovementLine> Classify(
         IReadOnlyList<(Guid SubcategoryId, decimal Amount)> lines, IReadOnlyDictionary<Guid, SubcategoryUse> uses)
     {

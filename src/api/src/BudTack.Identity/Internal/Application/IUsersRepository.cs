@@ -10,6 +10,8 @@ internal interface IUsersRepository
 
     Task<User?> FindByIdAsync(Guid id, CancellationToken cancellationToken);
 
+    Task<IReadOnlyDictionary<Guid, string>> NamesOfAsync(IReadOnlyCollection<Guid> ids, CancellationToken cancellationToken);
+
     Task<User?> FindByEmailAsync(string email, CancellationToken cancellationToken);
 
     /// <summary>One page of accounts ordered by email, and how many there are in all.</summary>

@@ -35,6 +35,8 @@ internal sealed class ModuleErrorFilter : IExceptionFilter
                     ErrorCodes.ValidationError,
                     e.Message,
                     [.. e.Errors.Select(error => new ApiErrorDetail(error.Field, error.Message))])),
+            TransactionsContracts.TransactionsForbiddenException e => Respond(
+                StatusCodes.Status403Forbidden, new ApiError(ErrorCodes.Forbidden, e.Message)),
             TransactionsContracts.TransactionsNotFoundException e => Respond(
                 StatusCodes.Status404NotFound, new ApiError(ErrorCodes.NotFound, e.Message)),
             TransactionsContracts.TransactionsBusinessRuleException e => Respond(

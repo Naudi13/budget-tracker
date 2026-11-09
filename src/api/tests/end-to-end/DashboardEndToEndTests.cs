@@ -47,7 +47,7 @@ public sealed class DashboardEndToEndTests(PostgresFixture postgres)
         await Record(client, "2026-11-01", "Venta", store, 1000m);
         await Record(client, "2026-11-02", "Papel", supplies, 300m, 50m);
         var mistake = await Record(client, "2026-11-03", "Error", supplies, 100m);
-        (await client.DeleteAsync(new Uri($"/api/v1/transactions/{mistake}", UriKind.Relative), Ct)).Dispose();
+        (await client.PostAsJsonAsync($"/api/v1/transactions/{mistake}/deletion", new { reason = "Monto equivocado" }, Ct)).Dispose();
 
         var started = System.Diagnostics.Stopwatch.StartNew();
         var body = await Dashboard(client);
