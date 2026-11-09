@@ -1,0 +1,50 @@
+<section class="auth-card" aria-labelledby="activate-title">
+  <h1 id="activate-title">{{ title }}</h1>
+
+  @if (failure() === 'link') {
+    <p class="banner banner-error" role="alert">Este enlace no es válido o ya venció. Pide uno nuevo a tu administrador.</p>
+  } @else {
+    @if (failure() === 'unavailable') {
+      <p class="banner banner-error" role="alert">No pudimos guardar tu contraseña. Inténtalo de nuevo.</p>
+    }
+
+    <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <div class="field">
+        <label for="activate-password">Contraseña</label>
+        <input
+          id="activate-password"
+          type="password"
+          formControlName="password"
+          autocomplete="new-password"
+          #first
+          [attr.aria-invalid]="showError('password')"
+          [attr.aria-describedby]="showError('password') ? 'activate-password-error' : 'activate-password-hint'"
+        />
+        @if (showError('password')) {
+          <p id="activate-password-error" class="field-error">{{ passwordMessage() }}</p>
+        } @else {
+          <p id="activate-password-hint" class="field-hint">Mínimo 8 caracteres.</p>
+        }
+      </div>
+
+      <div class="field">
+        <label for="activate-repeat">Repite la contraseña</label>
+        <input
+          id="activate-repeat"
+          type="password"
+          formControlName="repeatPassword"
+          autocomplete="new-password"
+          [attr.aria-invalid]="showError('repeatPassword')"
+          [attr.aria-describedby]="showError('repeatPassword') ? 'activate-repeat-error' : null"
+        />
+        @if (showError('repeatPassword')) {
+          <p id="activate-repeat-error" class="field-error">Las contraseñas no coinciden.</p>
+        }
+      </div>
+
+      <button type="submit" class="btn-primary" [disabled]="submitting()">
+        {{ submitting() ? 'Guardando…' : 'Guardar' }}
+      </button>
+    </form>
+  }
+</section>

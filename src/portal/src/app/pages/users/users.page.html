@@ -1,4 +1,71 @@
-<h1>Usuarios</h1>
+<div class="heading">
+  <h1>Usuarios</h1>
+  @if (state() === 'ready' && !formOpen()) {
+    <button type="button" class="btn-primary" (click)="openForm()">Nuevo usuario</button>
+  }
+</div>
+
+@if (failure(); as message) {
+  <p class="banner banner-error" role="alert">{{ message }}</p>
+}
+
+@if (formOpen()) {
+  <form class="panel user-form" [formGroup]="form" (submit)="$event.preventDefault(); save()" novalidate>
+    <h2>Nuevo usuario</h2>
+    <div class="fields">
+      <div class="field">
+        <label for="user-name">Nombre</label>
+        <input
+          id="user-name"
+          #firstField
+          type="text"
+          formControlName="name"
+          maxlength="100"
+          [attr.aria-invalid]="showError('name')"
+          [attr.aria-describedby]="showError('name') ? 'user-name-error' : null"
+        />
+        @if (showError('name')) {
+          <p id="user-name-error" class="field-error">{{ nameMessage() }}</p>
+        }
+      </div>
+      <div class="field">
+        <label for="user-email">Correo electrónico</label>
+        <input
+          id="user-email"
+          type="email"
+          formControlName="email"
+          [attr.aria-invalid]="showError('email') || emailTaken()"
+          [attr.aria-describedby]="showError('email') || emailTaken() ? 'user-email-error' : null"
+        />
+        @if (emailTaken()) {
+          <p id="user-email-error" class="field-error" role="alert">Ya existe una cuenta con este correo.</p>
+        } @else if (showError('email')) {
+          <p id="user-email-error" class="field-error">Escribe un correo válido, por ejemplo ana&#64;example.com.</p>
+        }
+      </div>
+      <div class="field">
+        <label for="user-role">Rol</label>
+        <select
+          id="user-role"
+          formControlName="role"
+          [attr.aria-invalid]="showError('role')"
+          [attr.aria-describedby]="showError('role') ? 'user-role-error' : null"
+        >
+          <option value="">Elige un rol</option>
+          <option value="USER">Usuario</option>
+          <option value="ADMIN">Administrador</option>
+        </select>
+        @if (showError('role')) {
+          <p id="user-role-error" class="field-error">Elige un rol.</p>
+        }
+      </div>
+    </div>
+    <div class="actions">
+      <button type="submit" class="btn-primary" [disabled]="saving()">{{ saving() ? 'Guardando…' : 'Crear usuario' }}</button>
+      <button type="button" class="btn-secondary" (click)="cancelForm()">Cancelar</button>
+    </div>
+  </form>
+}
 
 @switch (state()) {
   @case ('loading') {
@@ -28,6 +95,8 @@
             <th scope="col">Nombre</th>
             <th scope="col">Correo</th>
             <th scope="col">Rol</th>
+            <th scope="col">Estado</th>
+            <th scope="col"><span class="visually-hidden">Acciones</span></th>
           </tr>
         </thead>
         <tbody>
@@ -36,6 +105,13 @@
               <td>{{ row.name }}</td>
               <td>{{ row.email }}</td>
               <td>{{ roleName(row) }}</td>
+              <td>{{ statusName(row) }}</td>
+              <td class="row-action">
+                <button type="button" class="link" (click)="generate(row)">
+                  {{ row.status === 'PENDING' ? 'Generar enlace' : 'Restablecer contraseña' }}
+                  <span class="visually-hidden">de {{ row.name }}</span>
+                </button>
+              </td>
             </tr>
           }
         </tbody>
@@ -52,4 +128,21 @@
       </nav>
     }
   }
+}
+
+@if (link(); as shown) {
+  <div class="backdrop">
+    <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="link-title">
+      <h2 id="link-title">Enlace para {{ shown.name }}</h2>
+      <p>Copia este enlace ahora: no se volverá a mostrar.</p>
+      <input type="text" readonly aria-label="Enlace" [value]="shown.url" />
+      @if (copied()) {
+        <p role="status">Enlace copiado.</p>
+      }
+      <div class="actions">
+        <button type="button" class="btn-primary" #copyButton (click)="copy(shown.url)">Copiar enlace</button>
+        <button type="button" class="btn-secondary" (click)="closeLink()">Cerrar</button>
+      </div>
+    </div>
+  </div>
 }
