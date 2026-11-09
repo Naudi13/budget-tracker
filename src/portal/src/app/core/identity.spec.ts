@@ -34,19 +34,6 @@ describe('identity in the portal', () => {
   afterEach(() => backend.verify());
 
   describe('IdentityService', () => {
-    it('signs up with POST /api/v1/users', async () => {
-      const call = firstValueFrom(
-        TestBed.inject(IdentityService).signUp({ name: 'Ana', email: 'a@b.co', password: '12345678' }),
-      );
-      const request = backend.expectOne('/api/v1/users');
-      expect(request.request.method).toBe('POST');
-      expect(request.request.body).toEqual({ name: 'Ana', email: 'a@b.co', password: '12345678' });
-      request.flush({ id: '1', name: 'Ana', email: 'a@b.co', role: 'USER' }, { status: 201, statusText: 'Created' });
-
-      expect(await call).toEqual({ id: '1', name: 'Ana', email: 'a@b.co', role: 'USER' });
-      expect(tokens.token()).toBeNull();
-    });
-
     it('signs in with POST /api/v1/sessions and keeps the token', async () => {
       const identity = TestBed.inject(IdentityService);
       const call = firstValueFrom(identity.signIn({ email: 'a@b.co', password: '12345678' }));

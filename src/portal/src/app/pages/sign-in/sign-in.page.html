@@ -1,8 +1,8 @@
 <section class="auth-card" aria-labelledby="sign-in-title">
   <h1 id="sign-in-title">Budget Tracker</h1>
 
-  @if (created && failure() === null) {
-    <p class="banner banner-success" role="status">Cuenta creada. Inicia sesión para empezar.</p>
+  @if (passwordSaved && failure() === null) {
+    <p class="banner banner-success" role="status">Contraseña guardada. Inicia sesión.</p>
   }
   @if (failure() === 'credentials') {
     <p class="banner banner-error" role="alert">El correo o la contraseña no son correctos.</p>
@@ -28,7 +28,7 @@
       />
       @if (showError('email')) {
         <p id="sign-in-email-error" class="field-error">
-          Escribe el correo con el que te registraste, por ejemplo ana&#64;example.com.
+          Escribe tu correo, por ejemplo ana&#64;example.com.
         </p>
       }
     </div>
@@ -53,5 +53,5 @@
     </button>
   </form>
 
-  <p class="switch">¿Aún no tienes cuenta? <a routerLink="/sign-up">Crea una</a></p>
+  <p class="switch">¿Olvidaste tu contraseña? Pide a tu administrador un enlace para restablecerla.</p>
 </section>
