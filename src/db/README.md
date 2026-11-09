@@ -48,6 +48,7 @@ creates in those schemas automatically (default privileges, `Platform001`).
 | `202611092100` | `Identity004_AddAccountTokens` | HU-10 | `identity.account_tokens`: single-use links, only their hash (ADR-010); `password_hash` optional until an account is activated |
 | `202611092101` | `Transactions007_ShareCatalog` | HU-12 | Removes `owned_by` from categories and budgets; a category name is unique per type (ADR-009) |
 | `202611092102` | `Transactions008_AddDeletionReason` | HU-06 | `deletion_reason`, set together with `deleted_at` (BR-04) |
+| `202611092200` | `Identity005_AddUserIsActive` | HU-13 | `is_active` on `identity.users`, true by default (BR-09) |
 
 ## Seed users
 
