@@ -6,10 +6,12 @@ info:
     name: MIT
     identifier: MIT
   description: >
-    Sign-up, sign-in and the administrator's account list. Sign-up and sign-in are the only
-    write endpoints that accept an unauthenticated request (NFR-05). Naming,
-    versioning, status codes and the error shape follow ../../rest-conventions.md;
-    shared components come from ./common.yaml.
+    Sign-in, the accounts an administrator creates, and the single-use links that
+    activate an account or reset its password. POST /sessions and
+    POST /account-links/confirm are the only write endpoints that accept an
+    unauthenticated request (NFR-05). Naming, versioning, status codes and the
+    error shape follow ../../rest-conventions.md; shared components come from
+    ./common.yaml.
 
 servers:
   - url: https://{host}/api/v1
@@ -22,12 +24,13 @@ paths:
   /users:
     post:
       operationId: createUser
-      summary: Sign up a business account
+      summary: Create an account
       description: >
-        Implements HU-01. An email already in use is a conflict; the password is
-        stored only as a salted hash (NFR-06). A new account always has the role USER;
-        a role sent in the body is ignored.
-      security: []
+        Implements HU-09, for the ADMIN role only (ADR-009). The account starts
+        PENDING, with no password; the response carries the link that activates it
+        (ADR-010). An email already in use is a conflict.
+      security:
+        - bearerAuth: []
       requestBody:
         required: true
         content:
@@ -40,9 +43,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                $ref: '#/components/schemas/CreatedUser'
         '400':
           $ref: './common.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: './common.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: './common.yaml#/components/responses/Forbidden'
         '409':
           $ref: './common.yaml#/components/responses/Conflict'
         '500':
@@ -74,12 +81,94 @@ paths:
         '500':
           $ref: './common.yaml#/components/responses/InternalError'
 
+  /users/{userId}/activation-links:
+    parameters:
+      - $ref: '#/components/parameters/UserId'
+    post:
+      operationId: createActivationLink
+      summary: Generate a new activation link
+      description: >
+        Implements HU-09, for the ADMIN role only. Cancels any earlier link of the
+        account. An account already active is a conflict.
+      security:
+        - bearerAuth: []
+      responses:
+        '201':
+          description: Link generated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountLink'
+        '401':
+          $ref: './common.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: './common.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: './common.yaml#/components/responses/NotFound'
+        '409':
+          $ref: './common.yaml#/components/responses/Conflict'
+        '500':
+          $ref: './common.yaml#/components/responses/InternalError'
+
+  /users/{userId}/password-resets:
+    parameters:
+      - $ref: '#/components/parameters/UserId'
+    post:
+      operationId: createPasswordReset
+      summary: Generate a password reset link
+      description: >
+        Implements HU-10, for the ADMIN role only. The administrator never sees or
+        sets a password. Cancels any earlier link of the account. An account still
+        pending is a conflict: it needs an activation link.
+      security:
+        - bearerAuth: []
+      responses:
+        '201':
+          description: Link generated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountLink'
+        '401':
+          $ref: './common.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: './common.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: './common.yaml#/components/responses/NotFound'
+        '409':
+          $ref: './common.yaml#/components/responses/Conflict'
+        '500':
+          $ref: './common.yaml#/components/responses/InternalError'
+
+  /account-links/confirm:
+    post:
+      operationId: confirmAccountLink
+      summary: Set the password with a link's token
+      description: >
+        Implements HU-10. A token that is unknown, expired or already used gets one
+        and the same 400, on the field token, so a caller learns nothing about it.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LinkConfirmation'
+      responses:
+        '204':
+          description: Password set; the account is active
+        '400':
+          $ref: './common.yaml#/components/responses/BadRequest'
+        '500':
+          $ref: './common.yaml#/components/responses/InternalError'
+
   /sessions:
     post:
       operationId: createSession
       summary: Sign in
       description: >
         Implements HU-01. Returns a bearer token that every other endpoint expects.
+        An account still pending is refused like a wrong password.
       security: []
       requestBody:
         required: true
@@ -102,15 +191,23 @@ paths:
           $ref: './common.yaml#/components/responses/InternalError'
 
 components:
+  parameters:
+    UserId:
+      name: userId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+
   schemas:
     User:
       type: object
-      required: [id, name, email, role]
+      required: [id, name, email, role, status]
       properties:
         id: { type: string, format: uuid }
         name: { type: string }
         email: { type: string, format: email }
         role: { $ref: '#/components/schemas/Role' }
+        status: { type: string, enum: [PENDING, ACTIVE] }
 
     Role:
       type: string
@@ -127,14 +224,37 @@ components:
 
     NewUser:
       type: object
-      required: [name, email, password]
+      required: [name, email, role]
       properties:
-        name: { type: string, minLength: 1 }
+        name: { type: string, minLength: 1, maxLength: 100 }
         email: { type: string, format: email }
+        role: { $ref: '#/components/schemas/Role' }
+
+    AccountLink:
+      type: object
+      required: [token, expiresAt]
+      description: Shown once. The portal builds the link; only a hash of the token is stored.
+      properties:
+        token: { type: string }
+        expiresAt: { type: string, format: date-time }
+
+    CreatedUser:
+      type: object
+      required: [user, activation]
+      properties:
+        user: { $ref: '#/components/schemas/User' }
+        activation: { $ref: '#/components/schemas/AccountLink' }
+
+    LinkConfirmation:
+      type: object
+      required: [token, password]
+      properties:
+        token: { type: string }
         password:
           type: string
           writeOnly: true
           minLength: 8
+          maxLength: 128
 
     Credentials:
       type: object
@@ -154,3 +274,7 @@ components:
           description: Seconds until the token expires (AUTH_JWT_EXPIRY_SECONDS).
           examples: [3600]
         role: { $ref: '#/components/schemas/Role' }
+
+  securitySchemes:
+    bearerAuth:
+      $ref: './common.yaml#/components/securitySchemes/bearerAuth'

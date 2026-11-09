@@ -13,7 +13,7 @@ routes, and it recovers the whole application, never one module alone.
 
 | Symptom | Likely cause | Action |
 |---|---|---|
-| Sign-in or sign-up failing, everything else fine | `identity` | Diagnose in `identity`'s own runbook |
+| Sign-in or account creation failing, everything else fine | `identity` | Diagnose in `identity`'s own runbook |
 | Transactions, categories, or budgets not saving | `transactions` | Diagnose in `transactions`'s own runbook |
 | Dashboard KPIs wrong or stuck, but recording works | `dashboard` | Diagnose in `dashboard`'s own runbook |
 | `/health` fails, everything is unreachable | The application process itself | Restart, below |

@@ -4,10 +4,11 @@
 
 | Entity | Table | Owning module | Key attributes |
 |---|---|---|---|
-| User | `identity.users` | `identity` | name, email, password_hash, role (`USER` \| `ADMIN`, default `USER`) |
+| User | `identity.users` | `identity` | name, email, password_hash (null until activated), role (`USER` \| `ADMIN`, default `USER`) |
+| Account link | `identity.account_tokens` | `identity` | user_id, purpose (`ACTIVATION` \| `PASSWORD_RESET`), token_hash, expires_at, used_at, created_by |
 | Category | `transactions.categories` | `transactions` | name, type (income \| expense), is_active |
 | Subcategory | `transactions.subcategories` | `transactions` | category reference, name, is_active |
-| Transaction | `transactions.transactions` | `transactions` | transaction date, description |
+| Transaction | `transactions.transactions` | `transactions` | owned_by, transaction date, description, deleted_at, deleted_by, deletion_reason |
 | Transaction detail | `transactions.transaction_details` | `transactions` | transaction reference, subcategory reference, amount |
 | Budget | `transactions.budgets` | `transactions` | category reference, amount, period start, period end |
 
@@ -31,7 +32,6 @@ erDiagram
     TRANSACTIONS ||--|{ TRANSACTION_DETAILS : contains
     CATEGORIES {
         uuid id PK
-        uuid owned_by
         string name
         string type
         boolean is_active
@@ -44,7 +44,6 @@ erDiagram
     }
     BUDGETS {
         uuid id PK
-        uuid owned_by
         uuid category_id FK
         numeric amount
         date period_start
@@ -57,6 +56,7 @@ erDiagram
         string description
         uuid deleted_by FK
         timestamptz deleted_at
+        string deletion_reason
     }
     TRANSACTION_DETAILS {
         uuid id PK
@@ -73,7 +73,7 @@ Every foreign key above stays inside `transactions`, `ON DELETE RESTRICT` (**BR-
 
 | Table | Column | Points to | Enforced by |
 |---|---|---|---|
-| `categories`, `transactions`, `budgets` | `owned_by` | `identity.users` | The authenticated user id; every read and write is filtered by it, so one business never sees another's data |
+| `transactions` | `owned_by` | `identity.users` | The user who recorded it; a `USER`'s reads and deletes are filtered by it |
 | Every table in `transactions` (`categories`, `subcategories`, `transactions`, `transaction_details`, `budgets`) | `created_by`, `updated_by` | `identity.users` | `IdentityFacade`, not a database foreign key — see [`database-conventions.md`](./database-conventions.md) |
 | `transactions.transactions` | `deleted_by` | `identity.users` | Same as above; set only together with `deleted_at`, never alone (**BR-04**) |
 

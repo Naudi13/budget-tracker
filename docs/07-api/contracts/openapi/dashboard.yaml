@@ -28,7 +28,15 @@ paths:
       description: >
         Implements HU-08. Totals are computed on read from transactions (BR-03), so
         a saved or deleted transaction is reflected immediately. Soft-deleted
-        transactions are excluded (BR-04).
+        transactions are excluded (BR-04). Totals and recent transactions are the
+        caller's for a USER and every account's for an ADMIN; the budget figures are
+        the business's for everyone (BR-08). With categoryId, all of it is for that
+        category. Implements HU-11.
+      parameters:
+        - name: categoryId
+          in: query
+          required: false
+          schema: { type: string, format: uuid }
       responses:
         '200':
           description: KPIs and recent transactions
@@ -36,8 +44,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Dashboard'
+        '400':
+          $ref: './common.yaml#/components/responses/BadRequest'
         '401':
           $ref: './common.yaml#/components/responses/Unauthorized'
+        '404':
+          $ref: './common.yaml#/components/responses/NotFound'
         '500':
           $ref: './common.yaml#/components/responses/InternalError'
 
@@ -52,11 +64,24 @@ components:
         netBalance:
           type: number
           description: totalIncome minus totalExpenses (BR-03).
+        budget:
+          description: Null when no budget is in force today.
+          oneOf:
+            - $ref: '#/components/schemas/BudgetProgress'
+            - type: 'null'
         recentTransactions:
           type: array
           maxItems: 5
           items:
             $ref: './transactions.yaml#/components/schemas/Transaction'
+
+    BudgetProgress:
+      type: object
+      required: [amount, spent, available]
+      properties:
+        amount: { type: number, description: The budgets in force today. }
+        spent: { type: number, description: Inside their periods, from every account (BR-08). }
+        available: { type: number, description: amount minus spent; negative when over budget. }
 
   securitySchemes:
     bearerAuth:

@@ -5,7 +5,7 @@
 | Symptom | Likely cause inside this module |
 |---|---|
 | Sign-in rejects a password that should be valid | A `PasswordHasher` version mismatch (iteration count or format changed without migrating existing hashes) |
-| Sign-up always rejects as a duplicate email | The uniqueness check or its index is case-sensitive where the business expects case-insensitive emails |
+| Creating an account always rejects as a duplicate email | The uniqueness check or its index is case-sensitive where the business expects case-insensitive emails |
 | Every request returns 401, even with a token just issued | `AUTH_JWT_SECRET` rotated without a grace period for tokens already issued |
 
 ## Diagnosis

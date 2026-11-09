@@ -26,11 +26,17 @@ paths:
       operationId: listTransactions
       summary: List recorded transactions
       description: >
-        Paginated history, newest first. Soft-deleted transactions are excluded
-        (BR-04). Implements HU-05.
+        Implements HU-05. Paginated history, newest first: a USER gets their own,
+        an ADMIN gets every account's. Soft-deleted transactions are excluded
+        (BR-04) unless an ADMIN asks for them with deleted=true, then only those.
       parameters:
         - $ref: './common.yaml#/components/parameters/PageParam'
         - $ref: './common.yaml#/components/parameters/LimitParam'
+        - name: deleted
+          in: query
+          required: false
+          description: ADMIN only; any other role gets 403.
+          schema: { type: boolean, default: false }
       responses:
         '200':
           description: A page of transactions
@@ -48,6 +54,8 @@ paths:
                     $ref: './common.yaml#/components/schemas/PaginationMeta'
         '401':
           $ref: './common.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: './common.yaml#/components/responses/Forbidden'
         '500':
           $ref: './common.yaml#/components/responses/InternalError'
     post:
@@ -91,18 +99,27 @@ paths:
         '500':
           $ref: './common.yaml#/components/responses/InternalError'
 
-  /transactions/{transactionId}:
+  /transactions/{transactionId}/deletion:
     parameters:
       - $ref: '#/components/parameters/TransactionId'
-    delete:
+    post:
       operationId: deleteTransaction
-      summary: Delete a transaction
+      summary: Delete a transaction, saying why
       description: >
         Implements HU-06. Soft delete: the transaction is hidden from listings and
-        dashboard totals and is never removed from storage (BR-04).
+        dashboard totals and is never removed from storage (BR-04). It is a POST
+        because it carries a body. A USER can only delete their own; another's is a 404.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransactionDeletion'
       responses:
         '204':
           description: Transaction hidden
+        '400':
+          $ref: './common.yaml#/components/responses/BadRequest'
         '401':
           $ref: './common.yaml#/components/responses/Unauthorized'
         '404':
@@ -126,11 +143,31 @@ components:
         id: { type: string, format: uuid }
         transactionDate: { type: string, format: date }
         description: { type: string }
+        recordedBy:
+          type: string
+          description: The name of who recorded it; present only for an ADMIN.
+        deletion:
+          $ref: '#/components/schemas/DeletionRecord'
         details:
           type: array
           description: In the order the lines were entered.
           items:
             $ref: '#/components/schemas/TransactionDetail'
+
+    TransactionDeletion:
+      type: object
+      required: [reason]
+      properties:
+        reason: { type: string, minLength: 3, maxLength: 200 }
+
+    DeletionRecord:
+      type: object
+      description: Present only in the ADMIN's list of deleted transactions.
+      required: [deletedAt, deletedBy, reason]
+      properties:
+        deletedAt: { type: string, format: date-time }
+        deletedBy: { type: string, description: The name of who deleted it. }
+        reason: { type: string }
 
     TransactionDetail:
       type: object

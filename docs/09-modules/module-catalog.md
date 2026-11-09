@@ -4,7 +4,7 @@
 
 | Module | Purpose | Owns | Public API | Status |
 |---|---|---|---|---|
-| `identity` | Sign up and sign in the single account a business uses | `users` | `IdentityFacade` | Evolving |
+| `identity` | Accounts, sign-in and single-use account links | `users`, `account_tokens` | `IdentityFacade` | Evolving |
 | `transactions` | Record income and expenses, their categories, subcategories, and budgets | `categories`, `subcategories`, `transactions`, `transaction_details`, `budgets` | `TransactionsFacade` | Evolving |
 | `dashboard` | Compute KPIs and the 5 most recent transactions, on read | — (owns no table) | `DashboardFacade` | Evolving |
 
