@@ -3,6 +3,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 
+import { AuthTokenStore } from '../../core/auth-token.store';
 import { errorInterceptor } from '../../core/error.interceptor';
 import { provideSpanishLocale } from '../../core/locale';
 import { Transaction } from '../../core/transactions.service';
@@ -55,6 +56,13 @@ describe('HistoryPage', () => {
   function click(label: string, index = 0): void {
     fixture.detectChanges();
     Array.from(page().querySelectorAll('button')).filter((b) => b.textContent?.trim().startsWith(label))[index].click();
+    fixture.detectChanges();
+  }
+
+  function reason(value = 'Monto equivocado'): void {
+    const field = page().querySelector<HTMLTextAreaElement>('#deletion-reason')!;
+    field.value = value;
+    field.dispatchEvent(new Event('input'));
     fixture.detectChanges();
   }
 
@@ -113,8 +121,9 @@ describe('HistoryPage', () => {
     expect(page().querySelector('[role="alertdialog"]')?.textContent).toContain(
       '¿Eliminar este movimiento? Saldrá del historial y de los totales del panel.',
     );
+    reason();
     click('Eliminar', 2);
-    backend.expectOne((r) => r.method === 'DELETE' && r.url === '/api/v1/transactions/t1').flush(null, { status: 204, statusText: 'No Content' });
+    backend.expectOne((r) => r.method === 'POST' && r.url === '/api/v1/transactions/t1/deletion').flush(null, { status: 204, statusText: 'No Content' });
     answer([sale]);
 
     expect(text()).toContain('Movimiento eliminado.');
@@ -139,15 +148,16 @@ describe('HistoryPage', () => {
     answer([paper]);
 
     click('Eliminar');
+    reason();
     click('Eliminar', 1);
-    backend.expectOne((r) => r.method === 'DELETE').flush({}, { status: 500, statusText: 'Error' });
+    backend.expectOne((r) => r.method === 'POST').flush({}, { status: 500, statusText: 'Error' });
     fixture.detectChanges();
 
     expect(page().querySelector('[role="alertdialog"]')?.textContent).toContain(
       'No pudimos eliminar el movimiento. Inténtalo de nuevo.',
     );
     click('Reintentar');
-    backend.expectOne((r) => r.method === 'DELETE').flush(null, { status: 204, statusText: 'No Content' });
+    backend.expectOne((r) => r.method === 'POST').flush(null, { status: 204, statusText: 'No Content' });
     answer([]);
     expect(text()).toContain('Movimiento eliminado.');
   });
@@ -158,11 +168,67 @@ describe('HistoryPage', () => {
     answer([paper], 2, 21);
 
     click('Eliminar');
+    reason();
     click('Eliminar', 1);
-    backend.expectOne((r) => r.method === 'DELETE').flush(null, { status: 204, statusText: 'No Content' });
+    backend.expectOne((r) => r.method === 'POST').flush(null, { status: 204, statusText: 'No Content' });
     answer([], 2, 20);
     answer([sale], 1, 20);
 
     expect(text()).toContain('Venta');
+  });
+
+  it('sends the reason, trimmed', () => {
+    answer([paper]);
+    click('Eliminar');
+    reason('  Monto equivocado ');
+    click('Eliminar', 1);
+
+    const request = backend.expectOne((r) => r.method === 'POST');
+    expect(request.request.body).toEqual({ reason: 'Monto equivocado' });
+    request.flush(null, { status: 204, statusText: 'No Content' });
+    answer([]);
+  });
+
+  it('does not delete without a reason', () => {
+    answer([paper]);
+    click('Eliminar');
+    click('Eliminar', 1);
+
+    expect(text()).toContain('Escribe la razón (mínimo 3 caracteres).');
+  });
+
+  describe('as an administrator', () => {
+    beforeEach(() => TestBed.inject(AuthTokenStore).set('t.o.k', 'ADMIN'));
+    afterEach(() => sessionStorage.clear());
+
+    const deleted: Transaction = {
+      ...paper,
+      recordedBy: 'Ana',
+      deletion: { deletedAt: '2026-11-09T12:00:00Z', deletedBy: 'Leo', reason: 'Duplicado' },
+    };
+
+    it('shows who recorded each one', () => {
+      answer([{ ...paper, recordedBy: 'Ana' }]);
+
+      expect(page().querySelector('tbody')?.textContent).toContain('Ana');
+    });
+
+    it('reviews the deleted ones with who and why, and no actions', () => {
+      answer([paper]);
+      const select = page().querySelector<HTMLSelectElement>('#history-view')!;
+      select.value = 'deleted';
+      select.dispatchEvent(new Event('change'));
+      backend.expectOne((r) => r.params.get('deleted') === 'true').flush({ data: [deleted], meta: { page: 1, limit: 20, total: 1 } });
+
+      expect(text()).toContain('Leo');
+      expect(text()).toContain('Duplicado');
+      expect(page().querySelector('tbody button')).toBeNull();
+    });
+  });
+
+  it('does not offer the deleted ones to a user', () => {
+    answer([paper]);
+
+    expect(page().querySelector('#history-view')).toBeNull();
   });
 });

@@ -1,12 +1,22 @@
 <div class="heading">
   <h1 #heading tabindex="-1">Movimientos</h1>
-  @if (state() === 'ready' && rows().length > 0) {
+  @if (state() === 'ready' && rows().length > 0 && !showingDeleted()) {
     <a class="btn-primary" routerLink="/transactions/new">Registrar un movimiento</a>
   }
 </div>
 
 @if (notice()) {
   <p class="banner banner-success" role="status">{{ notice() }}</p>
+}
+
+@if (identity.isAdmin()) {
+  <div class="view">
+    <label for="history-view">Ver</label>
+    <select id="history-view" [formControl]="view">
+      <option value="active">Activos</option>
+      <option value="deleted">Eliminados</option>
+    </select>
+  </div>
 }
 
 @switch (state()) {
@@ -24,7 +34,9 @@
     </div>
   }
   @case ('ready') {
-    @if (rows().length === 0) {
+    @if (rows().length === 0 && showingDeleted()) {
+      <div class="panel empty"><p>No hay movimientos eliminados.</p></div>
+    } @else if (rows().length === 0) {
       <div class="panel empty">
         <p>Aún no has registrado movimientos</p>
         <a class="btn-primary" routerLink="/transactions/new">Registrar un movimiento</a>
@@ -39,7 +51,16 @@
               <th scope="col">Descripción</th>
               <th scope="col">Tipo</th>
               <th scope="col" class="number">Total</th>
-              <th scope="col"><span class="visually-hidden">Acciones</span></th>
+              @if (identity.isAdmin()) {
+                <th scope="col">Registrado por</th>
+              }
+              @if (showingDeleted()) {
+                <th scope="col">Eliminado por</th>
+                <th scope="col">Eliminado el</th>
+                <th scope="col">Razón</th>
+              } @else {
+                <th scope="col"><span class="visually-hidden">Acciones</span></th>
+              }
             </tr>
           </thead>
           <tbody>
@@ -52,11 +73,20 @@
                   <span class="type" [class.income]="row.details[0]?.type === 'income'">{{ typeOf(row) }}</span>
                 </td>
                 <td class="number">{{ totalOf(row) | currency: 'COP' : 'symbol-narrow' : '1.2-2' }}</td>
-                <td class="actions">
-                  <button type="button" class="link danger" (click)="askDelete(row)">
-                    Eliminar <span class="visually-hidden">{{ row.description }}</span>
-                  </button>
-                </td>
+                @if (identity.isAdmin()) {
+                  <td>{{ row.recordedBy }}</td>
+                }
+                @if (showingDeleted()) {
+                  <td>{{ row.deletion?.deletedBy }}</td>
+                  <td>{{ row.deletion?.deletedAt | date: 'd MMM y, HH:mm' }}</td>
+                  <td class="reason">{{ row.deletion?.reason }}</td>
+                } @else {
+                  <td class="actions">
+                    <button type="button" class="link danger" (click)="askDelete(row)">
+                      Eliminar <span class="visually-hidden">{{ row.description }}</span>
+                    </button>
+                  </td>
+                }
               </tr>
             }
           </tbody>
@@ -84,8 +114,22 @@
       } @else {
         <p id="dialog-message">¿Eliminar este movimiento? Saldrá del historial y de los totales del panel.</p>
       }
+      <div class="reason-field">
+        <label for="deletion-reason">Razón</label>
+        <textarea
+          id="deletion-reason"
+          #reasonField
+          rows="2"
+          [formControl]="reason"
+          [attr.aria-invalid]="reasonError() !== null"
+          [attr.aria-describedby]="reasonError() ? 'deletion-reason-error' : null"
+        ></textarea>
+        @if (reasonError(); as message) {
+          <p id="deletion-reason-error" class="field-error">{{ message }}</p>
+        }
+      </div>
       <div class="dialog-actions">
-        <button type="button" class="btn-danger" #dialogAction [disabled]="busy()" (click)="confirmDelete()">
+        <button type="button" class="btn-danger" [disabled]="busy()" (click)="confirmDelete()">
           {{ pending.failed ? 'Reintentar' : 'Eliminar' }}
         </button>
         <button type="button" class="btn-secondary" [disabled]="busy()" (click)="closeDialog()">Cancelar</button>

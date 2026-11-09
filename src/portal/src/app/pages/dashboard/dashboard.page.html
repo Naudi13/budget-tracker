@@ -7,6 +7,18 @@
   <p class="banner banner-success" role="status">{{ notice }}</p>
 }
 
+@if (options().length > 0) {
+  <div class="filter">
+    <label for="dashboard-category">Categoría</label>
+    <select id="dashboard-category" [formControl]="filter">
+      <option value="">Todas</option>
+      @for (option of options(); track option.id) {
+        <option [value]="option.id">{{ option.name }}</option>
+      }
+    </select>
+  </div>
+}
+
 @switch (state()) {
   @case ('loading') {
     <div aria-busy="true" aria-label="Cargando el panel">
@@ -42,6 +54,30 @@
             {{ d.netBalance | currency: 'COP' : 'symbol-narrow' : '1.2-2' }}
           </span>
         </div>
+      </section>
+
+      <section class="budget" aria-label="Presupuesto">
+        @if (d.budget; as b) {
+          <div class="stat">
+            <span class="label">Presupuesto</span>
+            <span class="value">{{ b.amount | currency: 'COP' : 'symbol-narrow' : '1.2-2' }}</span>
+          </div>
+          <div class="stat">
+            <span class="label">Gastado</span>
+            <span class="value">{{ b.spent | currency: 'COP' : 'symbol-narrow' : '1.2-2' }}</span>
+          </div>
+          <div class="stat">
+            <span class="label">Disponible</span>
+            <span class="value" [class.negative]="b.available < 0">
+              {{ b.available | currency: 'COP' : 'symbol-narrow' : '1.2-2' }}
+            </span>
+            @if (b.available < 0) {
+              <span class="over">Sobre el presupuesto</span>
+            }
+          </div>
+        } @else {
+          <p class="no-budget">Sin presupuesto vigente</p>
+        }
       </section>
 
       <section class="recent" aria-labelledby="recent-title">
