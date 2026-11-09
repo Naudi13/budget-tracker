@@ -20,6 +20,11 @@ Scenario: A pending account cannot sign in
   When  I sign in with that email and any password
   Then  I see "El correo o la contraseña no son correctos."
 
+Scenario: An inactive account cannot sign in
+  Given the account "owner@example.com" was inactivated
+  When  I sign in with that email and its password
+  Then  I see "El correo o la contraseña no son correctos."
+
 Scenario: Sign in with valid credentials
   Given an account exists with email "owner@example.com"
   When  I sign in with that email and its password

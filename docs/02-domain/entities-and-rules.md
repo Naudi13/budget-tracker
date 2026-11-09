@@ -4,7 +4,7 @@
 
 | Entity | Key attributes | Invariants |
 |---|---|---|
-| User | name, email, password_hash (none until activated), role | Email is unique; role is `USER` or `ADMIN`; an account is `PENDING` until its owner sets a password, then `ACTIVE` |
+| User | name, email, password_hash (none until activated), role, is_active | Email is unique; role is `USER` or `ADMIN`; an account is `PENDING` until its owner sets a password, then `ACTIVE`, and `INACTIVE` whenever an administrator turns it off |
 | Category | name, type (income \| expense) | Name is unique within its type, ignoring case |
 | Subcategory | category reference, name | Name is unique within its category, ignoring case |
 | Transaction | owner, transaction date, description | Deleting a transaction is a soft delete with a reason, never a physical removal |
@@ -48,6 +48,11 @@ that first required it, until an ADR supersedes that trace.
    of the expense details of its category dated inside that period, from every
    account, computed on read. Available is the budget minus spent. Globally, only
    budgets of expense categories count. Traced from `HU-11`.
+9. **BR-09** — An inactive account cannot sign in, and any session it had stops
+   working at once. An administrator cannot inactivate their own account, so the
+   application always keeps an active administrator. Only an account that was
+   never activated can be deleted; one with a password is inactivated, because
+   its transactions keep naming who recorded them. Traced from `HU-13`.
 
 ## Where a rule is enforced
 

@@ -21,6 +21,7 @@ even for a story that gets dropped before it ships.
 | [HU-10](./stories/HU-10-activate-account-or-reset-password.md) | Activate an account or reset its password | `identity` | ⭐ | HU-09 |
 | [HU-11](./stories/HU-11-dashboard-against-budget.md) | See the dashboard against the budget, globally or by category | `dashboard` | ⭐ | HU-07, HU-08 |
 | [HU-12](./stories/HU-12-permissions-by-role.md) | Permissions by role | `transactions` | ⭐ | HU-02, HU-07 |
+| [HU-13](./stories/HU-13-inactivate-or-delete-account.md) | Inactivate or delete an account | `identity` | — | HU-09 |
 
 Story points are not written here: the whole team assigns them in planning
 poker, per [`agile-conventions.md`](../00-governance/agile-conventions.md).

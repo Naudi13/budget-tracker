@@ -24,6 +24,8 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) | [SemVer](http
 - `HU-10` to `HU-12`, `TC-022` to `TC-026`, rules `BR-07` and `BR-08`, and the screen `activate-account.md`
 - The dashboard filters by category and compares spending with the budget
 
+- `HU-13`, `BR-09`, `TC-027` and `ADR-011`: an administrator can inactivate an account, or delete one that was never activated
+
 ### Changed
 - There is no public sign-up: `POST /users` is for `ADMIN`
 - Deleting a transaction needs a reason: `POST /transactions/{id}/deletion`

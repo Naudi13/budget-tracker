@@ -23,6 +23,7 @@ a defect.
 | HU-10 | `identity` | [`identity.yaml`](../07-api/contracts/openapi/identity.yaml) · [`activate-account.md`](../12-ux-ui/screens/activate-account.md) | [`TC-023`](../11-quality/test-cases/TC-023-single-use-account-links.md) |
 | HU-11 | `dashboard` | [`dashboard.yaml`](../07-api/contracts/openapi/dashboard.yaml) · [`dashboard.md`](../12-ux-ui/screens/dashboard.md) | [`TC-025`](../11-quality/test-cases/TC-025-dashboard-against-budget.md) |
 | HU-12 | `transactions` | [`categories.yaml`](../07-api/contracts/openapi/categories.yaml) · [`budgets.yaml`](../07-api/contracts/openapi/budgets.yaml) | [`TC-024`](../11-quality/test-cases/TC-024-permissions-by-role.md) |
+| HU-13 | `identity` | [`identity.yaml`](../07-api/contracts/openapi/identity.yaml) · [`users.md`](../12-ux-ui/screens/users.md) | [`TC-027`](../11-quality/test-cases/TC-027-inactivate-or-delete-account.md) |
 
 Each Design document cell names the API contract that defines the story's
 request and response shape, and the screen that serves it where one exists.
