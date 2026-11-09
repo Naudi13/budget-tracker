@@ -4,7 +4,7 @@
 
 | Entity | Table | Owning module | Key attributes |
 |---|---|---|---|
-| User | `identity.users` | `identity` | name, email, password_hash (null until activated), role (`USER` \| `ADMIN`, default `USER`) |
+| User | `identity.users` | `identity` | name, email, password_hash (null until activated), role (`USER` \| `ADMIN`, default `USER`), is_active (default true) |
 | Account link | `identity.account_tokens` | `identity` | user_id, purpose (`ACTIVATION` \| `PASSWORD_RESET`), token_hash, expires_at, used_at, created_by |
 | Category | `transactions.categories` | `transactions` | name, type (income \| expense), is_active |
 | Subcategory | `transactions.subcategories` | `transactions` | category reference, name, is_active |

@@ -21,8 +21,16 @@
 Only the role `ADMIN` sees the "Usuarios" link. Any other role opening the route
 is sent to the dashboard.
 
-Each row also shows the state (*Pendiente* or *Activa*) and one action: *Generar
-enlace* on a pending account, *Restablecer contraseña* on an active one.
+Each row also shows the state (*Pendiente*, *Activa* or *Inactiva*) and its actions:
+
+| State | Actions |
+|---|---|
+| *Pendiente* | *Generar enlace*, *Inactivar*, *Eliminar* |
+| *Activa* | *Restablecer contraseña*, *Inactivar* (not on the administrator's own row) |
+| *Inactiva* | *Activar*, and *Eliminar* if it was never activated |
+
+*Inactivar* and *Eliminar* ask first: "¿Inactivar a *nombre*? No podrá entrar hasta que
+la actives de nuevo." and "¿Eliminar a *nombre*? No se puede deshacer."
 
 *Nuevo usuario* opens a form with name, email and role. On saving, and for either
 action, a dialog shows the link once, with *Copiar enlace* and the warning "Copia

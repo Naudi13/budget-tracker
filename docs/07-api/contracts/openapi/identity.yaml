@@ -81,6 +81,65 @@ paths:
         '500':
           $ref: './common.yaml#/components/responses/InternalError'
 
+  /users/{userId}:
+    parameters:
+      - $ref: '#/components/parameters/UserId'
+    patch:
+      operationId: updateUserStatus
+      summary: Activate or inactivate an account
+      description: >
+        Implements HU-13, for the ADMIN role only (BR-09). Inactivating ends the
+        account's sessions at once and cancels its unused links. An administrator
+        cannot inactivate their own account: that is a conflict.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserStatusUpdate'
+      responses:
+        '200':
+          description: Account updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          $ref: './common.yaml#/components/responses/BadRequest'
+        '401':
+          $ref: './common.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: './common.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: './common.yaml#/components/responses/NotFound'
+        '409':
+          $ref: './common.yaml#/components/responses/Conflict'
+        '500':
+          $ref: './common.yaml#/components/responses/InternalError'
+    delete:
+      operationId: deleteUser
+      summary: Delete an account that was never activated
+      description: >
+        Implements HU-13, for the ADMIN role only (BR-09). An account that has a
+        password is a conflict: inactivate it instead.
+      security:
+        - bearerAuth: []
+      responses:
+        '204':
+          description: Account deleted
+        '401':
+          $ref: './common.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: './common.yaml#/components/responses/Forbidden'
+        '404':
+          $ref: './common.yaml#/components/responses/NotFound'
+        '409':
+          $ref: './common.yaml#/components/responses/Conflict'
+        '500':
+          $ref: './common.yaml#/components/responses/InternalError'
+
   /users/{userId}/activation-links:
     parameters:
       - $ref: '#/components/parameters/UserId'
@@ -89,7 +148,7 @@ paths:
       summary: Generate a new activation link
       description: >
         Implements HU-09, for the ADMIN role only. Cancels any earlier link of the
-        account. An account already active is a conflict.
+        account. An account already active, or inactive, is a conflict.
       security:
         - bearerAuth: []
       responses:
@@ -168,7 +227,7 @@ paths:
       summary: Sign in
       description: >
         Implements HU-01. Returns a bearer token that every other endpoint expects.
-        An account still pending is refused like a wrong password.
+        An account still pending, or inactive, is refused like a wrong password.
       security: []
       requestBody:
         required: true
@@ -207,7 +266,7 @@ components:
         name: { type: string }
         email: { type: string, format: email }
         role: { $ref: '#/components/schemas/Role' }
-        status: { type: string, enum: [PENDING, ACTIVE] }
+        status: { type: string, enum: [PENDING, ACTIVE, INACTIVE] }
 
     Role:
       type: string
@@ -229,6 +288,12 @@ components:
         name: { type: string, minLength: 1, maxLength: 100 }
         email: { type: string, format: email }
         role: { $ref: '#/components/schemas/Role' }
+
+    UserStatusUpdate:
+      type: object
+      required: [isActive]
+      properties:
+        isActive: { type: boolean }
 
     AccountLink:
       type: object
