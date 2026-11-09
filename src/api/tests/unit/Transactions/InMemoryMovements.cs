@@ -28,7 +28,7 @@ internal sealed class InMemoryMovements : IMovementsRepository
     }
 
     public Task<(IReadOnlyList<Movement> Rows, long Total)> ListAsync(
-        Guid? owner, bool deleted, Paging paging, CancellationToken cancellationToken)
+        Guid? owner, bool deleted, Guid? categoryId, Paging paging, CancellationToken cancellationToken)
     {
         var all = Movements
             .Where(m => (owner is null || m.OwnedBy == owner) && Deleted.Contains(m.Id) == deleted)
@@ -39,7 +39,7 @@ internal sealed class InMemoryMovements : IMovementsRepository
         return Task.FromResult<(IReadOnlyList<Movement>, long)>(([.. all.Skip(paging.Offset).Take(paging.Limit)], all.Count));
     }
 
-    public Task<(decimal Income, decimal Expenses)> TotalsAsync(Guid? owner, CancellationToken cancellationToken)
+    public Task<(decimal Income, decimal Expenses)> TotalsAsync(Guid? owner, Guid? categoryId, CancellationToken cancellationToken)
     {
         var lines = Movements.Where(m => (owner is null || m.OwnedBy == owner) && !Deleted.Contains(m.Id)).SelectMany(m => m.Lines).ToList();
         return Task.FromResult((
