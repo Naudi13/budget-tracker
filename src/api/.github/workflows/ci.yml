@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [develop, qa, main]
+  push:
+    branches: [develop, qa, main]
+
+permissions:
+  contents: read
+
+# The stages of 10-devops/ci-cd.md, in order: build → boundary check → test →
+# package. `deploy` joins once staging exists in bud-tack-infra.
+jobs:
+  pipeline:
+    name: Build, boundary check, test and package
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: build
+        run: dotnet build -c Release
+
+      - name: Vulnerable dependencies
+        run: |
+          dotnet list package --vulnerable --include-transitive | tee vulnerable.txt
+          ! grep -q -E "Critical|High" vulnerable.txt
+
+      - name: boundary check
+        run: dotnet test --project tests/boundary -c Release --no-build
+
+      - name: test (unit, with coverage)
+        run: >
+          dotnet test --project tests/unit -c Release --no-build
+          --results-directory TestResults
+          --coverage --coverage-output-format cobertura --coverage-output unit.cobertura.xml
+
+      - name: test (module-integration, with coverage, against a throwaway PostgreSQL)
+        run: >
+          dotnet test --project tests/module-integration -c Release --no-build
+          --results-directory TestResults
+          --coverage --coverage-output-format cobertura --coverage-output module-integration.cobertura.xml
+
+      - name: coverage gate (NFR-07, unit and module-integration together)
+        run: python3 scripts/coverage-gate.py TestResults/unit.cobertura.xml TestResults/module-integration.cobertura.xml
+
+      - name: test (end-to-end, against a throwaway PostgreSQL)
+        run: dotnet test --project tests/end-to-end -c Release --no-build
+
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: TestResults/*.cobertura.xml
+          if-no-files-found: ignore
+
+      - name: package
+        run: docker build -t "bud-tack-api:${GITHUB_SHA::7}" .
