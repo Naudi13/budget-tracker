@@ -59,7 +59,7 @@ public sealed class DashboardFacadeTests(PostgresFixture database) : IAsyncLifet
     [Fact]
     public async Task GetDashboardAsync_noTransactions_isAllZeros()
     {
-        var dashboard = await Dashboard().GetDashboardAsync(Ana, Ct);
+        var dashboard = await Dashboard().GetDashboardAsync(new Viewer(Ana, false), Ct);
 
         Assert.Equal((0m, 0m, 0m), (dashboard.TotalIncome, dashboard.TotalExpenses, dashboard.NetBalance));
         Assert.Empty(dashboard.RecentTransactions);
@@ -71,9 +71,9 @@ public sealed class DashboardFacadeTests(PostgresFixture database) : IAsyncLifet
         await Record(new DateOnly(2026, 11, 1), "Venta", _store, 600m, 400m);
         await Record(new DateOnly(2026, 11, 2), "Papel", _supplies, 300m, 50m);
         var mistake = await Record(new DateOnly(2026, 11, 3), "Error", _supplies, 100m);
-        await Transactions().DeleteTransactionAsync(Ana, mistake.Id, Ct);
+        await Transactions().DeleteTransactionAsync(new Viewer(Ana, false), mistake.Id, new TransactionDeletion("Monto equivocado"), Ct);
 
-        var dashboard = await Dashboard().GetDashboardAsync(Ana, Ct);
+        var dashboard = await Dashboard().GetDashboardAsync(new Viewer(Ana, false), Ct);
 
         Assert.Equal((1000m, 350m, 650m), (dashboard.TotalIncome, dashboard.TotalExpenses, dashboard.NetBalance));
         Assert.DoesNotContain(dashboard.RecentTransactions, t => t.Id == mistake.Id);
@@ -84,11 +84,11 @@ public sealed class DashboardFacadeTests(PostgresFixture database) : IAsyncLifet
     {
         await Record(new DateOnly(2026, 11, 1), "Venta", _store, 1000m);
         await Record(new DateOnly(2026, 11, 2), "Papel", _supplies, 400m);
-        Assert.Equal(600m, (await Dashboard().GetDashboardAsync(Ana, Ct)).NetBalance);
+        Assert.Equal(600m, (await Dashboard().GetDashboardAsync(new Viewer(Ana, false), Ct)).NetBalance);
 
         await Record(new DateOnly(2026, 11, 3), "Tinta", _supplies, 100m);
 
-        Assert.Equal(500m, (await Dashboard().GetDashboardAsync(Ana, Ct)).NetBalance);
+        Assert.Equal(500m, (await Dashboard().GetDashboardAsync(new Viewer(Ana, false), Ct)).NetBalance);
     }
 
     [Fact]
@@ -99,7 +99,7 @@ public sealed class DashboardFacadeTests(PostgresFixture database) : IAsyncLifet
             await Record(new DateOnly(2026, 11, day), $"Día {day}", _supplies, day);
         }
 
-        var dashboard = await Dashboard().GetDashboardAsync(Ana, Ct);
+        var dashboard = await Dashboard().GetDashboardAsync(new Viewer(Ana, false), Ct);
 
         Assert.Equal(["Día 8", "Día 7", "Día 6", "Día 5", "Día 4"], dashboard.RecentTransactions.Select(t => t.Description));
         Assert.Equal(36m, dashboard.TotalExpenses);
@@ -110,7 +110,7 @@ public sealed class DashboardFacadeTests(PostgresFixture database) : IAsyncLifet
     {
         await Record(new DateOnly(2026, 11, 1), "Venta", _store, 1000m);
 
-        var dashboard = await Dashboard().GetDashboardAsync(Leo, Ct);
+        var dashboard = await Dashboard().GetDashboardAsync(new Viewer(Leo, false), Ct);
 
         Assert.Equal(0m, dashboard.TotalIncome);
         Assert.Empty(dashboard.RecentTransactions);

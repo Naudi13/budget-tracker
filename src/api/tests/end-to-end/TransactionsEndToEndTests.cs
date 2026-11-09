@@ -19,7 +19,7 @@ public sealed class TransactionsEndToEndTests(PostgresFixture postgres)
     [Theory]
     [InlineData("GET", "/api/v1/transactions")]
     [InlineData("POST", "/api/v1/transactions")]
-    [InlineData("DELETE", "/api/v1/transactions/00000000-0000-7000-8000-000000000001")]
+    [InlineData("POST", "/api/v1/transactions/00000000-0000-7000-8000-000000000001/deletion")]
     public async Task EveryEndpoint_withoutAToken_isUnauthorized(string method, string path) // TC-013
     {
         await using var api = new ApiFactory(postgres.DatabaseUrl);
@@ -150,8 +150,8 @@ public sealed class TransactionsEndToEndTests(PostgresFixture postgres)
         Assert.Equal(["A"], body.GetProperty("data").EnumerateArray().Select(t => t.GetProperty("description").GetString()));
         Assert.Equal(3, body.GetProperty("meta").GetProperty("total").GetInt64());
 
-        using var deleted = await client.DeleteAsync(new Uri($"/api/v1/transactions/{ids["C"]}", UriKind.Relative), Ct);
-        using var again = await client.DeleteAsync(new Uri($"/api/v1/transactions/{ids["C"]}", UriKind.Relative), Ct);
+        using var deleted = await client.PostAsJsonAsync($"/api/v1/transactions/{ids["C"]}/deletion", new { reason = "Monto equivocado" }, Ct);
+        using var again = await client.PostAsJsonAsync($"/api/v1/transactions/{ids["C"]}/deletion", new { reason = "Monto equivocado" }, Ct);
         using var after = await client.GetAsync(new Uri("/api/v1/transactions", UriKind.Relative), Ct);
 
         Assert.Equal(HttpStatusCode.NoContent, deleted.StatusCode);
@@ -177,7 +177,7 @@ public sealed class TransactionsEndToEndTests(PostgresFixture postgres)
         var id = (await Json(created)).RootElement.GetProperty("id").GetGuid();
 
         using var list = await theirs.GetAsync(new Uri("/api/v1/transactions", UriKind.Relative), Ct);
-        using var delete = await theirs.DeleteAsync(new Uri($"/api/v1/transactions/{id}", UriKind.Relative), Ct);
+        using var delete = await theirs.PostAsJsonAsync($"/api/v1/transactions/{id}/deletion", new { reason = "Monto equivocado" }, Ct);
         using var borrow = await theirs.PostAsJsonAsync("/api/v1/transactions", new
         {
             transactionDate = "2026-11-06",
