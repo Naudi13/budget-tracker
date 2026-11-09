@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "Budget Tracker API",
-    "description": "Sign-in with both seed users, the role checks (TC-020) and a full CRUD of categories with rule BR-05. Needs the running application: docker compose up in bud-tack-infra.",
+    "description": "Sign-in with both seed users, the role checks (TC-020, TC-024) and a full CRUD of categories with rule BR-05. Needs the running application: docker compose up in bud-tack-infra.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -331,7 +331,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{userToken}}",
+                  "value": "{{adminToken}}",
                   "type": "string"
                 }
               ]
@@ -354,6 +354,55 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.collectionVariables.set('categoryName', 'Postman ' + Date.now());"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "A USER cannot create one",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/categories",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "categories"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\": \"No\", \"type\": \"expense\"}"
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{userToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('responds 403', () => pm.response.to.have.status(403));",
+                  "pm.test('error is FORBIDDEN', () => pm.expect(pm.response.json().error).to.eql('FORBIDDEN'));"
                 ]
               }
             }
@@ -389,7 +438,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{userToken}}",
+                  "value": "{{adminToken}}",
                   "type": "string"
                 }
               ]
@@ -409,7 +458,7 @@
           ]
         },
         {
-          "name": "List the categories",
+          "name": "A USER reads the catalog",
           "request": {
             "method": "GET",
             "header": [],
@@ -485,7 +534,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{userToken}}",
+                  "value": "{{adminToken}}",
                   "type": "string"
                 }
               ]
@@ -535,7 +584,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{userToken}}",
+                  "value": "{{adminToken}}",
                   "type": "string"
                 }
               ]
@@ -585,7 +634,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{userToken}}",
+                  "value": "{{adminToken}}",
                   "type": "string"
                 }
               ]
@@ -635,7 +684,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{userToken}}",
+                  "value": "{{adminToken}}",
                   "type": "string"
                 }
               ]
@@ -676,7 +725,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{userToken}}",
+                  "value": "{{adminToken}}",
                   "type": "string"
                 }
               ]
@@ -719,7 +768,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{userToken}}",
+                  "value": "{{adminToken}}",
                   "type": "string"
                 }
               ]
@@ -759,7 +808,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{userToken}}",
+                  "value": "{{adminToken}}",
                   "type": "string"
                 }
               ]
@@ -799,7 +848,7 @@
               "bearer": [
                 {
                   "key": "token",
-                  "value": "{{userToken}}",
+                  "value": "{{adminToken}}",
                   "type": "string"
                 }
               ]

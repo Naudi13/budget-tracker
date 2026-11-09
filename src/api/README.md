@@ -94,8 +94,8 @@ only runner xUnit v3 supports on the .NET 10 SDK.
 ## Postman
 
 `postman/budget-tracker.postman_collection.json` signs in with both seed users, checks
-`401` and `403`, and runs a full CRUD of categories with rule BR-05. It leaves no
-data behind. With the application running from `bud-tack-infra`:
+`401` and `403`, and runs a full CRUD of categories as `ADMIN` with rule BR-05. It
+leaves no data behind. With the application running from `bud-tack-infra`:
 
 ```bash
 npx newman run postman/budget-tracker.postman_collection.json
