@@ -8,4 +8,8 @@ namespace BudTack.Dashboard.Api.Contracts;
 /// on read (BR-03).
 /// </summary>
 public sealed record DashboardView(
-    decimal TotalIncome, decimal TotalExpenses, decimal NetBalance, IReadOnlyList<Transaction> RecentTransactions);
+    decimal TotalIncome,
+    decimal TotalExpenses,
+    decimal NetBalance,
+    BudgetProgress? Budget,
+    IReadOnlyList<Transaction> RecentTransactions);

@@ -25,7 +25,7 @@ public sealed class ManageBudgetsTests
         _categories.Categories.Add(new DomainCategory(Office, "Oficina", "expense", IsActive: true));
         _categories.Categories.Add(new DomainCategory(Travel, "Viajes", "expense", IsActive: true));
         _categories.Categories.Add(new DomainCategory(Old, "Viejos", "expense", IsActive: false));
-        _manage = new ManageBudgets(_budgets, _categories, NullLogger<ManageBudgets>.Instance);
+        _manage = new ManageBudgets(_budgets, _categories, TimeProvider.System, NullLogger<ManageBudgets>.Instance);
     }
 
     private static CancellationToken Ct => TestContext.Current.CancellationToken;
@@ -104,5 +104,25 @@ public sealed class ManageBudgetsTests
         Assert.Empty(_budgets.Rows);
         var error = await Assert.ThrowsAsync<TransactionsNotFoundException>(() => _manage.DeleteAsync(budget.Id, Ct));
         Assert.Equal(ManageBudgets.NotFound, error.Message);
+    }
+
+    [Fact]
+    public async Task ProgressAsync_noBudgetInForce_isNull() // HU-11
+    {
+        Assert.Null(await _manage.ProgressAsync(null, Ct));
+    }
+
+    [Fact]
+    public async Task ProgressAsync_availableIsTheBudgetMinusSpent_evenWhenNegative() // BR-08
+    {
+        _budgets.Progress = (2, 500m, 600m);
+
+        Assert.Equal(new BudgetProgress(500m, 600m, -100m), await _manage.ProgressAsync(Office, Ct));
+    }
+
+    [Fact]
+    public async Task ProgressAsync_ofAnUnknownCategory_isNotFound() // TC-025
+    {
+        await Assert.ThrowsAsync<TransactionsNotFoundException>(() => _manage.ProgressAsync(Guid.NewGuid(), Ct));
     }
 }

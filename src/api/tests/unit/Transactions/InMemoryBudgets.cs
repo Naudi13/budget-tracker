@@ -18,6 +18,12 @@ internal sealed class InMemoryBudgets : IBudgetsRepository
         return Task.FromResult<(IReadOnlyList<BudgetRow>, long)>(([.. all.Skip(paging.Offset).Take(paging.Limit)], all.Count));
     }
 
+    public (int Budgets, decimal Amount, decimal Spent) Progress { get; set; }
+
+    public Task<(int Budgets, decimal Amount, decimal Spent)> ProgressAsync(
+        Guid? categoryId, DateOnly today, CancellationToken cancellationToken) =>
+        Task.FromResult(Progress);
+
     public Task<BudgetRow?> FindAsync(Guid budgetId, CancellationToken cancellationToken) =>
         Task.FromResult(Rows.Find(b => b.Id == budgetId));
 

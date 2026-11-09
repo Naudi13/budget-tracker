@@ -85,19 +85,27 @@ internal sealed class MovementsRepository(NpgsqlDataSource dataSource) : IMoveme
     }
 
     public async Task<(IReadOnlyList<Movement> Rows, long Total)> ListAsync(
-        Guid? owner, bool deleted, Paging paging, CancellationToken cancellationToken)
+        Guid? owner, bool deleted, Guid? categoryId, Paging paging, CancellationToken cancellationToken)
     {
-        const string Where = "WHERE ($1::uuid IS NULL OR owned_by = $1) AND (deleted_at IS NOT NULL) = $2";
+        const string Where =
+            """
+            WHERE ($1::uuid IS NULL OR owned_by = $1) AND (deleted_at IS NOT NULL) = $2
+              AND ($3::uuid IS NULL OR EXISTS (
+                    SELECT 1 FROM transactions.transaction_details d
+                    JOIN transactions.subcategories s ON s.id = d.subcategory_id
+                    WHERE d.transaction_id = transactions.transactions.id AND s.category_id = $3))
+            """;
         var headers = new List<Movement>();
         await using (var command = dataSource.CreateCommand(
             $"""
             SELECT id, owned_by, transaction_date, description, deleted_at, deleted_by, deletion_reason
             FROM transactions.transactions {Where}
-            ORDER BY transaction_date DESC, created_at DESC, id DESC LIMIT $3 OFFSET $4
+            ORDER BY transaction_date DESC, created_at DESC, id DESC LIMIT $4 OFFSET $5
             """))
         {
             command.Parameters.Add(Owner(owner));
             command.Parameters.Add(new NpgsqlParameter { Value = deleted });
+            command.Parameters.Add(Owner(categoryId));
             command.Parameters.Add(new NpgsqlParameter { Value = paging.Limit });
             command.Parameters.Add(new NpgsqlParameter { Value = paging.Offset });
             await using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
@@ -120,6 +128,7 @@ internal sealed class MovementsRepository(NpgsqlDataSource dataSource) : IMoveme
         await using var count = dataSource.CreateCommand($"SELECT count(*) FROM transactions.transactions {Where}");
         count.Parameters.Add(Owner(owner));
         count.Parameters.Add(new NpgsqlParameter { Value = deleted });
+        count.Parameters.Add(Owner(categoryId));
         var total = (long)(await count.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false))!;
 
         var rows = headers
@@ -128,7 +137,7 @@ internal sealed class MovementsRepository(NpgsqlDataSource dataSource) : IMoveme
         return (rows, total);
     }
 
-    public async Task<(decimal Income, decimal Expenses)> TotalsAsync(Guid? owner, CancellationToken cancellationToken)
+    public async Task<(decimal Income, decimal Expenses)> TotalsAsync(Guid? owner, Guid? categoryId, CancellationToken cancellationToken)
     {
         // One pass over the undeleted lines; each line's type is its category's (BR-01).
         await using var command = dataSource.CreateCommand(
@@ -139,9 +148,10 @@ internal sealed class MovementsRepository(NpgsqlDataSource dataSource) : IMoveme
             JOIN transactions.transaction_details d ON d.transaction_id = t.id
             JOIN transactions.subcategories s ON s.id = d.subcategory_id
             JOIN transactions.categories c ON c.id = s.category_id
-            WHERE ($1::uuid IS NULL OR t.owned_by = $1) AND t.deleted_at IS NULL
+            WHERE ($1::uuid IS NULL OR t.owned_by = $1) AND t.deleted_at IS NULL AND ($2::uuid IS NULL OR c.id = $2)
             """);
         command.Parameters.Add(Owner(owner));
+        command.Parameters.Add(Owner(categoryId));
         await using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
         await reader.ReadAsync(cancellationToken).ConfigureAwait(false);
         return (reader.GetDecimal(0), reader.GetDecimal(1));
@@ -163,8 +173,8 @@ internal sealed class MovementsRepository(NpgsqlDataSource dataSource) : IMoveme
         return await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false) == 1;
     }
 
-    private static NpgsqlParameter Owner(Guid? owner) =>
-        new() { Value = (object?)owner ?? DBNull.Value, NpgsqlDbType = NpgsqlDbType.Uuid };
+    private static NpgsqlParameter Owner(Guid? id) =>
+        new() { Value = (object?)id ?? DBNull.Value, NpgsqlDbType = NpgsqlDbType.Uuid };
 
     private async Task<Dictionary<Guid, List<MovementLine>>> LinesAsync(Guid[] movementIds, CancellationToken cancellationToken)
     {

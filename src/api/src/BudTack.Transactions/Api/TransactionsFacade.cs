@@ -96,8 +96,8 @@ public sealed class TransactionsFacade
 
     /// <summary>HU-05: <c>GET /transactions</c>, newest first, without deleted ones (BR-04), or only those for an ADMIN.</summary>
     public Task<Page<Transaction>> ListTransactionsAsync(
-        Viewer viewer, int? page = null, int? limit = null, bool deleted = false, CancellationToken cancellationToken = default) =>
-        _movements.ListAsync(viewer, page, limit, deleted, cancellationToken);
+        Viewer viewer, int? page = null, int? limit = null, bool deleted = false, Guid? categoryId = null, CancellationToken cancellationToken = default) =>
+        _movements.ListAsync(viewer, page, limit, deleted, categoryId, cancellationToken);
 
     /// <summary>HU-06: <c>POST /transactions/{id}/deletion</c>, a soft delete with a reason (BR-04); an already deleted one is not found.</summary>
     public Task DeleteTransactionAsync(
@@ -111,8 +111,12 @@ public sealed class TransactionsFacade
     /// HU-08: the income and expense totals the viewer reaches, computed on read (BR-03)
     /// without deleted transactions (BR-04). Called by the dashboard.
     /// </summary>
-    public Task<Totals> GetTotalsAsync(Viewer viewer, CancellationToken cancellationToken = default) =>
-        _movements.TotalsAsync(viewer, cancellationToken);
+    public Task<Totals> GetTotalsAsync(Viewer viewer, Guid? categoryId = null, CancellationToken cancellationToken = default) =>
+        _movements.TotalsAsync(viewer, categoryId, cancellationToken);
+
+    /// <summary>HU-11: how spending compares with the budgets in force today (BR-08), or null when none is. Called by the dashboard.</summary>
+    public Task<BudgetProgress?> GetBudgetProgressAsync(Guid? categoryId = null, CancellationToken cancellationToken = default) =>
+        _budgets.ProgressAsync(categoryId, cancellationToken);
 
     /// <summary>HU-07: <c>GET /budgets</c>, newest period first, optionally for one category.</summary>
     public Task<Page<Budget>> ListBudgetsAsync(
