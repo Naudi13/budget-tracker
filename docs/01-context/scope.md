@@ -4,7 +4,7 @@
 
 | Capability | Note |
 |---|---|
-| User account | One installation serves one business. An administrator creates each account, and its owner activates it with a single-use link and chooses the password; there is no public sign-up |
+| User account | One installation serves one business. An administrator creates each account, and its owner activates it with a single-use link and chooses the password; there is no public sign-up. An administrator can inactivate an account, and delete one that was never activated |
 | Roles | `ADMIN` manages accounts, categories, subcategories and budgets, and sees every transaction. `USER` records and sees only their own transactions ([`ADR-009`](../05-architecture/decisions/records/ADR-009-one-business-with-a-shared-catalog.md)) |
 | Income registration | Record a transaction (date, description) with one or more detail lines, each an amount against an income subcategory |
 | Expense registration | Record a transaction the same way, using an expense subcategory for each detail line |

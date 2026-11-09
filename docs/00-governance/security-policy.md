@@ -46,6 +46,9 @@ pull request that adds the dependency.
   a write endpoint that accepts an unauthenticated request is a bug — **NFR-05**.
   A role is checked at the edge of the request, by a named authorization policy
   on the endpoint. A `USER` only reaches transactions they recorded.
+- **Inactive accounts:** every request checks that its account is still active, so
+  inactivating one ends its sessions at once
+  ([`ADR-011`](../05-architecture/decisions/records/ADR-011-check-the-account-on-every-request.md)).
 - **Account links:** activation and password reset use a random single-use token,
   and only its hash is stored
   ([`ADR-010`](../05-architecture/decisions/records/ADR-010-single-use-account-links.md)).
