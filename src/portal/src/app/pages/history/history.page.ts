@@ -10,15 +10,17 @@ import {
   viewChild,
 } from '@angular/core';
 import { CurrencyPipe, DatePipe } from '@angular/common';
+import { FormControl, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 
 import { ApiError } from '../../core/api-error';
+import { IdentityService } from '../../core/identity.service';
 import { HISTORY_PAGE_SIZE, Transaction, TransactionsService, totalOf } from '../../core/transactions.service';
 
 /** HU-05 and HU-06, 12-ux-ui/screens/transaction-history.md. */
 @Component({
   selector: 'bt-history-page',
-  imports: [RouterLink, DatePipe, CurrencyPipe],
+  imports: [ReactiveFormsModule, RouterLink, DatePipe, CurrencyPipe],
   templateUrl: './history.page.html',
   styleUrl: './history.page.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -27,7 +29,7 @@ import { HISTORY_PAGE_SIZE, Transaction, TransactionsService, totalOf } from '..
 export class HistoryPage {
   private readonly transactions = inject(TransactionsService);
   private readonly injector = inject(Injector);
-  private readonly dialogAction = viewChild<ElementRef<HTMLButtonElement>>('dialogAction');
+  private readonly reasonField = viewChild<ElementRef<HTMLTextAreaElement>>('reasonField');
   private readonly heading = viewChild<ElementRef<HTMLHeadingElement>>('heading');
 
   protected readonly state = signal<'loading' | 'error' | 'ready'>('loading');
@@ -42,14 +44,38 @@ export class HistoryPage {
   private opener: HTMLElement | null = null;
 
   protected readonly totalOf = totalOf;
+  protected readonly identity = inject(IdentityService);
+
+  /** ADMIN only: the transactions in use, or the deleted ones with who, when and why. */
+  protected readonly view = new FormControl<'active' | 'deleted'>('active', { nonNullable: true });
+  protected readonly showingDeleted = signal(false);
+
+  protected readonly reason = inject(NonNullableFormBuilder).control('', [
+    Validators.required,
+    (control) => (control.value.trim().length >= 3 ? null : { short: true }),
+    Validators.maxLength(200),
+  ]);
+  protected readonly reasonAttempted = signal(false);
 
   constructor() {
     this.load(1);
+    this.view.valueChanges.subscribe((view) => {
+      this.notice.set(null);
+      this.showingDeleted.set(view === 'deleted');
+      this.load(1);
+    });
+  }
+
+  protected reasonError(): string | null {
+    if (!(this.reason.dirty || this.reasonAttempted()) || this.reason.valid) {
+      return null;
+    }
+    return this.reason.hasError('maxlength') ? 'Usa máximo 200 caracteres.' : 'Escribe la razón (mínimo 3 caracteres).';
   }
 
   protected load(page: number): void {
     this.state.set('loading');
-    this.transactions.list(page).subscribe({
+    this.transactions.list(page, this.showingDeleted()).subscribe({
       next: (result) => {
         // A page emptied by a delete: step back to the last page that has rows.
         if (result.data.length === 0 && result.meta.total > 0 && page > 1) {
@@ -74,7 +100,9 @@ export class HistoryPage {
     this.notice.set(null);
     this.opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     this.pending.set({ row, failed: false });
-    afterNextRender(() => this.dialogAction()?.nativeElement.focus(), { injector: this.injector });
+    this.reason.reset('');
+    this.reasonAttempted.set(false);
+    afterNextRender(() => this.reasonField()?.nativeElement.focus(), { injector: this.injector });
   }
 
   protected closeDialog(): void {
@@ -93,8 +121,13 @@ export class HistoryPage {
       return;
     }
 
+    this.reasonAttempted.set(true);
+    if (this.reason.invalid) {
+      return;
+    }
+
     this.busy.set(true);
-    this.transactions.delete(pending.row.id).subscribe({
+    this.transactions.delete(pending.row.id, this.reason.value.trim()).subscribe({
       next: () => this.deleted(),
       error: (error: ApiError) => {
         // Already gone (deleted elsewhere): the list just catches up.

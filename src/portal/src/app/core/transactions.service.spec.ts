@@ -56,13 +56,13 @@ describe('TransactionsService', () => {
   it('records, lists 20 per page and deletes', () => {
     service.record({ transactionDate: '2026-11-06', description: 'x', details: [{ subcategoryId: 's1', amount: 1 }] }).subscribe();
     service.list(2).subscribe();
-    service.delete('t1').subscribe();
+    service.delete('t1', 'Monto equivocado').subscribe();
 
     expect(backend.expectOne((r) => r.method === 'POST' && r.url === '/api/v1/transactions').request.body.description).toBe('x');
     const list = backend.expectOne((r) => r.method === 'GET' && r.url === '/api/v1/transactions');
     expect(list.request.params.get('page')).toBe('2');
     expect(list.request.params.get('limit')).toBe('20');
-    backend.expectOne((r) => r.method === 'DELETE' && r.url === '/api/v1/transactions/t1');
+    backend.expectOne((r) => r.method === 'POST' && r.url === '/api/v1/transactions/t1/deletion');
   });
 
   it('adds a total to the cent', () => {

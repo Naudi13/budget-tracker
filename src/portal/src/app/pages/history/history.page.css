@@ -170,3 +170,46 @@ tbody tr:last-child td {
   display: flex;
   gap: calc(var(--space-unit) * 3);
 }
+
+.view {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--space-unit) * 3);
+  margin-bottom: calc(var(--space-unit) * 4);
+}
+
+.view label,
+.reason-field label {
+  font-weight: 600;
+}
+
+.view select,
+.reason-field textarea {
+  padding: calc(var(--space-unit) * 2) calc(var(--space-unit) * 3);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--space-unit);
+  font: inherit;
+  color: var(--color-text);
+  background: var(--color-bg-surface);
+}
+
+td.reason {
+  white-space: normal;
+}
+
+.reason-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-unit);
+  margin-bottom: calc(var(--space-unit) * 5);
+}
+
+.reason-field textarea[aria-invalid='true'] {
+  border-color: var(--color-danger);
+}
+
+.dialog .reason-field .field-error {
+  margin: 0;
+  font-size: var(--font-size-caption);
+  color: var(--color-danger);
+}
