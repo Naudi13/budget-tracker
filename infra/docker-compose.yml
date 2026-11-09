@@ -1,11 +1,11 @@
-# bud-tack-infra — the whole application on one machine.
+# infra — the whole application on one machine.
 #
 #   browser ──► portal (nginx, the only published port) ──/api/, /health, /swagger──► api ──► postgres
 #                                                                    migrate ──┘ (DDL, then exits)
 #
 # One origin for the browser (ADR-006). The API publishes no port: it
 # is reachable only through the portal. PostgreSQL publishes 5432 on 127.0.0.1
-# only, for `dotnet run` in bud-tack-db and bud-tack-api during development.
+# only, for `dotnet run` in src/db and src/api during development.
 #
 #   docker compose up -d --build --wait    the whole application on :8080
 #   docker compose up -d --wait postgres   PostgreSQL only (local-setup.md, step 2)
@@ -34,8 +34,8 @@ services:
       retries: 10
       start_period: 10s
 
-  # Applies bud-tack-db's pending migrations as bud_tack_migrator, then exits.
-  # bud-tack-db ships no image (ADR-005: one console project), so this runs its
+  # Applies the pending migrations as bud_tack_migrator, then exits.
+  # src/db ships no image (ADR-005: one console project), so this runs its
   # source with the .NET SDK. The source is mounted read-only and built in a
   # copy, so no bin/ or obj/ owned by root lands in your clone.
   migrate:
@@ -50,7 +50,7 @@ services:
       DOTNET_CLI_TELEMETRY_OPTOUT: "1"
       DOTNET_NOLOGO: "1"
     volumes:
-      - ${DB_SOURCE:-../bud-tack-db}:/source:ro
+      - ${DB_SOURCE:-../src/db}:/source:ro
       - nuget:/root/.nuget/packages
     depends_on:
       postgres:
@@ -58,7 +58,7 @@ services:
 
   api:
     image: bud-tack-api:${APP_TAG:-local}
-    build: ${API_SOURCE:-../bud-tack-api}
+    build: ${API_SOURCE:-../src/api}
     restart: unless-stopped
     environment:
       DATABASE_URL: postgresql://bud_tack_app:${BUD_TACK_APP_PASSWORD}@postgres:5432/${POSTGRES_DB:-app_dev}
@@ -87,7 +87,7 @@ services:
 
   portal:
     image: bud-tack-portal:${APP_TAG:-local}
-    build: ${PORTAL_SOURCE:-../bud-tack-portal}
+    build: ${PORTAL_SOURCE:-../src/portal}
     restart: unless-stopped
     environment:
       API_ORIGIN: http://api:3000
