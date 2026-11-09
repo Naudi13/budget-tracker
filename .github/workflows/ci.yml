@@ -2,9 +2,9 @@ name: CI
 
 on:
   pull_request:
-    branches: [main]
+    branches: [develop, qa, main]
   push:
-    branches: [main]
+    branches: [develop, qa, main]
 
 permissions:
   contents: read
@@ -90,7 +90,6 @@ jobs:
           --health-retries 10
 
     env:
-      PG_CONTAINER: ${{ job.services.postgres.id }}
       MIGRATOR_DATABASE_URL: postgresql://bud_tack_migrator:ci@localhost:5432/app_dev
 
     steps:
@@ -103,6 +102,8 @@ jobs:
       # Same roles as infra/init/01-roles.sh, the source of truth.
       # A service container cannot mount that script, so CI recreates them.
       - name: Create the migrator and app roles
+        env:
+          PG_CONTAINER: ${{ job.services.postgres.id }}
         run: |
           docker exec -i "$PG_CONTAINER" psql -v ON_ERROR_STOP=1 -U postgres -d app_dev <<'EOSQL'
           CREATE ROLE bud_tack_migrator LOGIN PASSWORD 'ci' NOSUPERUSER NOCREATEDB NOCREATEROLE;
@@ -122,6 +123,8 @@ jobs:
           ! grep -q -E "Critical|High" vulnerable.txt
 
       - name: Migrate up, down to zero, and up again
+        env:
+          PG_CONTAINER: ${{ job.services.postgres.id }}
         run: sh scripts/round-trip.sh
 
   portal:
