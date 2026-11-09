@@ -1,9 +1,9 @@
-# bud-tack-infra
+# infra
 
 > Budget Tracker - Infrastructure: Compose/IaC, environments and secrets
 
 Part of the **Budget Tracker** full-stack project — team `budget-tracker`, Complementaria III - Desarrollo Fullstack 2026-B.
-Governance and documentation live in [`bud-tack-docs`](https://github.com/code-corhuila/bud-tack-docs).
+Governance and documentation live in [`docs/`](../docs/README.md).
 
 ## Implementation manual
 
@@ -21,22 +21,16 @@ Everything needed to run Budget Tracker on a machine that has never seen it.
 
 Docker Desktop must be running before step 4. Ports `8080` and `5432` must be free.
 
-### 2. Clone the four repositories
+### 2. Clone the repository
 
-The four folders must end up side by side, which is where `docker-compose.yml`
-looks for them.
+The application, its database, its infrastructure and its documentation are in one repository.
 
 ```bash
-mkdir budget-tracker
-cd budget-tracker
-git clone -b qa https://github.com/code-corhuila/bud-tack-infra.git
-git clone -b qa https://github.com/code-corhuila/bud-tack-db.git
-git clone -b qa https://github.com/code-corhuila/bud-tack-api.git
-git clone -b qa https://github.com/code-corhuila/bud-tack-portal.git
-cd bud-tack-infra
+git clone https://github.com/Naudi13/budget-tracker.git
+cd budget-tracker/infra
 ```
 
-Every command below runs from `bud-tack-infra`, unless it says otherwise.
+Every command below runs from `infra/`, unless it says otherwise.
 
 ### 3. Create the environment file
 
@@ -105,7 +99,7 @@ changes nothing.
 
 ### 7. Run the tests
 
-**API**, from `bud-tack-api`. The last two need Docker, for a throwaway PostgreSQL:
+**API**, from `src/api`. The last two need Docker, for a throwaway PostgreSQL:
 
 ```bash
 dotnet build -c Release
@@ -115,14 +109,14 @@ dotnet test --project tests/module-integration -c Release --no-build
 dotnet test --project tests/end-to-end -c Release --no-build
 ```
 
-**Portal**, from `bud-tack-portal`:
+**Portal**, from `src/portal`:
 
 ```bash
 npm ci
 npx ng test --watch=false
 ```
 
-**Postman**, from `bud-tack-api`, with the application running. It signs in with both
+**Postman**, from `src/api`, with the application running. It signs in with both
 roles, checks `401` and `403`, and runs a full CRUD of categories with rule BR-05.
 It can also be imported into Postman.
 
@@ -144,7 +138,7 @@ These are errors the team met and solved while building the project.
 | Problem | Cause | Solution |
 |---|---|---|
 | PowerShell says `sh` is not recognized | PowerShell has no `sh` | Run the script with `& "C:\Program Files\Git\bin\sh.exe" scripts/<name>.sh`, or open Git Bash |
-| Docker cannot find `../bud-tack-api` or another repository | The clones are not side by side | Clone them as in step 2, or set `DB_SOURCE`, `API_SOURCE` and `PORTAL_SOURCE` in `.env` to the real paths |
+| Docker cannot find `../src/api` or another folder | A value in `.env` points elsewhere | Copy `.env.example` again, or set `DB_SOURCE`, `API_SOURCE` and `PORTAL_SOURCE` in `.env` to the real paths |
 | The `api` service never becomes healthy and its log says `AUTH_JWT_SECRET is not set` | `.env` was copied before that variable existed | Copy `.env.example` to `.env` again, then repeat step 4 |
 | Sign-in refuses a test user with the right password | An older database volume or image from before the seed users and BCrypt | Run `docker compose down --volumes`, then repeat step 4 with `--build` |
 
@@ -155,7 +149,7 @@ These are errors the team met and solved while building the project.
 | Service | Image | Published | Does |
 |---|---|---|---|
 | `postgres` | `postgres:17-alpine` | `127.0.0.1:5432` | The one database and its two roles |
-| `migrate` | `dotnet/sdk:10.0`, running `bud-tack-db`'s source | — | `up` as `bud_tack_migrator`, then exits |
+| `migrate` | `dotnet/sdk:10.0`, running the source in `src/db` | — | `up` as `bud_tack_migrator`, then exits |
 | `api` | `bud-tack-api:${APP_TAG}`, built from `API_SOURCE` | — | Starts once `migrate` exited with 0; connects as `bud_tack_app`; signs tokens with `AUTH_JWT_SECRET`; admits only `CORS_ALLOWED_ORIGIN` across origins |
 | `portal` | `bud-tack-portal:${APP_TAG}`, built from `PORTAL_SOURCE` | `${PORTAL_PORT}` → 8080 | Serves Angular; forwards `/api/`, `/health` and Swagger to `api:3000` |
 
@@ -166,7 +160,7 @@ port, and that the migrations created the module schemas.
 
 ### PostgreSQL alone
 
-For `dotnet run` in `bud-tack-db` and `bud-tack-api` during development:
+For `dotnet run` in `src/db` and `src/api` during development:
 
 ```bash
 docker compose up -d --wait postgres
@@ -175,40 +169,25 @@ sh scripts/verify-roles.sh
 
 | Role | Password (local) | Used by | Can |
 |---|---|---|---|
-| `bud_tack_migrator` | `dev` | `bud-tack-db` (`MIGRATOR_DATABASE_URL`) | Own the database `app_dev`, create schemas and tables |
-| `bud_tack_app` | `dev` | `bud-tack-api` (`DATABASE_URL`) | Connect only; table rights come from the migrations |
+| `bud_tack_migrator` | `dev` | `src/db` (`MIGRATOR_DATABASE_URL`) | Own the database `app_dev`, create schemas and tables |
+| `bud_tack_app` | `dev` | `src/api` (`DATABASE_URL`) | Connect only; table rights come from the migrations |
 
 The roles are created by `init/01-roles.sh` on the **first** start only. After
 changing a password in `.env`, recreate the volume with `docker compose down
 --volumes`, then `up` again. The schemas `identity` and `transactions` are not
-created here: they are the first migration in `bud-tack-db` (ADR-005).
+created here: they are the first migration in `src/db` (ADR-005).
 
 ## Pipeline
+
+The jobs are in [`.github/workflows/ci.yml`](../.github/workflows/ci.yml), at the root of the repository.
 
 | Job | Checks |
 |---|---|
 | Local PostgreSQL and roles | `docker compose config`, PostgreSQL healthy, `verify-roles.sh` |
-| Whole application through the portal | The `develop` branch of `bud-tack-db`, `-api` and `-portal`, built with one tag; `verify-stack.sh` |
-
-The other repositories are private, so the second job needs the repository
-secret **`BUD_TACK_REPOS_TOKEN`**: a fine-grained personal access token whose
-resource owner is `code-corhuila`, with access to `bud-tack-db`, `bud-tack-api`
-and `bud-tack-portal` only, and the permission **Contents: Read-only**. Create
-it in GitHub → Settings → Developer settings → Fine-grained tokens, then add it
-in this repository → Settings → Secrets and variables → Actions.
+| Whole application through the portal | `src/db`, `src/api` and `src/portal` of the same commit, built with one tag; `verify-stack.sh` |
 
 ## Branching
 
-Three permanent branches. **None of them accepts a direct commit** — you enter through a child
-branch and leave through a Pull Request.
+`main` is the only permanent branch. Every change starts in a `feat/...`, `fix/...`, `refactor/...`, `docs/...` or `chore/...` branch and enters through a Pull Request.
 
-```
-develop  <--PR--  feat/... fix/... chore/...
-qa       <--PR--  develop
-main     <--PR--  qa (release)   hotfix/...
-```
-
-`develop` is the default branch: start every task from it. `main` requires **1 approval from
-`ariel5253`**. On `develop` and `qa` the team sets its own review rule.
-
-Commit and branch naming: `00-governance/git-conventions.md` in `bud-tack-docs`.
+Commit naming: [`git-conventions.md`](../docs/00-governance/git-conventions.md).

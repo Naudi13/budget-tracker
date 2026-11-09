@@ -1,5 +1,10 @@
 # 10 — CI/CD Pipeline
 
+> **Single repository.** This project now lives in one repository. Where this document names
+> `bud-tack-api`, `-portal`, `-db`, `-infra` or `-docs`, read `src/api`, `src/portal`, `src/db`,
+> `infra/` or `docs/`. One workflow, `.github/workflows/ci.yml`, runs a job per folder
+> on every pull request into `main`.
+
 ## One artifact, one pipeline
 
 The application builds once, into one deployable artifact, in the
