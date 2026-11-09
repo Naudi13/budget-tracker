@@ -47,7 +47,8 @@ public static class IdentityModule
             provider.GetRequiredService<AccountLinks>(),
             provider.GetRequiredService<SignIn>(),
             provider.GetRequiredService<TokenService>(),
-            provider.GetRequiredService<ListUsers>()));
+            provider.GetRequiredService<ListUsers>(),
+            provider.GetRequiredService<IUsersRepository>()));
         return services;
     }
 }

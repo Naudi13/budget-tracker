@@ -23,8 +23,10 @@ public static class TransactionsModule
             provider.GetRequiredService<ICategoriesRepository>(),
             provider.GetRequiredService<ILogger<ManageCategories>>()));
         services.AddScoped<IMovementsRepository, MovementsRepository>();
+        services.AddScoped<IAccountNames>(provider => new IdentityAccountNames(provider.GetRequiredService<IdentityFacade>()));
         services.AddScoped(provider => new ManageMovements(
             provider.GetRequiredService<IMovementsRepository>(),
+            provider.GetRequiredService<IAccountNames>(),
             provider.GetRequiredService<ILogger<ManageMovements>>()));
         services.AddScoped<IBudgetsRepository, BudgetsRepository>();
         services.AddScoped(provider => new ManageBudgets(

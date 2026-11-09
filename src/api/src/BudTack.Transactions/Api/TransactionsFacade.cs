@@ -94,21 +94,25 @@ public sealed class TransactionsFacade
         return _movements.RecordAsync(userId, request, cancellationToken);
     }
 
-    /// <summary>HU-05: <c>GET /transactions</c>, newest first, without deleted ones (BR-04).</summary>
+    /// <summary>HU-05: <c>GET /transactions</c>, newest first, without deleted ones (BR-04), or only those for an ADMIN.</summary>
     public Task<Page<Transaction>> ListTransactionsAsync(
-        Guid userId, int? page = null, int? limit = null, CancellationToken cancellationToken = default) =>
-        _movements.ListAsync(userId, page, limit, cancellationToken);
+        Viewer viewer, int? page = null, int? limit = null, bool deleted = false, CancellationToken cancellationToken = default) =>
+        _movements.ListAsync(viewer, page, limit, deleted, cancellationToken);
 
-    /// <summary>HU-06: <c>DELETE /transactions/{id}</c>, a soft delete (BR-04); an already deleted one is not found.</summary>
-    public Task DeleteTransactionAsync(Guid userId, Guid transactionId, CancellationToken cancellationToken = default) =>
-        _movements.DeleteAsync(userId, transactionId, cancellationToken);
+    /// <summary>HU-06: <c>POST /transactions/{id}/deletion</c>, a soft delete with a reason (BR-04); an already deleted one is not found.</summary>
+    public Task DeleteTransactionAsync(
+        Viewer viewer, Guid transactionId, TransactionDeletion request, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        return _movements.DeleteAsync(viewer, transactionId, request, cancellationToken);
+    }
 
     /// <summary>
-    /// HU-08: the owner's income and expense totals, computed on read (BR-03)
+    /// HU-08: the income and expense totals the viewer reaches, computed on read (BR-03)
     /// without deleted transactions (BR-04). Called by the dashboard.
     /// </summary>
-    public Task<Totals> GetTotalsAsync(Guid userId, CancellationToken cancellationToken = default) =>
-        _movements.TotalsAsync(userId, cancellationToken);
+    public Task<Totals> GetTotalsAsync(Viewer viewer, CancellationToken cancellationToken = default) =>
+        _movements.TotalsAsync(viewer, cancellationToken);
 
     /// <summary>HU-07: <c>GET /budgets</c>, newest period first, optionally for one category.</summary>
     public Task<Page<Budget>> ListBudgetsAsync(

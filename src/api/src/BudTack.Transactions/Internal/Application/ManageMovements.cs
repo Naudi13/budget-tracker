@@ -7,12 +7,16 @@ namespace BudTack.Transactions.Internal.Application;
 /// <summary>
 /// HU-04, HU-05 and HU-06: record a transaction with its lines (BR-01, BR-02,
 /// BR-05), list the history newest first without the deleted ones, and delete
-/// softly (BR-04). Always for one owner. Descriptions and amounts are never
-/// logged, only ids.
+/// softly with a reason (BR-04). A USER reaches their own, an ADMIN all of them,
+/// with who recorded each one. Descriptions, amounts and reasons are never logged,
+/// only ids.
 /// </summary>
-internal sealed partial class ManageMovements(IMovementsRepository repository, ILogger<ManageMovements> logger)
+internal sealed partial class ManageMovements(
+    IMovementsRepository repository, IAccountNames accounts, ILogger<ManageMovements> logger)
 {
     public const string NotFound = "The transaction does not exist.";
+
+    private const string UnknownAccount = "Unknown";
 
     public async Task<Transaction> RecordAsync(Guid owner, NewTransaction request, CancellationToken cancellationToken)
     {
@@ -27,28 +31,60 @@ internal sealed partial class ManageMovements(IMovementsRepository repository, I
         return ToContract(movement);
     }
 
-    public async Task<Page<Transaction>> ListAsync(Guid owner, int? page, int? limit, CancellationToken cancellationToken)
+    public async Task<Page<Transaction>> ListAsync(
+        Viewer viewer, int? page, int? limit, bool deleted, CancellationToken cancellationToken)
     {
+        if (deleted && !viewer.IsAdmin)
+        {
+            throw new TransactionsForbiddenException();
+        }
+
         var paging = Paging.From(page, limit);
-        var (rows, total) = await repository.ListAsync(owner, paging, cancellationToken).ConfigureAwait(false);
-        return new Page<Transaction>([.. rows.Select(ToContract)], new PageMeta(paging.Page, paging.Limit, total));
+        var (rows, total) = await repository.ListAsync(Scope(viewer), deleted, paging, cancellationToken).ConfigureAwait(false);
+        var names = viewer.IsAdmin ? await NamesAsync(rows, cancellationToken).ConfigureAwait(false) : null;
+        return new Page<Transaction>(
+            [.. rows.Select(row => names is null ? ToContract(row) : ToAdminContract(row, names))],
+            new PageMeta(paging.Page, paging.Limit, total));
     }
 
-    public async Task<Totals> TotalsAsync(Guid owner, CancellationToken cancellationToken)
+    public async Task<Totals> TotalsAsync(Viewer viewer, CancellationToken cancellationToken)
     {
-        var (income, expenses) = await repository.TotalsAsync(owner, cancellationToken).ConfigureAwait(false);
+        var (income, expenses) = await repository.TotalsAsync(Scope(viewer), cancellationToken).ConfigureAwait(false);
         return new Totals(income, expenses);
     }
 
-    public async Task DeleteAsync(Guid owner, Guid transactionId, CancellationToken cancellationToken)
+    public async Task DeleteAsync(
+        Viewer viewer, Guid transactionId, TransactionDeletion request, CancellationToken cancellationToken)
     {
-        if (!await repository.SoftDeleteAsync(owner, transactionId, cancellationToken).ConfigureAwait(false))
+        var reason = MovementRules.Validate(request);
+        if (!await repository.SoftDeleteAsync(viewer.UserId, Scope(viewer), transactionId, reason, cancellationToken).ConfigureAwait(false))
         {
             throw new TransactionsNotFoundException(NotFound);
         }
 
         LogDeleted(logger, transactionId);
     }
+
+    private static Guid? Scope(Viewer viewer) => viewer.IsAdmin ? null : viewer.UserId;
+
+    private async Task<IReadOnlyDictionary<Guid, string>> NamesAsync(
+        IReadOnlyList<Movement> rows, CancellationToken cancellationToken)
+    {
+        var ids = rows.Select(row => row.OwnedBy)
+            .Concat(rows.Where(row => row.Deletion is not null).Select(row => row.Deletion!.DeletedBy))
+            .Distinct()
+            .ToList();
+        return await accounts.NamesOfAsync(ids, cancellationToken).ConfigureAwait(false);
+    }
+
+    private static Transaction ToAdminContract(Movement movement, IReadOnlyDictionary<Guid, string> names) =>
+        ToContract(movement) with
+        {
+            RecordedBy = names.GetValueOrDefault(movement.OwnedBy, UnknownAccount),
+            Deletion = movement.Deletion is { } deletion
+                ? new DeletionRecord(deletion.DeletedAt, names.GetValueOrDefault(deletion.DeletedBy, UnknownAccount), deletion.Reason)
+                : null,
+        };
 
     private static Transaction ToContract(Movement movement) =>
         new(

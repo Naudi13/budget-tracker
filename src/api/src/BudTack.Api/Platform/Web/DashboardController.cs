@@ -11,5 +11,5 @@ internal sealed class DashboardController(DashboardFacade dashboard) : Controlle
 {
     [HttpGet]
     public Task<DashboardView> Get(CancellationToken cancellationToken) =>
-        dashboard.GetDashboardAsync(User.UserId(), cancellationToken);
+        dashboard.GetDashboardAsync(User.Viewer(), cancellationToken);
 }
