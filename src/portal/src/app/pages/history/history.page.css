@@ -1,0 +1,172 @@
+.heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: calc(var(--space-unit) * 4);
+  margin-bottom: calc(var(--space-unit) * 6);
+}
+
+.heading h1 {
+  margin: 0;
+}
+
+a.btn-primary {
+  display: inline-block;
+  text-decoration: none;
+}
+
+.panel {
+  padding: calc(var(--space-unit) * 5);
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  border-radius: calc(var(--space-unit) * 2);
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: calc(var(--space-unit) * 3);
+}
+
+.empty p {
+  margin: 0;
+}
+
+/*
+ * A narrow screen scrolls the table, never the page. `position: relative` keeps
+ * the visually hidden labels (position: absolute) inside the scrolling box.
+ */
+.table-wrap {
+  position: relative;
+  overflow-x: auto;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  border-radius: calc(var(--space-unit) * 2);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: calc(var(--space-unit) * 3) calc(var(--space-unit) * 4);
+  text-align: left;
+  border-bottom: 1px solid var(--color-border);
+  white-space: nowrap;
+}
+
+td:nth-child(2) {
+  white-space: normal;
+}
+
+th {
+  font-size: var(--font-size-caption);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-muted);
+}
+
+tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.number {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.actions {
+  text-align: right;
+}
+
+/* Gasto: grey; Ingreso: mint tint with dark-mint text (5:1). */
+.type {
+  padding: 0 calc(var(--space-unit) * 2);
+  border-radius: 999px;
+  font-size: var(--font-size-caption);
+  color: var(--color-text-muted);
+  background: #eef0f4;
+}
+
+.type.income {
+  color: var(--color-success);
+  background: #eaf8f6;
+}
+
+.link {
+  padding: var(--space-unit);
+  border: 0;
+  background: none;
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.link.danger {
+  color: var(--color-danger);
+}
+
+.pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: calc(var(--space-unit) * 4);
+  margin-top: calc(var(--space-unit) * 5);
+}
+
+.banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: calc(var(--space-unit) * 3);
+  margin: 0 0 calc(var(--space-unit) * 4);
+  padding: calc(var(--space-unit) * 3) calc(var(--space-unit) * 4);
+  border-radius: var(--space-unit);
+  border: 1px solid currentColor;
+}
+
+.banner-success {
+  color: var(--color-success);
+  background: #eaf8f6;
+}
+
+.banner-error {
+  color: var(--color-danger);
+}
+
+.skeleton .bar {
+  height: 48px;
+  margin-bottom: calc(var(--space-unit) * 2);
+  border-radius: var(--space-unit);
+  background: linear-gradient(90deg, #e9ecf2, #f4f6fa, #e9ecf2);
+}
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: calc(var(--space-unit) * 4);
+  background: rgb(27 42 74 / 45%);
+  z-index: 10;
+}
+
+.dialog {
+  width: min(440px, 100%);
+  padding: calc(var(--space-unit) * 6);
+  border-radius: calc(var(--space-unit) * 2);
+  background: var(--color-bg-surface);
+  box-shadow: 0 8px 24px rgb(27 42 74 / 25%);
+}
+
+.dialog p {
+  margin: 0 0 calc(var(--space-unit) * 5);
+}
+
+.dialog-actions {
+  display: flex;
+  gap: calc(var(--space-unit) * 3);
+}

@@ -1,0 +1,120 @@
+/* Tokens of bud-tack-docs 12-ux-ui/design-system.md. Change a value there first. */
+:root {
+  /* The BudgetTrack palette (identity manual v1, section 3). */
+  --brand-navy: #1b2a4a; /* principal */
+  --brand-mint: #2ec4b6; /* secundario */
+  --brand-coral: #ff6b35; /* apoyo / acento */
+
+  /*
+   * How the palette is used, within WCAG 2.1 AA (contrast against the
+   * background each one sits on): navy text and controls on white 14:1; coral
+   * and mint never carry white text (2.8:1 and 2.2:1), only navy (5:1, 6.6:1)
+   * or sit on navy; success text is mint darkened to 5.2:1.
+   */
+  --color-primary: var(--brand-navy);
+  --color-action: var(--brand-coral);
+  --color-on-action: var(--brand-navy);
+  --color-accent: var(--brand-mint);
+  --color-danger: #d1293d;
+  --color-success: #127a70;
+  --color-text: #1a1a1a;
+  --color-bg-surface: #ffffff;
+
+  /* Not in the design system yet: the page background and hairlines. */
+  --color-bg-page: #f4f6fa;
+  --color-border: #d9dee7;
+  /* Input borders need 3:1 against white (WCAG 1.4.11); hints 4.5:1. */
+  --color-border-strong: #767f8e;
+  --color-text-muted: #545c69;
+
+  --font-size-h1: 1.75rem;
+  --font-size-body: 1rem;
+  --font-size-caption: 0.8125rem;
+  --space-unit: 4px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+}
+
+body {
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  font-size: var(--font-size-body);
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--color-text);
+  background: var(--color-bg-page);
+}
+
+h1 {
+  margin: 0 0 calc(var(--space-unit) * 6);
+  font-size: var(--font-size-h1);
+  font-weight: 700;
+}
+
+a {
+  color: var(--color-primary);
+}
+
+/* Read by screen readers, not shown: the name behind a repeated "Eliminar". */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Buttons of the component inventory: one primary per screen, at most. */
+.btn-primary,
+.btn-secondary,
+.btn-danger {
+  padding: calc(var(--space-unit) * 2) calc(var(--space-unit) * 4);
+  border: 1px solid transparent;
+  border-radius: var(--space-unit);
+  font: inherit;
+  cursor: pointer;
+}
+
+/* The one action of a screen: coral with navy text (5:1). */
+.btn-primary {
+  background: var(--color-action);
+  color: var(--color-on-action);
+  font-weight: 700;
+}
+
+.btn-primary:hover:not(:disabled) {
+  filter: brightness(1.06);
+}
+
+.btn-secondary {
+  background: var(--color-bg-surface);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.btn-danger {
+  background: var(--color-danger);
+  color: #fff;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

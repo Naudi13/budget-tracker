@@ -1,0 +1,95 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: calc(var(--space-unit) * 3) calc(var(--space-unit) * 6);
+  padding: calc(var(--space-unit) * 4) calc(var(--space-unit) * 6);
+  background: var(--brand-navy);
+  /* A thin mint line, the secondary colour, under the navy band. */
+  border-bottom: 3px solid var(--brand-mint);
+}
+
+/* The reverse logo (white on navy), at its 24 px minimum or more (manual, section 5). */
+.brand {
+  display: inline-flex;
+  border-radius: var(--space-unit);
+}
+
+.brand img {
+  display: block;
+  height: 32px;
+  width: auto;
+}
+
+/* On navy, focus is shown in mint (6.6:1). */
+.header :focus-visible {
+  outline-color: var(--brand-mint);
+}
+
+/* White on navy (14:1); the current page is underlined in mint. */
+.nav {
+  display: flex;
+  gap: calc(var(--space-unit) * 5);
+  margin-left: auto;
+}
+
+.header .btn-secondary {
+  white-space: nowrap;
+}
+
+/* Narrow screens: logo and Cerrar sesión on the first row, the menu below. */
+@media (max-width: 640px) {
+  .nav {
+    order: 3;
+    width: 100%;
+    margin-left: 0;
+  }
+}
+
+.nav a {
+  padding: var(--space-unit) 0;
+  color: #fff;
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+}
+
+.nav a:hover,
+.nav a.active {
+  border-bottom-color: var(--brand-mint);
+}
+
+.header .btn-secondary {
+  background: transparent;
+  border-color: var(--brand-mint);
+  color: #fff;
+}
+
+.main {
+  flex: 1;
+  width: 100%;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: calc(var(--space-unit) * 8) calc(var(--space-unit) * 4);
+  outline: none;
+}
+
+.skip-link {
+  position: absolute;
+  left: calc(var(--space-unit) * 2);
+  top: calc(var(--space-unit) * -12);
+  padding: calc(var(--space-unit) * 2) calc(var(--space-unit) * 4);
+  background: var(--color-action);
+  color: var(--color-on-action);
+  z-index: 1;
+}
+
+.skip-link:focus {
+  top: calc(var(--space-unit) * 2);
+}

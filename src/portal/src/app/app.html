@@ -1,0 +1,29 @@
+<a class="skip-link" href="#main">Saltar al contenido</a>
+
+<header class="header">
+  <a class="brand" routerLink="/">
+    <img src="brand/logo-reverse.png" alt="BudgetTrack" width="436" height="96" />
+  </a>
+  @if (identity.signedIn()) {
+    <nav class="nav" aria-label="Principal">
+      <a routerLink="/dashboard" routerLinkActive="active" ariaCurrentWhenActive="page">Panel</a>
+      <a
+        routerLink="/transactions"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: false }"
+        ariaCurrentWhenActive="page"
+        >Movimientos</a
+      >
+      <a routerLink="/settings/categories" routerLinkActive="active" ariaCurrentWhenActive="page">Categorías</a>
+      <a routerLink="/settings/budgets" routerLinkActive="active" ariaCurrentWhenActive="page">Presupuestos</a>
+      @if (identity.isAdmin()) {
+        <a routerLink="/settings/users" routerLinkActive="active" ariaCurrentWhenActive="page">Usuarios</a>
+      }
+    </nav>
+    <button type="button" class="btn-secondary" (click)="signOut()">Cerrar sesión</button>
+  }
+</header>
+
+<main id="main" class="main" tabindex="-1">
+  <router-outlet />
+</main>

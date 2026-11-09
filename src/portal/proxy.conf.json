@@ -1,0 +1,26 @@
+{
+  "/api": {
+    "target": "http://localhost:3000",
+    "secure": false,
+    "changeOrigin": false,
+    "logLevel": "warn"
+  },
+  "/swagger": {
+    "target": "http://localhost:3000",
+    "secure": false,
+    "changeOrigin": false,
+    "logLevel": "warn"
+  },
+  "/swagger-ui.html": {
+    "target": "http://localhost:3000",
+    "secure": false,
+    "changeOrigin": false,
+    "logLevel": "warn"
+  },
+  "/health": {
+    "target": "http://localhost:3000",
+    "secure": false,
+    "changeOrigin": false,
+    "logLevel": "warn"
+  }
+}

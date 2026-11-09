@@ -1,0 +1,221 @@
+<div class="heading">
+  <h1 #heading tabindex="-1">Categorías</h1>
+  @if (state() === 'ready' && groups().length > 0 && !creating()) {
+    <button type="button" class="btn-primary" (click)="openNewCategory()">Nueva categoría</button>
+  }
+</div>
+
+@if (notice()) {
+  <p class="banner banner-success" role="status">{{ notice() }}</p>
+}
+@if (failure()) {
+  <p class="banner banner-error" role="alert">{{ failure() }}</p>
+}
+
+@if (creating()) {
+  <form class="panel new-category" [formGroup]="categoryForm" (ngSubmit)="createCategory()" novalidate>
+    <h2>Nueva categoría</h2>
+    <div class="field">
+      <label for="new-category-name">Nombre</label>
+      <input
+        id="new-category-name"
+        #newCategoryName
+        type="text"
+        formControlName="name"
+        maxlength="100"
+        [attr.aria-invalid]="categoryError('name') !== null || categoryConflict() !== null"
+        [attr.aria-describedby]="categoryError('name') || categoryConflict() ? 'new-category-name-error' : null"
+      />
+      @if (categoryConflict()) {
+        <p id="new-category-name-error" class="field-error" role="alert">{{ categoryConflict() }}</p>
+      } @else if (categoryError('name')) {
+        <p id="new-category-name-error" class="field-error">{{ categoryError('name') }}</p>
+      }
+    </div>
+    <fieldset
+      class="field"
+      [attr.aria-invalid]="categoryError('type') !== null"
+      [attr.aria-describedby]="categoryError('type') ? 'new-category-type-error' : null"
+    >
+      <legend>Tipo</legend>
+      <label class="choice"><input type="radio" formControlName="type" value="income" /> Ingreso</label>
+      <label class="choice"><input type="radio" formControlName="type" value="expense" /> Gasto</label>
+      @if (categoryError('type')) {
+        <p id="new-category-type-error" class="field-error">{{ categoryError('type') }}</p>
+      }
+    </fieldset>
+    <div class="actions">
+      <button type="submit" class="btn-primary" [disabled]="savingCategory()">
+        {{ savingCategory() ? 'Guardando…' : 'Guardar categoría' }}
+      </button>
+      <button type="button" class="btn-secondary" (click)="cancelNewCategory()">Cancelar</button>
+    </div>
+  </form>
+}
+
+@switch (state()) {
+  @case ('loading') {
+    <div class="skeleton" aria-busy="true" aria-label="Cargando categorías">
+      <div class="bar"></div>
+      <div class="bar"></div>
+      <div class="bar"></div>
+    </div>
+  }
+  @case ('error') {
+    <div class="banner banner-error" role="alert">
+      <span>No pudimos cargar las categorías.</span>
+      <button type="button" class="btn-secondary" (click)="load()">Reintentar</button>
+    </div>
+  }
+  @case ('ready') {
+    @if (groups().length === 0 && !creating()) {
+      <div class="panel empty">
+        <p>Aún no tienes categorías</p>
+        <button type="button" class="btn-primary" (click)="openNewCategory()">Nueva categoría</button>
+      </div>
+    }
+    @for (section of [{ title: 'Ingresos', groups: incomes() }, { title: 'Gastos', groups: expenses() }]; track section.title) {
+      @if (section.groups.length > 0) {
+        <section class="type" [attr.aria-label]="section.title">
+          <h2>{{ section.title }}</h2>
+          <ul class="categories">
+            @for (group of section.groups; track group.category.id) {
+              <li class="panel category">
+                @if (renaming()?.id === group.category.id) {
+                  <form class="rename-category" (submit)="$event.preventDefault(); saveName()" novalidate>
+                    <label for="rename-category" class="visually-hidden">Nuevo nombre de {{ group.category.name }}</label>
+                    <input
+                      id="rename-category"
+                      #renameField
+                      type="text"
+                      maxlength="100"
+                      [formControl]="nameField"
+                      [attr.aria-invalid]="nameError() !== null"
+                      [attr.aria-describedby]="nameError() ? 'rename-category-error' : null"
+                    />
+                    <button type="submit" class="btn-primary" [disabled]="savingName()">
+                      {{ savingName() ? 'Guardando…' : 'Guardar' }}
+                    </button>
+                    <button type="button" class="btn-secondary" (click)="cancelRename()">Cancelar</button>
+                    @if (nameError(); as message) {
+                      <p id="rename-category-error" class="field-error" role="alert">{{ message }}</p>
+                    }
+                  </form>
+                } @else {
+                <div class="row">
+                  <span class="name">{{ group.category.name }}</span>
+                  <span class="badge" [class.off]="!group.category.isActive">
+                    {{ group.category.isActive ? 'Activa' : 'Inactiva' }}
+                  </span>
+                  <span class="row-actions">
+                    <button type="button" class="link" (click)="openRename(group.category)">
+                      Editar <span class="visually-hidden">{{ group.category.name }}</span>
+                    </button>
+                    <button type="button" class="link" (click)="toggle({ kind: 'category', category: group.category })">
+                      {{ group.category.isActive ? 'Desactivar' : 'Activar' }}
+                      <span class="visually-hidden">{{ group.category.name }}</span>
+                    </button>
+                    <button type="button" class="link danger" (click)="askDelete({ kind: 'category', category: group.category })">
+                      Eliminar <span class="visually-hidden">{{ group.category.name }}</span>
+                    </button>
+                  </span>
+                </div>
+                }
+
+                @if (group.subcategories.length > 0) {
+                  <ul class="subcategories">
+                    @for (subcategory of group.subcategories; track subcategory.id) {
+                      <li class="row">
+                        <span class="name">{{ subcategory.name }}</span>
+                        <span class="badge" [class.off]="!subcategory.isActive">
+                          {{ subcategory.isActive ? 'Activa' : 'Inactiva' }}
+                        </span>
+                        <span class="row-actions">
+                          <button
+                            type="button"
+                            class="link"
+                            (click)="toggle({ kind: 'subcategory', category: group.category, subcategory })"
+                          >
+                            {{ subcategory.isActive ? 'Desactivar' : 'Activar' }}
+                            <span class="visually-hidden">{{ subcategory.name }}</span>
+                          </button>
+                          <button
+                            type="button"
+                            class="link danger"
+                            (click)="askDelete({ kind: 'subcategory', category: group.category, subcategory })"
+                          >
+                            Eliminar <span class="visually-hidden">{{ subcategory.name }}</span>
+                          </button>
+                        </span>
+                      </li>
+                    }
+                  </ul>
+                }
+
+                <form class="add-subcategory" (submit)="$event.preventDefault(); createSubcategory(group.category)" novalidate>
+                  <label [attr.for]="'sub-' + group.category.id" class="visually-hidden">
+                    Nueva subcategoría de {{ group.category.name }}
+                  </label>
+                  <input
+                    [id]="'sub-' + group.category.id"
+                    type="text"
+                    maxlength="100"
+                    placeholder="Nueva subcategoría"
+                    [formControl]="subcategoryField(group.category.id)"
+                    [attr.aria-invalid]="subcategoryErrors()[group.category.id] ? true : null"
+                    [attr.aria-describedby]="subcategoryErrors()[group.category.id] ? 'sub-error-' + group.category.id : null"
+                  />
+                  <button type="submit" class="btn-secondary" [disabled]="savingSubcategoryOf() === group.category.id">
+                    Agregar
+                  </button>
+                  @if (subcategoryErrors()[group.category.id]; as message) {
+                    <p [id]="'sub-error-' + group.category.id" class="field-error" role="alert">{{ message }}</p>
+                  }
+                </form>
+              </li>
+            }
+          </ul>
+        </section>
+      }
+    }
+  }
+}
+
+@if (pending(); as pending) {
+  <div class="backdrop">
+    <div class="dialog" role="alertdialog" aria-modal="true" aria-labelledby="dialog-message">
+      @switch (pending.step) {
+        @case ('confirm') {
+          <p id="dialog-message">¿Eliminar {{ nameOf(pending.target) }}?</p>
+          <div class="actions">
+            <button type="button" class="btn-danger" #dialogAction [disabled]="busy()" (click)="confirmDelete()">
+              Eliminar
+            </button>
+            <button type="button" class="btn-secondary" [disabled]="busy()" (click)="closeDialog()">Cancelar</button>
+          </div>
+        }
+        @case ('blocked') {
+          <p id="dialog-message">
+            {{ nameOf(pending.target) }} está en uso: tiene movimientos, subcategorías o presupuestos. Mejor
+            desactívala.
+          </p>
+          <div class="actions">
+            <button type="button" class="btn-secondary" #dialogAction [disabled]="busy()" (click)="deactivateInstead()">
+              Desactivar
+            </button>
+            <button type="button" class="btn-secondary" [disabled]="busy()" (click)="closeDialog()">Cancelar</button>
+          </div>
+        }
+        @case ('failed') {
+          <p id="dialog-message">No pudimos eliminar {{ nameOf(pending.target) }}. Inténtalo de nuevo.</p>
+          <div class="actions">
+            <button type="button" class="btn-danger" #dialogAction [disabled]="busy()" (click)="confirmDelete()">
+              Reintentar
+            </button>
+            <button type="button" class="btn-secondary" [disabled]="busy()" (click)="closeDialog()">Cancelar</button>
+          </div>
+        }
+      }
+    </div>
+  </div>
+}
