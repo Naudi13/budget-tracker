@@ -8,7 +8,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 
 import { ApiError } from '../../core/api-error';
 import { IdentityService } from '../../core/identity.service';
@@ -16,16 +16,15 @@ import { emailShape } from '../form-rules';
 
 type Failure = 'credentials' | 'unavailable' | null;
 
-/** What sign-up hands over when it sends the user here (sign-up.md). */
+/** What setting a password hands over when it sends the user here (activate-account.md). */
 export interface SignInState {
-  readonly email?: string;
-  readonly created?: boolean;
+  readonly passwordSaved?: boolean;
 }
 
 /** HU-01, 12-ux-ui/screens/sign-in.md. */
 @Component({
   selector: 'bt-sign-in-page',
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule],
   templateUrl: './sign-in.page.html',
   styleUrl: '../auth-form.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -42,19 +41,20 @@ export class SignInPage {
   private readonly first = viewChild.required<ElementRef<HTMLInputElement>>('first');
 
   protected readonly submitting = signal(false);
-  /** Errors show once a field is typed in or the form is submitted, not on blur (see SignUpPage). */
+  /**
+   * Errors show once a field is typed in or the form is submitted, not on
+   * blur: a message appearing on blur pushes the button down under the
+   * pointer, and the click that caused the blur misses it.
+   */
   protected readonly attempted = signal(false);
   protected readonly failure = signal<Failure>(null);
-  protected readonly created: boolean;
+  protected readonly passwordSaved: boolean;
 
   constructor() {
     // Empty state: the cursor starts in Email (sign-in.md).
     afterNextRender(() => this.first().nativeElement.focus());
     const state = (this.router.currentNavigation()?.extras.state ?? history.state ?? {}) as SignInState;
-    this.created = state.created === true;
-    if (state.email) {
-      this.form.controls.email.setValue(state.email);
-    }
+    this.passwordSaved = state.passwordSaved === true;
   }
 
   protected showError(field: 'email' | 'password'): boolean {

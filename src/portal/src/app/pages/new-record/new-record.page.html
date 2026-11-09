@@ -21,7 +21,11 @@
     @if (options().length === 0 && !formShown()) {
       <div class="panel">
         <p>Para registrar un movimiento necesitas al menos una subcategoría activa.</p>
-        <a routerLink="/settings/categories">Configura tus categorías</a>
+        @if (identity.isAdmin()) {
+          <a routerLink="/settings/categories">Configura tus categorías</a>
+        } @else {
+          <p>Pide a tu administrador que las configure.</p>
+        }
       </div>
     } @else {
       <form class="panel" [formGroup]="form" (ngSubmit)="save()" novalidate>

@@ -62,7 +62,7 @@ describe('SignInPage', () => {
 
     submit();
 
-    expect(page().textContent).toContain('Escribe el correo con el que te registraste, por ejemplo ana@example.com.');
+    expect(page().textContent).toContain('Escribe tu correo, por ejemplo ana@example.com.');
     expect(page().textContent).toContain('Escribe tu contraseña.');
     expect(input('sign-in-email').getAttribute('aria-invalid')).toBe('true');
     backend.expectNone('/api/v1/sessions');
@@ -122,15 +122,15 @@ describe('SignInPage', () => {
     expect(navigate).toHaveBeenCalledWith(['/dashboard']);
   });
 
-  it('welcomes a new account with its email filled in', () => {
-    setUp({ email: 'new@example.com', created: true });
+  it('confirms a password just saved', () => {
+    setUp({ passwordSaved: true });
 
-    expect(page().querySelector('[role=status]')?.textContent).toContain('Cuenta creada. Inicia sesión para empezar.');
-    expect(input('sign-in-email').value).toBe('new@example.com');
+    expect(page().querySelector('[role=status]')?.textContent).toContain('Contraseña guardada. Inicia sesión.');
   });
 
   it('drops the welcome once an attempt fails, so only the error shows', () => {
-    setUp({ email: 'new@example.com', created: true });
+    setUp({ passwordSaved: true });
+    type('sign-in-email', 'new@example.com');
     type('sign-in-password', 'wrong-password');
 
     submit();
@@ -143,9 +143,10 @@ describe('SignInPage', () => {
     expect(page().querySelector('[role=alert]')?.textContent).toContain('El correo o la contraseña no son correctos.');
   });
 
-  it('links to sign-up', () => {
+  it('offers no sign-up, and says where to go for a forgotten password', () => {
     setUp();
 
-    expect(page().querySelector('a')?.getAttribute('href')).toBe('/sign-up');
+    expect(page().querySelector('a')).toBeNull();
+    expect(page().textContent).toContain('Pide a tu administrador un enlace para restablecerla.');
   });
 });

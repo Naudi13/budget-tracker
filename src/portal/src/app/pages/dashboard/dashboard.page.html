@@ -70,7 +70,9 @@
         }
       </section>
 
-      <p class="settings"><a routerLink="/settings/categories">Configurar tus categorías</a></p>
+      @if (identity.isAdmin()) {
+        <p class="settings"><a routerLink="/settings/categories">Configurar tus categorías</a></p>
+      }
     }
   }
 }

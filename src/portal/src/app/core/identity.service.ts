@@ -5,12 +5,6 @@ import { Observable, tap } from 'rxjs';
 import { AuthTokenStore, Role } from './auth-token.store';
 
 /** The schemas of bud-tack-docs 07-api/contracts/openapi/identity.yaml. */
-export interface NewUser {
-  readonly name: string;
-  readonly email: string;
-  readonly password: string;
-}
-
 export interface Credentials {
   readonly email: string;
   readonly password: string;
@@ -21,6 +15,7 @@ export interface User {
   readonly name: string;
   readonly email: string;
   readonly role: Role;
+  readonly status: 'PENDING' | 'ACTIVE';
 }
 
 export interface Session {
@@ -31,7 +26,7 @@ export interface Session {
 }
 
 /**
- * Sign-up, sign-in and sign-out (HU-01). Sign-out is client-side only: the
+ * Sign-in and sign-out (HU-01). Sign-out is client-side only: the
  * token is discarded, there is no `DELETE /sessions` in V1.
  */
 @Injectable({ providedIn: 'root' })
@@ -41,10 +36,6 @@ export class IdentityService {
 
   readonly signedIn = computed(() => this.tokens.token() !== null);
   readonly isAdmin = computed(() => this.tokens.role() === 'ADMIN');
-
-  signUp(user: NewUser): Observable<User> {
-    return this.http.post<User>('/api/v1/users', user);
-  }
 
   signIn(credentials: Credentials): Observable<Session> {
     return this.http
