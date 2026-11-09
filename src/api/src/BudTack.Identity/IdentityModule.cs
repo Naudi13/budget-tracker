@@ -42,12 +42,16 @@ public static class IdentityModule
             provider.GetRequiredService<TokenService>(),
             provider.GetRequiredService<ILogger<SignIn>>()));
         services.AddScoped(provider => new ListUsers(provider.GetRequiredService<IUsersRepository>()));
+        services.AddScoped(provider => new ManageAccount(
+            provider.GetRequiredService<IUsersRepository>(),
+            provider.GetRequiredService<ILogger<ManageAccount>>()));
         services.AddScoped(provider => new IdentityFacade(
             provider.GetRequiredService<CreateUser>(),
             provider.GetRequiredService<AccountLinks>(),
             provider.GetRequiredService<SignIn>(),
             provider.GetRequiredService<TokenService>(),
             provider.GetRequiredService<ListUsers>(),
+            provider.GetRequiredService<ManageAccount>(),
             provider.GetRequiredService<IUsersRepository>()));
         return services;
     }

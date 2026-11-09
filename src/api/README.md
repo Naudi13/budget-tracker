@@ -29,6 +29,7 @@ signs the bearer tokens.
 | `POST /api/v1/users` | Bearer, `ADMIN` | Create an account (HU-09): `201` with its activation link, `400` per field, `409` email in use |
 | `POST /api/v1/sessions` | none | Sign-in (HU-01): `201` with `{ token, tokenType, expiresIn, role }`, `401` wrong email or password |
 | `GET /api/v1/users` | Bearer, `ADMIN` | List the accounts (HU-09, `?page`, `?limit`): `401` without a token, `403` with another role |
+| `PATCH`, `DELETE /api/v1/users/{id}` | Bearer, `ADMIN` | Inactivate or activate (HU-13, `409` on your own account); delete a never-activated account (`409` otherwise) |
 | `POST /api/v1/users/{id}/activation-links`, `/password-resets` | Bearer, `ADMIN` | A new single-use link (HU-09, HU-10): `201`, `404`, `409` wrong state |
 | `POST /api/v1/account-links/confirm` | none | Set the password with a link (HU-10): `204`, `400` |
 | Writes on categories and subcategories; all of `/api/v1/budgets` | Bearer, `ADMIN` | `403` with another role (HU-12) |
