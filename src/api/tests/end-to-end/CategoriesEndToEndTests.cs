@@ -193,7 +193,7 @@ public sealed class CategoriesEndToEndTests(PostgresFixture postgres)
         using var notAGuid = await client.PatchAsJsonAsync("/api/v1/categories/not-a-guid", new { isActive = true }, Ct);
 
         Assert.Equal(HttpStatusCode.BadRequest, missing.StatusCode);
-        Assert.Equal("isActive", (await Json(missing)).RootElement.GetProperty("details")[0].GetProperty("field").GetString());
+        Assert.Equal("body", (await Json(missing)).RootElement.GetProperty("details")[0].GetProperty("field").GetString());
         Assert.Equal(HttpStatusCode.NotFound, notAGuid.StatusCode);
     }
 

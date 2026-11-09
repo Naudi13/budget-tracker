@@ -109,15 +109,15 @@ public sealed class CategoriesFacadeTests(PostgresFixture database) : IAsyncLife
     }
 
     [Fact]
-    public async Task SetCategoryActiveAsync_onlyForItsOwner()
+    public async Task UpdateCategoryAsync_onlyForItsOwner()
     {
         var category = await Create(Ana, "Oficina");
 
-        var off = await Facade().SetCategoryActiveAsync(Ana, category.Id, new ActivationUpdate(false), Ct);
+        var off = await Facade().UpdateCategoryAsync(Ana, category.Id, new CategoryChanges(null, false), Ct);
 
         Assert.False(off.IsActive);
         await Assert.ThrowsAsync<TransactionsNotFoundException>(
-            () => Facade().SetCategoryActiveAsync(Leo, category.Id, new ActivationUpdate(true), Ct));
+            () => Facade().UpdateCategoryAsync(Leo, category.Id, new CategoryChanges(null, true), Ct));
     }
 
     [Fact]
