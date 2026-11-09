@@ -93,8 +93,6 @@ refused "an email that is not lowercase is refused" \
   "INSERT INTO identity.users (id, name, email, password_hash) VALUES (gen_random_uuid(), 'Ana', 'Owner@Example.com', 'hash');"
 refused "a blank name is refused" \
   "INSERT INTO identity.users (id, name, email, password_hash) VALUES (gen_random_uuid(), '   ', 'blank@example.com', 'hash');"
-refused "a user without a password hash is refused" \
-  "INSERT INTO identity.users (id, name, email) VALUES (gen_random_uuid(), 'Ana', 'nohash@example.com');"
 refused "the app role cannot drop identity.users" \
   "DROP TABLE identity.users;"
 
@@ -120,8 +118,8 @@ EOSQL
 ana=00000000-0000-7000-8000-00000000000a
 leo=00000000-0000-7000-8000-00000000000b
 office=00000000-0000-7000-8000-0000000000c1
-category() { # id owner name type
-  echo "INSERT INTO transactions.categories (id, owned_by, name, type, created_by, updated_by) VALUES ('$1', '$2', '$3', '$4', '$2', '$2');"
+category() { # id author name type
+  echo "INSERT INTO transactions.categories (id, name, type, created_by, updated_by) VALUES ('$1', '$3', '$4', '$2', '$2');"
 }
 subcategory() { # category name
   echo "INSERT INTO transactions.subcategories (id, category_id, name, created_by, updated_by) VALUES (gen_random_uuid(), '$1', '$2', '$ana', '$ana');"
@@ -140,18 +138,16 @@ allowed "a category and a subcategory are created active" \
      IF NOT (SELECT bool_and(is_active) FROM (SELECT is_active FROM transactions.categories UNION ALL SELECT is_active FROM transactions.subcategories) t)
      THEN RAISE EXCEPTION 'not active'; END IF;
    END \$\$;"
-refused "a second expense category of the same owner with the same name, in any case, is refused" \
+refused "a second expense category with the same name, in any case, is refused" \
   "$(category $office $ana Oficina expense) $(category 00000000-0000-7000-8000-0000000000c2 $ana OFICINA expense)"
 allowed "the same name is allowed in the other type" \
   "$(category $office $ana Oficina expense) $(category 00000000-0000-7000-8000-0000000000c2 $ana Oficina income)"
-allowed "the same name is allowed for another owner" \
+refused "the same name is refused from another user too (ADR-009)" \
   "$(category $office $ana Oficina expense) $(category 00000000-0000-7000-8000-0000000000c2 $leo Oficina expense)"
 refused "a type other than income or expense is refused" \
   "$(category $office $ana Oficina savings)"
 refused "a blank category name is refused" \
   "$(category $office $ana '   ' expense)"
-refused "a category without an owner is refused" \
-  "INSERT INTO transactions.categories (id, name, type, created_by, updated_by) VALUES ('$office', 'Oficina', 'expense', '$ana', '$ana');"
 refused "a second subcategory with the same name in one category, in any case, is refused" \
   "$(category $office $ana Oficina expense) $(subcategory $office Papelería) $(subcategory $office PAPELERÍA)"
 allowed "the same subcategory name is allowed in another category" \
@@ -204,8 +200,14 @@ refused "a description over 200 characters is refused" \
   "$(transaction $movement "$(printf 'a%.0s' $(seq 201))")"
 refused "deleted_at without deleted_by is refused (BR-04)" \
   "$(transaction $movement 'x') UPDATE transactions.transactions SET deleted_at = now() WHERE id = '$movement';"
-allowed "a soft delete sets deleted_at and deleted_by together (BR-04)" \
+allowed "a soft delete sets deleted_at, deleted_by and the reason together (BR-04)" \
+  "$(transaction $movement 'x') UPDATE transactions.transactions SET deleted_at = now(), deleted_by = '$ana', deletion_reason = 'Monto equivocado' WHERE id = '$movement';"
+refused "a soft delete without a reason is refused (BR-04)" \
   "$(transaction $movement 'x') UPDATE transactions.transactions SET deleted_at = now(), deleted_by = '$ana' WHERE id = '$movement';"
+refused "a reason under 3 characters is refused (BR-04)" \
+  "$(transaction $movement 'x') UPDATE transactions.transactions SET deleted_at = now(), deleted_by = '$ana', deletion_reason = ' a ' WHERE id = '$movement';"
+refused "a reason without a delete is refused" \
+  "$(transaction $movement 'x') UPDATE transactions.transactions SET deletion_reason = 'Monto equivocado' WHERE id = '$movement';"
 refused "a detail against a subcategory that does not exist is refused" \
   "$(transaction $movement 'x') $(detail $movement 00000000-0000-7000-8000-0000000000ff 10)"
 refused "a subcategory a detail uses cannot be deleted (BR-05)" \
@@ -227,7 +229,7 @@ refused "a line without a number is refused" \
    VALUES (gen_random_uuid(), '$movement', '$paper', 1, '$ana', '$ana');"
 # Transactions006_CreateBudgets (HU-07).
 budget() { # amount start end
-  echo "INSERT INTO transactions.budgets (id, owned_by, category_id, amount, period_start, period_end, created_by, updated_by) VALUES (gen_random_uuid(), '$ana', '$office', $1, DATE '$2', DATE '$3', '$ana', '$ana');"
+  echo "INSERT INTO transactions.budgets (id, category_id, amount, period_start, period_end, created_by, updated_by) VALUES (gen_random_uuid(), '$office', $1, DATE '$2', DATE '$3', '$ana', '$ana');"
 }
 office_only="$(category $office $ana Oficina expense)"
 check "transactions.budgets exists, and the app role may read and write it" \
@@ -257,12 +259,32 @@ refused "a category that owns a budget cannot be deleted (BR-05)" \
 allowed "once its budget is deleted, the category can be (TC-019)" \
   "$office_only $(budget 500 2026-11-01 2026-11-30) DELETE FROM transactions.budgets; DELETE FROM transactions.categories WHERE id = '$office';"
 refused "a budget for a category that does not exist is refused" \
-  "INSERT INTO transactions.budgets (id, owned_by, category_id, amount, period_start, period_end, created_by, updated_by)
-   VALUES (gen_random_uuid(), '$ana', '00000000-0000-7000-8000-0000000000ff', 1, DATE '2026-11-01', DATE '2026-11-30', '$ana', '$ana');"
+  "INSERT INTO transactions.budgets (id, category_id, amount, period_start, period_end, created_by, updated_by)
+   VALUES (gen_random_uuid(), '00000000-0000-7000-8000-0000000000ff', 1, DATE '2026-11-01', DATE '2026-11-30', '$ana', '$ana');"
 
 check "the line order index replaces the plain transaction_id index" \
   "SELECT to_regclass('transactions.idx_transaction_details_transaction_id_line_number') IS NOT NULL
       AND to_regclass('transactions.idx_transaction_details_transaction_id') IS NULL"
+
+# Identity004_AddAccountTokens and Transactions007_ShareCatalog (ADR-009, ADR-010).
+seed_admin=00000000-0000-4000-8000-000000000001
+token() { # hash [purpose]
+  echo "INSERT INTO identity.account_tokens (id, user_id, purpose, token_hash, expires_at, created_by) VALUES (gen_random_uuid(), '$seed_admin', '${2:-ACTIVATION}', '$1', now() + interval '1 hour', '$seed_admin');"
+}
+check "categories and budgets have no owner; transactions keep theirs" \
+  "SELECT count(*) = 1 AND bool_and(table_name = 'transactions') FROM information_schema.columns WHERE table_schema = 'transactions' AND column_name = 'owned_by'"
+check "the app role may read and write identity.account_tokens" \
+  "SELECT has_table_privilege('bud_tack_app', 'identity.account_tokens', 'SELECT, INSERT, UPDATE, DELETE')"
+allowed "an account without a password is allowed until it is activated" \
+  "INSERT INTO identity.users (id, name, email) VALUES (gen_random_uuid(), 'Ana', 'pending@example.com');"
+allowed "a link for each purpose is stored" \
+  "$(token aaa) $(token bbb PASSWORD_RESET)"
+refused "a purpose that does not exist is refused" \
+  "$(token aaa LOGIN)"
+refused "two links with the same hash are refused" \
+  "$(token aaa) $(token aaa)"
+refused "a link for an account that does not exist is refused" \
+  "INSERT INTO identity.account_tokens (id, user_id, purpose, token_hash, expires_at, created_by) VALUES (gen_random_uuid(), '$ana', 'ACTIVATION', 'ccc', now(), '$ana');"
 
 migrate down
 check "down removes identity.users and every transactions table" \
