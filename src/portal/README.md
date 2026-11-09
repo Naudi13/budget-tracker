@@ -17,18 +17,19 @@ npm start                                  # http://localhost:4200
 
 `ng serve` forwards `/api/` and `/health` to `localhost:3000` through
 `proxy.conf.json`, so the browser sees one origin and the API needs no CORS
-(ADR-006). Without a token `/` goes to sign-in; `/sign-up` creates the
+(ADR-006). Without a token `/` goes to sign-in; an administrator creates the
 account (HU-01). `/status` says whether the API and its database are up.
 
 | Route | Who | Screen |
 |---|---|---|
-| `/sign-in`, `/sign-up` | Signed out only | `12-ux-ui/screens/sign-in.md`, `sign-up.md` |
+| `/sign-in` | Signed out only | `12-ux-ui/screens/sign-in.md` |
+| `/activate`, `/reset-password` | Anyone with a link | `activate-account.md`: choose a password (HU-10) |
 | `/dashboard` (and `/`) | Signed in only | `dashboard.md`: income, expenses and balance, and the five most recent transactions (HU-08) |
 | `/transactions` | Signed in only | `transaction-history.md`: history newest first, 20 per page, soft delete (HU-05, HU-06) |
 | `/transactions/new` | Signed in only | `new-record.md`: a transaction with one or more lines, BR-02 warned before saving (HU-04) |
-| `/settings/categories` | Signed in only | `categories-configuration.md`: categories and subcategories (HU-02, HU-03) |
-| `/settings/budgets` | Signed in only | `budgets.md`: budgets newest period first, filtered by category, set, edited and deleted (HU-07) |
-| `/settings/users` | `ADMIN` only | `users.md`: the accounts with their role, paged (HU-09) |
+| `/settings/categories` | `ADMIN` only | `categories-configuration.md`: categories and subcategories (HU-02, HU-03) |
+| `/settings/budgets` | `ADMIN` only | `budgets.md`: budgets newest period first, filtered by category, set, edited and deleted (HU-07) |
+| `/settings/users` | `ADMIN` only | `users.md`: create accounts, list them with role and state, generate their links (HU-09, HU-10) |
 | `/status` | Anyone | `GET /health` through the proxy |
 
 The token lives in memory and `sessionStorage`. Sign-out discards it; a `401`
