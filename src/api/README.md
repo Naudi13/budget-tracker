@@ -88,6 +88,18 @@ the end-to-end layer and reported, not gated.
 `dotnet test` runs on Microsoft.Testing.Platform (set in `global.json`), the
 only runner xUnit v3 supports on the .NET 10 SDK.
 
+## Postman
+
+`postman/budget-tracker.postman_collection.json` signs in with both seed users, checks
+`401` and `403`, and runs a full CRUD of categories with rule BR-05. It leaves no
+data behind. With the application running from `bud-tack-infra`:
+
+```bash
+npx newman run postman/budget-tracker.postman_collection.json
+```
+
+It targets `http://localhost:8080`; change the collection variable `baseUrl` for another address.
+
 ## Branching
 
 Three permanent branches. **None of them accepts a direct commit** — you enter through a child
