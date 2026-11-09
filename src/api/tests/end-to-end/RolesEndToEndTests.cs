@@ -1,5 +1,4 @@
 using System.Net;
-using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
 using BudTack.EndToEnd.Tests.Support;
@@ -11,35 +10,12 @@ namespace BudTack.EndToEnd.Tests;
 [Collection(PostgresTestGroup.Name)]
 public sealed class RolesEndToEndTests(PostgresFixture postgres)
 {
-    private const string Password = "Str0ngPass!23";
-
     private static CancellationToken Ct => TestContext.Current.CancellationToken;
 
     private static Uri Users => new("/api/v1/users", UriKind.Relative);
 
-    private static string UniqueEmail() => $"owner-{Guid.NewGuid():N}@example.com";
-
     private static async Task<JsonDocument> Json(HttpResponseMessage response) =>
         await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync(Ct), cancellationToken: Ct);
-
-    private static async Task<string> SignIn(HttpClient client, string email)
-    {
-        using var session = await client.PostAsJsonAsync("/api/v1/sessions", new { email, password = Password }, Ct);
-        using var body = await Json(session);
-        client.DefaultRequestHeaders.Authorization =
-            new AuthenticationHeaderValue("Bearer", body.RootElement.GetProperty("token").GetString());
-        return body.RootElement.GetProperty("role").GetString()!;
-    }
-
-    private async Task<HttpClient> AdminAsync(ApiFactory api)
-    {
-        var client = api.CreateClient();
-        var email = UniqueEmail();
-        (await client.PostAsJsonAsync("/api/v1/users", new { name = "Admin", email, password = Password }, Ct)).Dispose();
-        await postgres.ScalarAsync("UPDATE identity.users SET role = 'ADMIN' WHERE email = $1 RETURNING id", email);
-        Assert.Equal("ADMIN", await SignIn(client, email));
-        return client;
-    }
 
     [Fact]
     public async Task GetUsers_withoutAToken_isUnauthorized() // TC-020, step 1
@@ -58,7 +34,7 @@ public sealed class RolesEndToEndTests(PostgresFixture postgres)
     public async Task GetUsers_asAUser_isForbidden() // TC-020, step 2
     {
         await using var api = new ApiFactory(postgres.DatabaseUrl);
-        using var client = await Accounts.SignedInAsync(api);
+        using var client = await Accounts.UserAsync(api, postgres);
 
         using var response = await client.GetAsync(Users, Ct);
 
@@ -71,7 +47,7 @@ public sealed class RolesEndToEndTests(PostgresFixture postgres)
     public async Task GetUsers_asAnAdmin_listsTheAccountsWithoutTheirHashes() // TC-020, step 3
     {
         await using var api = new ApiFactory(postgres.DatabaseUrl);
-        using var client = await AdminAsync(api);
+        using var client = await Accounts.NewAdminAsync(api, postgres);
 
         using var response = await client.GetAsync(new Uri("/api/v1/users?limit=100", UriKind.Relative), Ct);
 
@@ -85,15 +61,18 @@ public sealed class RolesEndToEndTests(PostgresFixture postgres)
     }
 
     [Fact]
-    public async Task PostUsers_askingForAdmin_isStillAUser() // TC-020, step 4
+    public async Task PostUsers_withoutAdmin_isRefused_andNobodySignsUp() // TC-020, step 4
     {
         await using var api = new ApiFactory(postgres.DatabaseUrl);
-        using var client = api.CreateClient();
-        var email = UniqueEmail();
+        using var anonymous = api.CreateClient();
+        using var user = await Accounts.UserAsync(api, postgres);
+        var body = new { name = "Eve", email = "eve@example.com", role = "ADMIN" };
 
-        (await client.PostAsJsonAsync("/api/v1/users", new { name = "Eve", email, password = Password, role = "ADMIN" }, Ct)).Dispose();
+        using var noToken = await anonymous.PostAsJsonAsync("/api/v1/users", body, Ct);
+        using var asUser = await user.PostAsJsonAsync("/api/v1/users", body, Ct);
 
-        Assert.Equal("USER", await SignIn(client, email));
+        Assert.Equal(HttpStatusCode.Unauthorized, noToken.StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, asUser.StatusCode);
     }
 
     [Theory]

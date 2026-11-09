@@ -8,7 +8,7 @@ internal sealed class InMemoryUsers : IUsersRepository
 {
     public List<BudTack.Identity.Internal.Domain.User> Rows { get; } = [];
 
-    public Task AddAsync(BudTack.Identity.Internal.Domain.User user, CancellationToken cancellationToken)
+    public Task AddAsync(BudTack.Identity.Internal.Domain.User user, Guid actor, CancellationToken cancellationToken)
     {
         if (Rows.Exists(row => row.Email == user.Email))
         {
@@ -18,6 +18,9 @@ internal sealed class InMemoryUsers : IUsersRepository
         Rows.Add(user);
         return Task.CompletedTask;
     }
+
+    public Task<BudTack.Identity.Internal.Domain.User?> FindByIdAsync(Guid id, CancellationToken cancellationToken) =>
+        Task.FromResult(Rows.Find(row => row.Id == id));
 
     public Task<BudTack.Identity.Internal.Domain.User?> FindByEmailAsync(string email, CancellationToken cancellationToken) =>
         Task.FromResult(Rows.Find(row => row.Email == email));

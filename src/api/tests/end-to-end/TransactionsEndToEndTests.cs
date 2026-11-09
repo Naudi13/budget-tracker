@@ -166,7 +166,7 @@ public sealed class TransactionsEndToEndTests(PostgresFixture postgres)
     {
         await using var api = new ApiFactory(postgres.DatabaseUrl);
         using var mine = await Accounts.AdminAsync(api, postgres);
-        using var theirs = await Accounts.SignedInAsync(api);
+        using var theirs = await Accounts.UserAsync(api, postgres);
         var (supplies, _) = await Subcategories(mine);
         using var created = await mine.PostAsJsonAsync("/api/v1/transactions", new
         {

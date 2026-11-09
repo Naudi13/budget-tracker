@@ -176,8 +176,6 @@ public sealed class CategoriesEndToEndTests(PostgresFixture postgres)
         Assert.Equal(HttpStatusCode.NotFound, notAGuid.StatusCode);
     }
 
-    private static Task<HttpClient> SignedIn(ApiFactory api) => Accounts.SignedInAsync(api);
-
     private static async Task<JsonDocument> Json(HttpResponseMessage response) =>
         await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync(Ct), cancellationToken: Ct);
 }

@@ -5,32 +5,49 @@ namespace BudTack.Identity.Api;
 
 /// <summary>
 /// The only entry point into the identity module (09-modules/identity):
-/// sign-up, sign-in, the administrator's account list, and checking the bearer
-/// token every other request carries.
+/// the accounts an administrator creates, their single-use links, sign-in, and
+/// checking the bearer token every other request carries.
 /// </summary>
 public sealed class IdentityFacade
 {
-    private readonly SignUp _signUp;
+    private readonly CreateUser _createUser;
+    private readonly AccountLinks _links;
     private readonly SignIn _signIn;
     private readonly TokenService _tokens;
     private readonly ListUsers _listUsers;
 
-    internal IdentityFacade(SignUp signUp, SignIn signIn, TokenService tokens, ListUsers listUsers)
+    internal IdentityFacade(CreateUser createUser, AccountLinks links, SignIn signIn, TokenService tokens, ListUsers listUsers)
     {
-        _signUp = signUp;
+        _createUser = createUser;
+        _links = links;
         _signIn = signIn;
         _tokens = tokens;
         _listUsers = listUsers;
     }
 
     /// <summary>
-    /// <c>POST /users</c>. Throws <see cref="IdentityValidationException"/> or
-    /// <see cref="EmailAlreadyInUseException"/>.
+    /// <c>POST /users</c>, for the role <c>ADMIN</c> only; the host checks the role.
+    /// Throws <see cref="IdentityValidationException"/> or <see cref="EmailAlreadyInUseException"/>.
     /// </summary>
-    public Task<User> SignUpAsync(NewUser request, CancellationToken cancellationToken = default)
+    public Task<CreatedUser> CreateUserAsync(Guid actor, NewUser request, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
-        return _signUp.HandleAsync(request, cancellationToken);
+        return _createUser.HandleAsync(actor, request, cancellationToken);
+    }
+
+    /// <summary><c>POST /users/{id}/activation-links</c>; cancels the account's earlier links.</summary>
+    public Task<AccountLink> CreateActivationLinkAsync(Guid actor, Guid userId, CancellationToken cancellationToken = default) =>
+        _links.CreateActivationAsync(actor, userId, cancellationToken);
+
+    /// <summary><c>POST /users/{id}/password-resets</c>; cancels the account's earlier links.</summary>
+    public Task<AccountLink> CreatePasswordResetAsync(Guid actor, Guid userId, CancellationToken cancellationToken = default) =>
+        _links.CreatePasswordResetAsync(actor, userId, cancellationToken);
+
+    /// <summary><c>POST /account-links/confirm</c>. Throws <see cref="IdentityValidationException"/>.</summary>
+    public Task ConfirmLinkAsync(LinkConfirmation request, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        return _links.ConfirmAsync(request, cancellationToken);
     }
 
     /// <summary>

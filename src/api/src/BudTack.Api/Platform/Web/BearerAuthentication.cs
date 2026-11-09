@@ -12,8 +12,8 @@ namespace BudTack.Api.Platform.Web;
 /// Every request is authenticated once, at the edge, by asking
 /// <see cref="IdentityFacade"/> what its bearer token stands for
 /// (security-policy.md). Every controller action requires a signed-in user
-/// unless it says <c>[AllowAnonymous]</c> — today only <c>POST /users</c> and
-/// <c>POST /sessions</c>; <c>GET /health</c> is not a controller and is open —
+/// unless it says <c>[AllowAnonymous]</c> — today only <c>POST /sessions</c> and
+/// <c>POST /account-links/confirm</c>; <c>GET /health</c> is not a controller and is open —
 /// so a new write endpoint is protected without anyone remembering to
 /// (NFR-05, TC-013). A path that matches no endpoint stays a 404.
 /// </summary>

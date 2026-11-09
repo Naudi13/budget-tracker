@@ -12,7 +12,7 @@ internal sealed class ListUsers(IUsersRepository users)
         var (rows, total) = await users.ListAsync(paging.Limit, paging.Offset, cancellationToken).ConfigureAwait(false);
 
         return new UserPage(
-            [.. rows.Select(row => new Api.Contracts.User(row.Id, row.Name, row.Email, row.Role))],
+            [.. rows.Select(row => new Api.Contracts.User(row.Id, row.Name, row.Email, row.Role, row.Status))],
             new UserPageMeta(paging.Page, paging.Limit, total));
     }
 }

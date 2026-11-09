@@ -5,24 +5,28 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace BudTack.Api.Platform.Web;
 
-/// <summary>
-/// <c>/api/v1/users</c> (identity.yaml): anyone signs up (HU-01); only an
-/// administrator lists the accounts (HU-09).
-/// </summary>
+/// <summary><c>/api/v1/users</c> (HU-09, HU-10, identity.yaml), for administrators only.</summary>
 [ApiController]
 [Route("api/v1/users")]
+[Authorize(Policy = BearerAuthentication.AdminOnly)]
 internal sealed class UsersController(IdentityFacade identity) : ControllerBase
 {
     [HttpGet]
-    [Authorize(Policy = BearerAuthentication.AdminOnly)]
     public Task<UserPage> List(int? page, int? limit, CancellationToken cancellationToken) =>
         identity.ListUsersAsync(page, limit, cancellationToken);
 
     [HttpPost]
-    [AllowAnonymous]
-    public async Task<ActionResult<User>> Create(NewUser request, CancellationToken cancellationToken)
+    public async Task<ActionResult<CreatedUser>> Create(NewUser request, CancellationToken cancellationToken)
     {
-        var user = await identity.SignUpAsync(request, cancellationToken);
-        return Created($"/api/v1/users/{user.Id}", user);
+        var created = await identity.CreateUserAsync(User.UserId(), request, cancellationToken);
+        return Created($"/api/v1/users/{created.User.Id}", created);
     }
+
+    [HttpPost("{userId:guid}/activation-links")]
+    public async Task<ActionResult<AccountLink>> CreateActivationLink(Guid userId, CancellationToken cancellationToken) =>
+        StatusCode(StatusCodes.Status201Created, await identity.CreateActivationLinkAsync(User.UserId(), userId, cancellationToken));
+
+    [HttpPost("{userId:guid}/password-resets")]
+    public async Task<ActionResult<AccountLink>> CreatePasswordReset(Guid userId, CancellationToken cancellationToken) =>
+        StatusCode(StatusCodes.Status201Created, await identity.CreatePasswordResetAsync(User.UserId(), userId, cancellationToken));
 }

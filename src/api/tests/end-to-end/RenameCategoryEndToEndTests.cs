@@ -27,7 +27,7 @@ public sealed class RenameCategoryEndToEndTests(PostgresFixture postgres)
     {
         await using var api = new ApiFactory(postgres.DatabaseUrl);
         using var client = await Accounts.AdminAsync(api, postgres);
-        using var other = await Accounts.SignedInAsync(api);
+        using var other = await Accounts.UserAsync(api, postgres);
         var id = await Create(client, "Oficina");
         await Create(client, "Arriendo");
         var url = $"/api/v1/categories/{id}";
