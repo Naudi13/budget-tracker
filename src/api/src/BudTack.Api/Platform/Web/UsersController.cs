@@ -22,6 +22,17 @@ internal sealed class UsersController(IdentityFacade identity) : ControllerBase
         return Created($"/api/v1/users/{created.User.Id}", created);
     }
 
+    [HttpPatch("{userId:guid}")]
+    public Task<User> SetActive(Guid userId, UserStatusUpdate request, CancellationToken cancellationToken) =>
+        identity.SetUserActiveAsync(User.UserId(), userId, request, cancellationToken);
+
+    [HttpDelete("{userId:guid}")]
+    public async Task<NoContentResult> Delete(Guid userId, CancellationToken cancellationToken)
+    {
+        await identity.DeleteUserAsync(User.UserId(), userId, cancellationToken);
+        return NoContent();
+    }
+
     [HttpPost("{userId:guid}/activation-links")]
     public async Task<ActionResult<AccountLink>> CreateActivationLink(Guid userId, CancellationToken cancellationToken) =>
         StatusCode(StatusCodes.Status201Created, await identity.CreateActivationLinkAsync(User.UserId(), userId, cancellationToken));

@@ -6,7 +6,7 @@ namespace BudTack.Identity.Internal.Application;
 
 /// <summary>
 /// HU-01, sign-in: a valid email and password get a bearer token. An unknown
-/// email, a pending account and a wrong password fail the same way and take the same time, so a
+/// email, a pending or inactive account and a wrong password fail the same way and take the same time, so a
 /// caller cannot learn which emails have an account.
 /// </summary>
 internal sealed partial class SignIn(
@@ -21,7 +21,7 @@ internal sealed partial class SignIn(
 
         var user = await users.FindByEmailAsync(email, cancellationToken).ConfigureAwait(false);
         var matches = PasswordHasher.Verify(password, user?.PasswordHash ?? _decoy.Value);
-        if (user?.PasswordHash is null || !matches)
+        if (user is not { IsActive: true, PasswordHash: not null } || !matches)
         {
             LogRefused(logger);
             throw new InvalidCredentialsException();

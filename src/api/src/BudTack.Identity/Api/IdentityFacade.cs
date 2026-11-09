@@ -15,15 +15,17 @@ public sealed class IdentityFacade
     private readonly SignIn _signIn;
     private readonly TokenService _tokens;
     private readonly ListUsers _listUsers;
+    private readonly ManageAccount _manageAccount;
     private readonly IUsersRepository _users;
 
-    internal IdentityFacade(CreateUser createUser, AccountLinks links, SignIn signIn, TokenService tokens, ListUsers listUsers, IUsersRepository users)
+    internal IdentityFacade(CreateUser createUser, AccountLinks links, SignIn signIn, TokenService tokens, ListUsers listUsers, ManageAccount manageAccount, IUsersRepository users)
     {
         _createUser = createUser;
         _links = links;
         _signIn = signIn;
         _tokens = tokens;
         _listUsers = listUsers;
+        _manageAccount = manageAccount;
         _users = users;
     }
 
@@ -74,10 +76,26 @@ public sealed class IdentityFacade
         IReadOnlyCollection<Guid> userIds, CancellationToken cancellationToken = default) =>
         _users.NamesOfAsync(userIds, cancellationToken);
 
-    /// <summary>Who a bearer token stands for, or null when it is not one of ours or has expired.</summary>
-    public Task<AuthenticatedUser?> AuthenticateAsync(string token)
+    /// <summary><c>PATCH /users/{id}</c>, for the role <c>ADMIN</c> only (BR-09).</summary>
+    public Task<User> SetUserActiveAsync(
+        Guid actor, Guid userId, UserStatusUpdate request, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        return _manageAccount.SetActiveAsync(actor, userId, request, cancellationToken);
+    }
+
+    /// <summary><c>DELETE /users/{id}</c>, for the role <c>ADMIN</c> only; only a never-activated account (BR-09).</summary>
+    public Task DeleteUserAsync(Guid actor, Guid userId, CancellationToken cancellationToken = default) =>
+        _manageAccount.DeleteAsync(actor, userId, cancellationToken);
+
+    /// <summary>
+    /// Who a bearer token stands for, or null when it is not one of ours, has
+    /// expired, or its account is no longer active (ADR-011).
+    /// </summary>
+    public async Task<AuthenticatedUser?> AuthenticateAsync(string token)
     {
         ArgumentNullException.ThrowIfNull(token);
-        return _tokens.ValidateAsync(token);
+        var user = await _tokens.ValidateAsync(token).ConfigureAwait(false);
+        return user is not null && await _users.IsActiveAsync(user.Id, CancellationToken.None).ConfigureAwait(false) ? user : null;
     }
 }

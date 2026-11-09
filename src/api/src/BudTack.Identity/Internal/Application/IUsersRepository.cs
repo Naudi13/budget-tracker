@@ -10,6 +10,15 @@ internal interface IUsersRepository
 
     Task<User?> FindByIdAsync(Guid id, CancellationToken cancellationToken);
 
+    /// <summary>True only for an account that exists and is active; read on every request (ADR-011).</summary>
+    Task<bool> IsActiveAsync(Guid id, CancellationToken cancellationToken);
+
+    /// <summary>Changes the state, and when inactivating cancels the unused links, in one step; null when there is no such account.</summary>
+    Task<User?> SetActiveAsync(Guid actor, Guid id, bool isActive, CancellationToken cancellationToken);
+
+    /// <summary>Removes an account that has no password, with its links; false when it has one.</summary>
+    Task<bool> DeleteNeverActivatedAsync(Guid id, CancellationToken cancellationToken);
+
     Task<IReadOnlyDictionary<Guid, string>> NamesOfAsync(IReadOnlyCollection<Guid> ids, CancellationToken cancellationToken);
 
     Task<User?> FindByEmailAsync(string email, CancellationToken cancellationToken);

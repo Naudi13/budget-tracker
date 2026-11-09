@@ -198,4 +198,68 @@ public sealed class AccountsTests
         await Assert.ThrowsAsync<IdentityValidationException>(
             () => SignIn.HandleAsync(new Credentials("owner@example.com", null), Ct));
     }
+
+    private ManageAccount Manage => new(_users, NullLogger<ManageAccount>.Instance);
+
+    [Fact]
+    public async Task SetActive_false_blocksSignIn_andTrueRestoresIt() // TC-027
+    {
+        var created = await Active();
+
+        var off = await Manage.SetActiveAsync(Admin, created.User.Id, new UserStatusUpdate(false), Ct);
+
+        Assert.Equal(AccountStatus.Inactive, off.Status);
+        await Assert.ThrowsAsync<InvalidCredentialsException>(() => Login(Password));
+        var on = await Manage.SetActiveAsync(Admin, created.User.Id, new UserStatusUpdate(true), Ct);
+        Assert.Equal(AccountStatus.Active, on.Status);
+        await Login(Password);
+    }
+
+    [Fact]
+    public async Task SetActive_onYourself_isAConflict() // BR-09
+    {
+        var created = await Active();
+
+        await Assert.ThrowsAsync<AccountStateConflictException>(
+            () => Manage.SetActiveAsync(created.User.Id, created.User.Id, new UserStatusUpdate(false), Ct));
+    }
+
+    [Fact]
+    public async Task SetActive_withoutIsActive_isAValidationError()
+    {
+        var created = await Active();
+
+        await Assert.ThrowsAsync<IdentityValidationException>(
+            () => Manage.SetActiveAsync(Admin, created.User.Id, new UserStatusUpdate(null), Ct));
+    }
+
+    [Fact]
+    public async Task SetActive_ofAnUnknownAccount_isNotFound()
+    {
+        await Assert.ThrowsAsync<UserNotFoundException>(
+            () => Manage.SetActiveAsync(Admin, Guid.NewGuid(), new UserStatusUpdate(false), Ct));
+    }
+
+    [Fact]
+    public async Task Delete_aNeverActivatedAccount_removesIt_andAnActivatedOne_isAConflict() // TC-027
+    {
+        var pending = await Create("pending@example.com");
+        var active = await Active();
+
+        await Manage.DeleteAsync(Admin, pending.User.Id, Ct);
+
+        Assert.Equal(active.User.Id, Assert.Single(_users.Rows).Id);
+        await Assert.ThrowsAsync<AccountStateConflictException>(() => Manage.DeleteAsync(Admin, active.User.Id, Ct));
+        await Assert.ThrowsAsync<UserNotFoundException>(() => Manage.DeleteAsync(Admin, pending.User.Id, Ct));
+    }
+
+    [Fact]
+    public async Task Links_ofAnInactiveAccount_areAConflict()
+    {
+        var created = await Active();
+        await Manage.SetActiveAsync(Admin, created.User.Id, new UserStatusUpdate(false), Ct);
+
+        await Assert.ThrowsAsync<AccountStateConflictException>(() => _links.CreatePasswordResetAsync(Admin, created.User.Id, Ct));
+        await Assert.ThrowsAsync<AccountStateConflictException>(() => _links.CreateActivationAsync(Admin, created.User.Id, Ct));
+    }
 }

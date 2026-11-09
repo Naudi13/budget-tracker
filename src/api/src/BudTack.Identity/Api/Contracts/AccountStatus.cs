@@ -5,4 +5,5 @@ public static class AccountStatus
 {
     public const string Pending = "PENDING";
     public const string Active = "ACTIVE";
+    public const string Inactive = "INACTIVE";
 }
