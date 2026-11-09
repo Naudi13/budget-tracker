@@ -17,15 +17,15 @@ describe('the navigation, by role', () => {
     return Array.from((fixture.nativeElement as HTMLElement).querySelectorAll('nav a')).map((a) => a.textContent?.trim());
   }
 
-  it('offers Usuarios to an administrator', () => {
+  it('offers an administrator every screen', () => {
     TestBed.inject(AuthTokenStore).set('t.o.k', 'ADMIN');
 
-    expect(links()).toContain('Usuarios');
+    expect(links()).toEqual(['Panel', 'Movimientos', 'Categorías', 'Presupuestos', 'Usuarios']);
   });
 
-  it('does not offer Usuarios to anyone else', () => {
+  it('offers a user only the dashboard and their movements', () => {
     TestBed.inject(AuthTokenStore).set('t.o.k', 'USER');
 
-    expect(links()).not.toContain('Usuarios');
+    expect(links()).toEqual(['Panel', 'Movimientos']);
   });
 });

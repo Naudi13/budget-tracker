@@ -5,6 +5,7 @@ import { Router, RouterLink } from '@angular/router';
 import { Dashboard, DashboardService } from '../../core/dashboard.service';
 import { Transaction, totalOf } from '../../core/transactions.service';
 import { DashboardState } from '../new-record/new-record.page';
+import { IdentityService } from '../../core/identity.service';
 
 /**
  * HU-08, 12-ux-ui/screens/dashboard.md: the three KPIs and the five most
@@ -20,6 +21,7 @@ import { DashboardState } from '../new-record/new-record.page';
 })
 export class DashboardPage {
   private readonly dashboards = inject(DashboardService);
+  protected readonly identity = inject(IdentityService);
 
   protected readonly state = signal<'loading' | 'error' | 'ready'>('loading');
   protected readonly dashboard = signal<Dashboard | null>(null);

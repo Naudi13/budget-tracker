@@ -10,6 +10,7 @@ import { CategoryType } from '../../core/categories.service';
 import { SubcategoryOption, TransactionsService } from '../../core/transactions.service';
 import { notBlank } from '../form-rules';
 import { parseAmount, todayIso } from '../money';
+import { IdentityService } from '../../core/identity.service';
 
 type Line = FormGroup<{ subcategoryId: FormControl<string>; amount: FormControl<string> }>;
 
@@ -30,6 +31,7 @@ const TYPE_WORD: Record<CategoryType, string> = { income: 'ingreso', expense: 'g
 })
 export class NewRecordPage {
   private readonly transactions = inject(TransactionsService);
+  protected readonly identity = inject(IdentityService);
   private readonly router = inject(Router);
   private readonly forms = inject(NonNullableFormBuilder);
 
