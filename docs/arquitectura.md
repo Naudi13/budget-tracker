@@ -14,9 +14,9 @@ La aplicación se despliega como una sola unidad, dividida en tres módulos que 
 
 | Módulo | Responsabilidad | Requisitos | Datos |
 |---|---|---|---|
-| `identity` | Cuentas, inicio de sesión, roles y tokens | RF-01, RF-02, RF-10, RNF-02, RNF-03 | Esquema `identity` |
-| `transactions` | Categorías, movimientos y presupuestos | RF-03 a RF-08 | Esquema `transactions` |
-| `dashboard` | Indicadores calculados al consultar | RF-09 | Ninguno: lee a través de `TransactionsFacade` |
+| `identity` | Cuentas, enlaces de activación, inicio de sesión, roles y tokens | RF-01, RF-02, RF-03, RNF-02, RNF-03 | Esquema `identity` |
+| `transactions` | Catálogo de categorías, movimientos y presupuestos | RF-04 a RF-09 | Esquema `transactions` |
+| `dashboard` | Indicadores y avance frente al presupuesto, calculados al consultar | RF-10 | Ninguno: lee a través de `TransactionsFacade` |
 
 ## Tecnologías
 
@@ -26,6 +26,15 @@ La aplicación se despliega como una sola unidad, dividida en tres módulos que 
 | Portal web | Angular 21 con TypeScript, servido por nginx | [ADR-002](./05-architecture/decisions/records/ADR-002-angular-dotnet-postgresql-stack.md), [ADR-006](./05-architecture/decisions/records/ADR-006-portal-image-behind-reverse-proxy.md) |
 | Base de datos | PostgreSQL 17, un esquema por módulo | [ADR-004](./05-architecture/decisions/records/ADR-004-shared-database-and-per-piece-repositories.md) |
 | Migraciones | FluentMigrator | [ADR-005](./05-architecture/decisions/records/ADR-005-fluentmigrator-for-schema-migrations.md) |
+
+## Decisiones de dominio que afectan la arquitectura
+
+| Decisión | Efecto en el diseño | Registro |
+|---|---|---|
+| Dos roles en el token: `ADMIN` y `USER` | Los permisos se declaran en los controladores con una política `AdminOnly`; los casos de uso reciben el rol y deciden qué movimientos alcanza cada uno | [ADR-007](./05-architecture/decisions/records/ADR-007-two-roles-in-the-token.md) |
+| Un solo negocio con catálogo compartido | Categorías y presupuestos no tienen dueño; cada movimiento conserva quién lo registró | [ADR-009](./05-architecture/decisions/records/ADR-009-one-business-with-a-shared-catalog.md) |
+| Enlaces de un solo uso | No hay registro público: el administrador crea la cuenta y la persona elige su contraseña con un enlace | [ADR-010](./05-architecture/decisions/records/ADR-010-single-use-account-links.md) |
+| Verificar la cuenta en cada petición | Después de validar el token, `identity` comprueba que la cuenta siga activa; inactivarla corta el acceso de inmediato | [ADR-011](./05-architecture/decisions/records/ADR-011-check-the-account-on-every-request.md) |
 
 ## Diagramas
 
@@ -117,10 +126,11 @@ src/
 
 | Necesidad | Cómo la atiende la arquitectura |
 |---|---|
-| RF-01, RF-02 y RF-10: cuentas y acceso | `identity` concentra la autenticación; los demás módulos solo conocen `IdentityFacade`. |
-| RF-03 a RF-08: núcleo del negocio | `transactions` reúne las reglas BR-01, BR-02, BR-04, BR-05 y BR-06, que comparten datos y deben validarse juntas. |
-| RF-09: reporte | `dashboard` no tiene tablas: calcula sobre lo que entrega `TransactionsFacade`, y por eso el saldo siempre está al día (BR-03). |
-| RNF-01: V(G) ≤ 10 | Las reglas están en clases del dominio, sin base de datos ni framework. Refactorizar `MovementRules` o `SignUpRules` no afecta a otros módulos y sus pruebas unitarias protegen el cambio. |
+| RF-01 a RF-03: cuentas y acceso | `identity` concentra la autenticación, los enlaces y el estado de las cuentas; `transactions` solo conoce `IdentityFacade`, para mostrar quién registró cada movimiento. |
+| RF-04 a RF-09: núcleo del negocio | `transactions` reúne el catálogo, los movimientos y los presupuestos, cuyas reglas BR-01, BR-02, BR-04, BR-05 y BR-06 comparten datos y deben validarse juntas. |
+| Permisos por rol | Quién puede escribir el catálogo se decide en un solo lugar, la capa de presentación; qué movimientos alcanza cada rol, en los casos de uso. |
+| RF-10: reporte | `dashboard` no tiene tablas: calcula sobre lo que entrega `TransactionsFacade`, y por eso el saldo y el avance frente al presupuesto siempre están al día (BR-03). |
+| RNF-01: V(G) ≤ 10 | Las reglas están en clases del dominio, sin base de datos ni framework. Refactorizar `MovementRules` no afecta a otros módulos y sus pruebas unitarias protegen el cambio. |
 | RNF-02: límite de intentos | Todo inicio de sesión entra por `POST /sessions`, así que el límite se aplica en un solo lugar. |
 | RNF-03: hash y sal | `PasswordHasher` es interno de `identity`; ningún otro módulo puede leer ni tratar contraseñas. |
 
