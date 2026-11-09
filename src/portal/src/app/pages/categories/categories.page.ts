@@ -51,6 +51,7 @@ export class CategoriesPage {
   private readonly dialogAction = viewChild<ElementRef<HTMLButtonElement>>('dialogAction');
   private readonly newCategoryName = viewChild<ElementRef<HTMLInputElement>>('newCategoryName');
   private readonly heading = viewChild<ElementRef<HTMLHeadingElement>>('heading');
+  private readonly renameField = viewChild<ElementRef<HTMLInputElement>>('renameField');
 
   protected readonly state = signal<'loading' | 'error' | 'ready'>('loading');
   protected readonly groups = signal<readonly Group[]>([]);
@@ -71,6 +72,13 @@ export class CategoriesPage {
     type: this.forms.control<CategoryType | ''>('', Validators.required),
   });
 
+  // The category being renamed, one at a time.
+  protected readonly renaming = signal<Category | null>(null);
+  protected readonly savingName = signal(false);
+  protected readonly nameAttempted = signal(false);
+  protected readonly nameConflict = signal<string | null>(null);
+  protected readonly nameField = this.forms.control('', [notBlank, Validators.maxLength(100)]);
+
   // One "new subcategory" field per category.
   private readonly subcategoryFields = new Map<string, FormControl<string>>();
   protected readonly subcategoryErrors = signal<Readonly<Record<string, string>>>({});
@@ -84,6 +92,7 @@ export class CategoriesPage {
   constructor() {
     this.load();
     this.categoryForm.valueChanges.subscribe(() => this.categoryConflict.set(null));
+    this.nameField.valueChanges.subscribe(() => this.nameConflict.set(null));
   }
 
   protected load(): void {
@@ -158,6 +167,74 @@ export class CategoriesPage {
           this.categoryConflict.set(`Ya existe una categoría de ${TYPE_WORD[type as CategoryType]} llamada ${name.trim()}.`);
         } else {
           this.failure.set('No pudimos crear la categoría. Inténtalo de nuevo.');
+        }
+      },
+    });
+  }
+
+  // --- Rename ----------------------------------------------------------------
+
+  protected openRename(category: Category): void {
+    this.notice.set(null);
+    this.failure.set(null);
+    this.nameAttempted.set(false);
+    this.nameField.reset(category.name);
+    this.nameConflict.set(null);
+    this.renaming.set(category);
+    afterNextRender(() => this.renameField()?.nativeElement.focus(), { injector: this.injector });
+  }
+
+  protected cancelRename(): void {
+    this.renaming.set(null);
+  }
+
+  protected nameError(): string | null {
+    if (this.nameConflict()) {
+      return this.nameConflict();
+    }
+    if (!(this.nameField.dirty || this.nameAttempted()) || this.nameField.valid) {
+      return null;
+    }
+    return this.nameField.hasError('maxlength') ? 'Usa máximo 100 caracteres.' : 'Escribe un nombre.';
+  }
+
+  protected saveName(): void {
+    const category = this.renaming();
+    if (!category) {
+      return;
+    }
+
+    this.nameAttempted.set(true);
+    this.failure.set(null);
+    if (this.nameField.invalid) {
+      return;
+    }
+
+    const name = this.nameField.value.trim();
+    if (name === category.name) {
+      this.cancelRename();
+      return;
+    }
+
+    this.savingName.set(true);
+    this.categories.rename(category.id, name).subscribe({
+      next: (saved) => {
+        this.savingName.set(false);
+        this.cancelRename();
+        this.groups.update((groups) =>
+          sortGroups(groups.map((g) => (g.category.id === saved.id ? { ...g, category: saved } : g))),
+        );
+        this.notice.set('Categoría guardada.');
+      },
+      error: (error: ApiError) => {
+        this.savingName.set(false);
+        if (error.status === 409) {
+          this.nameConflict.set(`Ya existe una categoría de ${TYPE_WORD[category.type]} llamada ${name}.`);
+        } else if (error.status === 404) {
+          this.cancelRename();
+          this.load();
+        } else {
+          this.failure.set('No pudimos guardar el cambio. Inténtalo de nuevo.');
         }
       },
     });

@@ -45,6 +45,10 @@ export class CategoriesService {
     return this.http.delete<void>(`/api/v1/categories/${categoryId}`);
   }
 
+  rename(categoryId: string, name: string): Observable<Category> {
+    return this.http.patch<Category>(`/api/v1/categories/${categoryId}`, { name });
+  }
+
   setActive(categoryId: string, isActive: boolean): Observable<Category> {
     return this.http.patch<Category>(`/api/v1/categories/${categoryId}`, { isActive });
   }
