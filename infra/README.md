@@ -188,6 +188,6 @@ The jobs are in [`.github/workflows/ci.yml`](../.github/workflows/ci.yml), at th
 
 ## Branching
 
-`main` is the only permanent branch. Every change starts in a `feat/...`, `fix/...`, `refactor/...`, `docs/...` or `chore/...` branch and enters through a Pull Request.
+Three permanent branches: `develop` (the default), `qa` and `main`. Every change starts from `develop` in a `feat/...`, `fix/...`, `refactor/...`, `docs/...` or `chore/...` branch and enters through a Pull Request; `develop` is promoted to `qa`, and `qa` to `main`.
 
 Commit naming: [`git-conventions.md`](../docs/00-governance/git-conventions.md).
