@@ -20,7 +20,13 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) | [SemVer](http
 
 - A category can be renamed: `name` in `PATCH /categories/{categoryId}`, `TC-021`, and HU-03 and its screen extended to match
 
+- One business per installation with a shared catalog (`ADR-009`), and single-use links to activate an account or reset its password (`ADR-010`)
+- `HU-10` to `HU-12`, `TC-022` to `TC-026`, rules `BR-07` and `BR-08`, and the screen `activate-account.md`
+- The dashboard filters by category and compares spending with the budget
+
 ### Changed
+- There is no public sign-up: `POST /users` is for `ADMIN`
+- Deleting a transaction needs a reason: `POST /transactions/{id}/deletion`
 - `budgets.yaml` bounds a budget's amount like a transaction's: above zero, at most two
   decimals, below 10^12, stored as `numeric(14,2)`
 - A transaction's lines keep the order they were entered: `line_number` on

@@ -7,10 +7,10 @@
 | Product and GitHub team | Budget Tracker · `budget-tracker` |
 | Members | Victor Alfonso Tovar Ramirez (`Naudi13`) |
 | Problem it solves | Small business owners guess their cash position from scattered notes and spreadsheets. Budget Tracker turns every recorded income and expense into an always-current balance. |
-| MVP entities and relations | `Category` 1—N `Subcategory`; `Transaction` 1—N `TransactionDetail`, each detail N—1 `Subcategory`; `Budget` N—1 `Category`; `User` owns all of them through `owned_by` |
-| Roles | `USER`: manages only their own categories, transactions and budgets. `ADMIN`: the same, and can also list the accounts ([`ADR-007`](./05-architecture/decisions/records/ADR-007-two-roles-in-the-token.md)) |
+| MVP entities and relations | `Category` 1—N `Subcategory`; `Transaction` 1—N `TransactionDetail`, each detail N—1 `Subcategory`; `Budget` N—1 `Category`; `User` owns their `Transaction`s through `owned_by` |
+| Roles | `ADMIN`: creates accounts, manages categories, subcategories and budgets, and sees every transaction. `USER`: records and sees only their own transactions, and reads the dashboard ([`ADR-009`](./05-architecture/decisions/records/ADR-009-one-business-with-a-shared-catalog.md)) |
 | Own business rule | A category or subcategory in use cannot be deleted, only deactivated (**BR-05**); a transaction cannot mix income and expense details (**BR-02**) |
-| Main endpoints | `POST /users` · `POST /sessions` · `GET /users` · `GET, POST, PATCH, DELETE /categories` · `POST /categories/{id}/subcategories` · `GET, POST, DELETE /transactions` · `GET, POST, PATCH, DELETE /budgets` · `GET /dashboard` (all under `/api/v1`) |
+| Main endpoints | `POST /sessions` · `GET, POST /users` · `POST /account-links/confirm` · `GET, POST, PATCH, DELETE /categories` · `POST /categories/{id}/subcategories` · `GET, POST /transactions` · `POST /transactions/{id}/deletion` · `GET, POST, PATCH, DELETE /budgets` · `GET /dashboard` (all under `/api/v1`) |
 | Frontend and database | Angular · PostgreSQL |
 | Owner of each part | api, portal, db and infra: Victor Alfonso Tovar Ramirez |
 
@@ -18,15 +18,15 @@
 
 **Problem:** small business owners lose track of their cash position because
 their income and expenses live in scattered notes and spreadsheets.
-**Users:** entrepreneurs and small business owners, each with one account that
-sees only its own data, plus an administrator who can list the accounts.
+**Users:** the staff of a small business, who record their own transactions, and
+an administrator who creates the accounts and manages categories and budgets.
 **Architecture:** one deployable modular monolith with the modules `identity`,
 `transactions` and `dashboard`, one PostgreSQL database with one schema per
 owning module, and an Angular client served behind nginx on a single origin.
 **Stack:** Angular 21, ASP.NET Core 10, PostgreSQL 17 and FluentMigrator, tested
 with xUnit, Testcontainers and Vitest, and packaged with Docker Compose.
 **Key decisions:** module boundaries are enforced by the compiler and NetArchTest,
-every query is filtered by its owner, sessions are JWT bearer tokens with a role
+a user reaches only their own transactions, sessions are JWT bearer tokens with a role
 claim, and each decision is recorded as an ADR in `05-architecture/decisions/`.
 **How to run:** clone the four code repositories side by side, copy `.env.example`
 to `.env` in `bud-tack-infra`, run `docker compose up -d --build --wait` there, and

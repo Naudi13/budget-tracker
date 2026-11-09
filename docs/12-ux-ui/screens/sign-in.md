@@ -14,7 +14,9 @@
 │  Correo electrónico  [________________]  │
 │  Contraseña          [________________]  │
 │                      [ Iniciar sesión ]  │  ← primary button
-│  ¿Aún no tienes cuenta?  Crea una        │  ← link to sign-up.md
+│  ¿Olvidaste tu contraseña? Pide a tu     │
+│  administrador un enlace para            │
+│  restablecerla.                          │  ← text, not a link
 └──────────────────────────────────────────┘
 ```
 
@@ -35,7 +37,7 @@ redirects here when there is no token or a request answers `401`.
 
 | Field | Rule | Message shown |
 |---|---|---|
-| Email (*Correo electrónico*) | Required, a valid email address | "Escribe el correo con el que te registraste, por ejemplo ana@example.com." |
+| Email (*Correo electrónico*) | Required, a valid email address | "Escribe tu correo, por ejemplo ana@example.com." |
 | Password (*Contraseña*) | Required | "Escribe tu contraseña." |
 
 The message for a wrong password never says which of the two fields is wrong,
@@ -43,4 +45,4 @@ so it does not reveal which emails have an account.
 
 ---
 
-**Related:** [`../design-system.md`](../design-system.md) · [`./sign-up.md`](./sign-up.md)
+**Related:** [`../design-system.md`](../design-system.md) · [`./activate-account.md`](./activate-account.md)

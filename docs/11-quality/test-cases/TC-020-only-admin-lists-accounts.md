@@ -18,8 +18,7 @@
 1. Call `GET /users` with no `Authorization` header.
 2. Call `GET /users` with the `USER` account's token.
 3. Call `GET /users` with the `ADMIN` account's token.
-4. Call `POST /users` with `"role": "ADMIN"` in the body, then `POST /sessions`
-   with that account.
+4. Call `POST /users` without a token, and as the `USER` account.
 
 ## Expected result
 
@@ -27,7 +26,7 @@
 2. `403`, with the error `FORBIDDEN`.
 3. `200` with both accounts ordered by email, each with `role` and no password
    or hash.
-4. The session's `role` is `USER`.
+4. `401` and `403`; no account is created.
 
 ---
 

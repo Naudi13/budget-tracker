@@ -1,11 +1,11 @@
-# TC-001 — Reject Sign-Up with a Duplicate Email
+# TC-001 — Reject an Account with a Duplicate Email
 
 ## Identification
 
 | Field | Value |
 |---|---|
 | Id | TC-001 |
-| Covers | `HU-01` |
+| Covers | `HU-09` |
 | Layer | `unit` |
 | Module | `identity` |
 
@@ -15,8 +15,8 @@
 
 ## Steps
 
-1. Call `IdentityFacade.SignUpAsync` with name "New Owner", email
-   `owner@example.com`, and a valid password.
+1. Call `IdentityFacade.CreateUserAsync` with name "New Owner", email
+   `owner@example.com` and the role `USER`.
 
 ## Expected result
 

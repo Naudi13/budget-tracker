@@ -16,12 +16,12 @@
 ## Steps
 
 1. Call every write endpoint — `POST`/`PATCH`/`DELETE` on transactions,
-   categories, subcategories, and budgets — with no `Authorization` header.
+   categories, subcategories, budgets and users — with no `Authorization` header.
 
 ## Expected result
 
 Every call responds `401 Unauthorized`; none performs the write.
-`POST /users` and `POST /sessions` are excluded, per
+`POST /sessions` and `POST /account-links/confirm` are excluded, per
 [`rest-conventions.md`](../../07-api/rest-conventions.md).
 
 ---

@@ -1,44 +1,46 @@
-# HU-09 — List the Accounts as an Administrator
+# HU-09 — Administer the Accounts
 
 ## Story
 
 **As** an administrator
-**I want** to see the accounts registered in the application
-**so that** I know who uses it, without opening any business's data
+**I want** to create the accounts and see who uses the application
+**so that** only the people I choose can get in
 
 ## Acceptance criteria
 
 ```gherkin
-Scenario: An administrator lists the accounts
+Scenario: The first administrator exists from the start
+  Given a new installation
+  Then  one ADMIN exists, created by the migrations, and nobody had to sign up
+
+Scenario: Create an account
+  Given I am signed in with the role ADMIN
+  When  I create "Ana" with her email and the role USER
+  Then  the account is listed as "Pendiente"
+  And   I get an activation link, shown once
+  And   I never see or set a password
+
+Scenario: Reject an email already in use
+  Given an account exists with email "ana@example.com"
+  When  I create another with that email
+  Then  it is not created
+  And   I see "Ya existe una cuenta con este correo."
+
+Scenario: Generate a new activation link
+  Given the account of Ana is pending
+  When  I generate a new link
+  Then  the earlier link stops working
+
+Scenario: List the accounts
   Given I am signed in with the role ADMIN
   When  I open "Usuarios"
-  Then  I see each account's name, email and role, ordered by email
-
-Scenario: No password leaves the API
-  Given I am signed in with the role ADMIN
-  When  the accounts are listed
-  Then  no response field carries a password or its hash
+  Then  I see each account's name, email, role and state, ordered by email
+  And   no response field carries a password or its hash
 
 Scenario: Another role is refused
   Given I am signed in with the role USER
-  When  I call GET /users
+  When  I call GET /users or POST /users
   Then  the API answers 403 with the error FORBIDDEN
-  And   the portal does not offer "Usuarios"
-
-Scenario: No token is refused
-  Given I send no Authorization header
-  When  I call GET /users
-  Then  the API answers 401
-
-Scenario: Nobody signs up as an administrator
-  Given I sign up sending the role ADMIN in the body
-  When  I sign in with that account
-  Then  my role is USER
-
-Scenario: The role does not open another account's data
-  Given I am signed in with the role ADMIN
-  When  I ask for a budget owned by another account
-  Then  the API answers 404
 ```
 
 ## Affected module and requirements
@@ -47,11 +49,11 @@ Scenario: The role does not open another account's data
 |---|---|
 | Module | `identity` |
 | Applicable NFR(s) | `NFR-05`, `NFR-06` |
-| Business rule(s) touched | none |
+| Business rule(s) touched | `BR-07` |
 | Repositories | `bud-tack-docs`, `-db`, `-api`, `-portal` |
-| Contract | [`identity.yaml`](../../07-api/contracts/openapi/identity.yaml) — `GET /users`, and `role` in `POST /sessions` |
+| Contract | [`identity.yaml`](../../07-api/contracts/openapi/identity.yaml) — `GET` and `POST /users`, `POST /users/{userId}/activation-links` |
 | Screen | [`users.md`](../../12-ux-ui/screens/users.md) |
-| Test cases | `TC-020` |
+| Test cases | `TC-001`, `TC-020`, `TC-022` |
 | Blocked by | `HU-01` |
 
 ## Definition of ready
@@ -61,4 +63,4 @@ This story does not enter sprint planning until it meets
 
 ---
 
-**Related:** [`../user-stories.md`](../user-stories.md) · [`ADR-007`](../../05-architecture/decisions/records/ADR-007-two-roles-in-the-token.md)
+**Related:** [`../user-stories.md`](../user-stories.md) · [`ADR-009`](../../05-architecture/decisions/records/ADR-009-one-business-with-a-shared-catalog.md)

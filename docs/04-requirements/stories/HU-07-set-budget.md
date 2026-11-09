@@ -70,7 +70,7 @@ Scenario: Filter budgets by category
 This story does not enter sprint planning until it meets
 [`definition-of-ready.md`](../../00-governance/definition-of-ready.md) in full.
 
-- [ ] Comparing a budget against actual spending is out of scope in V1 — see [`scope.md`](../../01-context/scope.md)
+- [ ] Only the `ADMIN` role manages budgets (`HU-12`); the dashboard compares them against spending (`HU-11`)
 
 ---
 

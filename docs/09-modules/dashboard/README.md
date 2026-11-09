@@ -10,7 +10,7 @@ nothing, only of how those figures are computed.
 
 | Method | Input | Output | Called by |
 |---|---|---|---|
-| `DashboardFacade.GetDashboard` | — | totalIncome, totalExpenses, netBalance, recentTransactions[] (max 5) | `platform/web` (`GET /dashboard`) |
+| `DashboardFacade.GetDashboard` | user, role, optional category | totalIncome, totalExpenses, netBalance, budget, recentTransactions[] (max 5) | `platform/web` (`GET /dashboard`) |
 
 Everything not listed above is `internal/` and unreachable from outside this
 module — see [`../../05-architecture/module-structure.md`](../../05-architecture/module-structure.md).

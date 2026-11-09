@@ -18,7 +18,8 @@ arithmetic**.
 | 2 | Make recording a transaction fast | Under 30 seconds from opening "New record" to returning to the dashboard |
 | 3 | Never lose a financial record by mistake | Every deleted transaction remains recoverable (soft delete); zero physical deletes in year one |
 | 4 | Keep the system usable without dedicated support staff | Zero dedicated operations hire required in year one |
-| 5 | Let an administrator see who uses the application, without opening another account's data | The account list is available to the `ADMIN` role only; 100% of calls with any other role get `403` |
+| 5 | Let an administrator control who uses the application and how the business is organized | Accounts, categories and budgets change only through the `ADMIN` role; 100% of calls with another role get `403` |
+| 6 | Show how spending compares with the budget | The dashboard shows budget, spent and available, globally and per category, always computed on read |
 
 ## Reviewing the vision
 

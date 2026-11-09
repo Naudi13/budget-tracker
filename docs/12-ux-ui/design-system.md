@@ -69,7 +69,7 @@ never serve as text on white; they sit on navy, or carry navy text.
 | Button (primary / secondary / danger) | Every screen | One primary button per screen, at most |
 | KPI tile | Dashboard ([`screens/dashboard.md`](./screens/dashboard.md)) | One figure and its label: total income, total expenses, net balance |
 | Data table | Transaction history, category list, subcategory list | Paginated, newest first for transactions |
-| Form field with inline validation | New record, category form, subcategory form, budget form, sign-up | Error message states the fix, not just the failure |
+| Form field with inline validation | New record, category form, subcategory form, budget form, new account | Error message states the fix, not just the failure |
 | Confirm dialog | Delete a transaction, a category or subcategory, or a budget | Danger button for the action, and a cancel that returns to the list |
 | Blocked notice | Delete a category or subcategory that is still in use | Says why the delete is refused and offers deactivation instead (BR-05) |
 | Empty state | Dashboard recent list, transaction history, category list | Message plus the one action that fills it |

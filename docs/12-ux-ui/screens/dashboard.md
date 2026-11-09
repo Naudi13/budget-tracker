@@ -5,11 +5,16 @@
 | Field | Value |
 |---|---|
 | Screen | Dashboard |
-| Serves | `HU-08` — see `../../04-requirements/user-stories.md` |
+| Serves | `HU-08` and `HU-11` — see `../../04-requirements/user-stories.md` |
 | Wireframe | Flow map "Dashboard" in `Budget-Tracker-Diagramas.pdf`, page 2 (not yet exported to the repository) |
 
 The dashboard is the entry point: it links to *Nuevo registro*, *Historial*
-and *Configuración*. It has no input fields, so it has no validation rules.
+and, for an `ADMIN`, *Configuración*.
+
+A filter, *Categoría*, offers *Todas* (the default) and every active category; the
+whole screen follows it. Below the three KPI tiles, a band shows *Presupuesto*,
+*Gastado* and *Disponible* (BR-08). A `USER`'s tiles and list are their own; the
+band is the business's for everyone.
 
 ## States
 
@@ -19,12 +24,14 @@ and *Configuración*. It has no input fields, so it has no validation rules.
 | Loading | KPI tiles and the recent list show skeleton blocks until the single dashboard request answers |
 | Error | "No pudimos cargar el panel." with a *Reintentar* button; no partial figures are shown |
 | Populated | Three KPI tiles — *Ingresos*, *Gastos* and *Balance* (total income, total expenses, net balance; BR-03) — and the five most recent transactions, newest first |
+| No budget in force | The band says "Sin presupuesto vigente" |
+| Over budget | *Disponible* is red and keeps its minus sign, with the text "Sobre el presupuesto" |
 
 ## Validation rules
 
 | Field | Rule | Message shown |
 |---|---|---|
-| — | No input fields on this screen | — |
+| Category filter | One of the listed options | — |
 
 ---
 

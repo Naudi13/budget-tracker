@@ -15,7 +15,7 @@
 
 ## Steps
 
-1. Call `POST /users` with password `Str0ngPass!23`.
+1. Activate an account with `POST /account-links/confirm` and the password `Str0ngPass!23`.
 2. Read the new row's `password_hash` column directly through persistence.
 
 ## Expected result

@@ -15,12 +15,13 @@
 
 ## Steps
 
-1. Call `TransactionsFacade.DeleteAsync(T1.Id)` as U1.
+1. Call `TransactionsFacade.DeleteAsync(T1.Id)` as U1, with the reason "Monto equivocado".
 2. Read T1's row directly through persistence, bypassing the facade.
 
 ## Expected result
 
-T1's `deleted_by` equals U1's id and `deleted_at` is set to the current time;
+T1's `deleted_by` equals U1's id, `deleted_at` is set to the current time and
+`deletion_reason` holds the reason;
 the row still exists in `transactions.transactions` — it is never physically
 removed, per **BR-04**.
 

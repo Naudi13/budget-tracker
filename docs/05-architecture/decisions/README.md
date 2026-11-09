@@ -42,6 +42,8 @@ that names it, so the history of the reasoning stays readable.
 | [ADR-006](./records/ADR-006-portal-image-behind-reverse-proxy.md) | The portal ships as its own image, behind a reverse proxy | Accepted | 2026-11-04 |
 | [ADR-007](./records/ADR-007-two-roles-in-the-token.md) | Two roles, carried in the token | Accepted | 2026-11-08 |
 | [ADR-008](./records/ADR-008-bcrypt-cors-and-swagger.md) | BCrypt, a CORS allow-list and Swagger | Accepted | 2026-11-08 |
+| [ADR-009](./records/ADR-009-one-business-with-a-shared-catalog.md) | One business per installation, with a shared catalog | Accepted | 2026-11-09 |
+| [ADR-010](./records/ADR-010-single-use-account-links.md) | Single-use links to activate an account or reset its password | Accepted | 2026-11-09 |
 
 ## Naming
 

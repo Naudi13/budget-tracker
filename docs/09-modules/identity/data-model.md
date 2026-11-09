@@ -4,7 +4,8 @@
 
 | Table | Schema | Entity | Key attributes |
 |---|---|---|---|
-| `identity.users` | `identity` | User | name, email, password_hash |
+| `identity.users` | `identity` | User | name, email, password_hash (null until activated), role |
+| `identity.account_tokens` | `identity` | Account link | user_id, purpose, token_hash, expires_at, used_at, created_by |
 
 Schema-per-module and naming rules live in
 [`../../06-data/database-conventions.md`](../../06-data/database-conventions.md).
@@ -14,7 +15,8 @@ Schema-per-module and naming rules live in
 | Invariant | Enforced where |
 |---|---|
 | Email is unique | This module's `internal/domain`, at write time, and a unique index on `identity.users.email` |
-| V1 has a single account per business; the role is `USER` or `ADMIN` (ADR-007) | This module's `internal/application` — `SignUp` has no role parameter to set |
+| Nobody signs up: an `ADMIN` creates each account, with no password (BR-07) | This module's `internal/application` |
+| A link works once and until it expires; a new one cancels the earlier ones (ADR-010) | This module's `internal/application` |
 
 ## Cross-module references
 

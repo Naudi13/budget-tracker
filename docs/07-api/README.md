@@ -15,7 +15,7 @@ pagination, plus the contract template a new resource group starts from.
 | Document | Answers | Priority |
 |---|---|---|
 | [rest-conventions.md](./rest-conventions.md) | What does the application's public API look like? | ⭐ |
-| [contracts/openapi/identity.yaml](./contracts/openapi/identity.yaml) | What do sign-up and sign-in look like? | ⭐ |
+| [contracts/openapi/identity.yaml](./contracts/openapi/identity.yaml) | What do sign-in, accounts and their links look like? | ⭐ |
 | [contracts/openapi/transactions.yaml](./contracts/openapi/transactions.yaml) | What do recording, listing and deleting transactions look like? | ⭐ |
 | [contracts/openapi/categories.yaml](./contracts/openapi/categories.yaml) | What do categories and subcategories look like? | ⭐ |
 | [contracts/openapi/budgets.yaml](./contracts/openapi/budgets.yaml) | What do budgets look like? | ⭐ |
