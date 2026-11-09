@@ -19,5 +19,6 @@ internal static class ErrorCodes
     public const string NotFound = "NOT_FOUND";
     public const string Unauthorized = "UNAUTHORIZED";
     public const string Forbidden = "FORBIDDEN";
+    public const string TooManyRequests = "TOO_MANY_REQUESTS";
     public const string InternalError = "INTERNAL_ERROR";
 }

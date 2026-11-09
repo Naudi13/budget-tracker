@@ -1,3 +1,4 @@
+using System.Globalization;
 using BudTack.Identity.Api.Contracts;
 using TransactionsContracts = BudTack.Transactions.Api.Contracts;
 using Microsoft.AspNetCore.Mvc;
@@ -29,6 +30,7 @@ internal sealed class ModuleErrorFilter : IExceptionFilter
                 StatusCodes.Status404NotFound, new ApiError(ErrorCodes.NotFound, e.Message)),
             InvalidCredentialsException e => Respond(
                 StatusCodes.Status401Unauthorized, new ApiError(ErrorCodes.Unauthorized, e.Message)),
+            TooManySignInAttemptsException e => TooManyRequests(context, e),
             TransactionsContracts.TransactionsValidationException e => Respond(
                 StatusCodes.Status400BadRequest,
                 new ApiError(
@@ -55,6 +57,14 @@ internal sealed class ModuleErrorFilter : IExceptionFilter
             context.Result = result;
             context.ExceptionHandled = true;
         }
+    }
+
+    // RNF-02: Retry-After says, in whole seconds, when the email may try again.
+    private static JsonResult TooManyRequests(ExceptionContext context, TooManySignInAttemptsException e)
+    {
+        var seconds = Math.Max(1, (int)Math.Ceiling(e.RetryAfter.TotalSeconds));
+        context.HttpContext.Response.Headers.RetryAfter = seconds.ToString(CultureInfo.InvariantCulture);
+        return Respond(StatusCodes.Status429TooManyRequests, new ApiError(ErrorCodes.TooManyRequests, e.Message));
     }
 
     // The same serializer settings as every other error: no "details": null.

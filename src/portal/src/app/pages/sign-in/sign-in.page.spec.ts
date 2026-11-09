@@ -85,6 +85,23 @@ describe('SignInPage', () => {
     expect(navigate).toHaveBeenCalledWith(['/dashboard']);
   });
 
+  it('says to wait after too many failed attempts (RNF-02)', () => {
+    setUp();
+    type('sign-in-email', 'owner@example.com');
+    type('sign-in-password', 'right-password');
+
+    submit();
+    backend
+      .expectOne('/api/v1/sessions')
+      .flush({ error: 'TOO_MANY_REQUESTS', message: 'x' }, { status: 429, statusText: 'Too Many Requests' });
+    fixture.detectChanges();
+
+    expect(page().querySelector('[role=alert]')?.textContent).toContain('Demasiados intentos fallidos con este correo.');
+    expect(input('sign-in-email').value).toBe('owner@example.com');
+    expect(input('sign-in-password').value).toBe('');
+    expect(navigate).not.toHaveBeenCalled();
+  });
+
   it('keeps the email and clears the password on a wrong password', () => {
     setUp();
     type('sign-in-email', 'owner@example.com');

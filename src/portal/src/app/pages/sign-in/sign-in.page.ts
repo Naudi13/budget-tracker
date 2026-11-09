@@ -14,7 +14,7 @@ import { ApiError } from '../../core/api-error';
 import { IdentityService } from '../../core/identity.service';
 import { emailShape } from '../form-rules';
 
-type Failure = 'credentials' | 'unavailable' | null;
+type Failure = 'credentials' | 'attempts' | 'unavailable' | null;
 
 /** What setting a password hands over when it sends the user here (activate-account.md). */
 export interface SignInState {
@@ -80,6 +80,11 @@ export class SignInPage {
           this.form.controls.password.reset();
           this.attempted.set(false);
           this.failure.set('credentials');
+        } else if (error.status === 429) {
+          // Too many failures with this email (RNF-02): the wait is in minutes.
+          this.form.controls.password.reset();
+          this.attempted.set(false);
+          this.failure.set('attempts');
         } else {
           this.failure.set('unavailable');
         }
