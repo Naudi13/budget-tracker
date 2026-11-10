@@ -1,7 +1,8 @@
 # Fichas de métricas
 
 Todas las mediciones se obtienen con un solo comando, descrito en
-[`metricas/README.md`](../../metricas/README.md). Cada medición se guarda en su carpeta: la inicial en [`antes/`](./antes/resultados.md).
+[`metricas/README.md`](../../metricas/README.md). Cada medición se guarda en su carpeta: la inicial en [`antes/`](./antes/resultados.md) y la posterior a
+las correcciones en [`despues/`](./despues/resultados.md); [`comparacion.md`](./comparacion.md) las contrasta.
 Los umbrales son los de la tabla de la guía del curso, salvo donde se indica.
 
 ## 1. Complejidad ciclomática V(G)
