@@ -12,6 +12,28 @@ permissions:
 # One job per part of the repository, each with the stages of
 # docs/10-devops/ci-cd.md, plus the whole application through the portal.
 jobs:
+  complexity:
+    name: RNF-01 - no method above V(G) 10
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install lizard
+        run: python -m pip install -r metricas/requirements.txt
+
+      # lizard exits with an error when a method exceeds -C. -L and -a are set
+      # high so that only cyclomatic complexity can fail this job.
+      - name: C# (API and migrations)
+        run: python -m lizard -l csharp src/api/src src/db/src -x "*/obj/*" -x "*/bin/*" -C 10 -L 1000 -a 1000 -w
+
+      - name: TypeScript (portal)
+        run: python -m lizard -l typescript src/portal/src/app -x "*.spec.ts" -C 10 -L 1000 -a 1000 -w
+
   api:
     name: API - build, boundary check, test and package
     runs-on: ubuntu-latest
