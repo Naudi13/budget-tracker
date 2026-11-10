@@ -49,7 +49,7 @@ Las pruebas nombradas son de `src/api/tests/end-to-end`; los casos `TC-NNN` est�
 
 | ID | Categoría | Descripción medible | Forma de verificación |
 |---|---|---|---|
-| **RNF-01** | Mantenibilidad | Ningún método del código de la aplicación supera una complejidad ciclomática V(G) de 10. | Medición con `lizard` 1.25.0 sobre `src/api/src`, `src/db/src` y `src/portal/src/app`, sin archivos `.spec.ts`: cero métodos con V(G) mayor que 10. |
+| **RNF-01** | Mantenibilidad | Ningún método del código de la aplicación supera una complejidad ciclomática V(G) de 10. | Medición con `lizard` 1.25.0 sobre `src/api/src`, `src/db/src` y `src/portal/src/app`, sin archivos `.spec.ts`: cero métodos con V(G) mayor que 10. El job `complexity` del CI lo verifica en cada pull request. |
 | **RNF-02** | Seguridad | Después de 5 intentos fallidos de inicio de sesión con un mismo correo en 15 minutos, los intentos siguientes de ese correo se rechazan con `429` hasta que termine la ventana. | Prueba automática end-to-end: los intentos 1 a 5 responden `401` y el intento 6 responde `429`, aunque la contraseña sea correcta. |
 | **RNF-03** | Seguridad | El 100 % de las contraseñas se almacena como hash con sal; el texto plano nunca se guarda ni se escribe en los registros. | Pruebas automáticas `ActivationThenSignIn_storesOnlyAHash_andNeverLogsThePassword` (TC-014) y `PasswordHasherTests`. Corresponde a NFR-06. |
 
