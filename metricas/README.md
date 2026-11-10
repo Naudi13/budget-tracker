@@ -27,6 +27,12 @@ Para probar además el límite de intentos de inicio de sesión (RNF-02), con la
 python metricas/medir.py --nombre antes --base-url http://localhost:8080
 ```
 
+Para contrastar dos mediciones, por ejemplo `antes` y `despues`:
+
+```bash
+python metricas/comparar.py antes despues
+```
+
 El job `complexity` del CI aplica en cada pull request el mismo umbral de RNF-01 con `lizard`.
 
 Sin `--base-url` se conserva la última medición del inicio de sesión. Con `--no-build` no se recompilan

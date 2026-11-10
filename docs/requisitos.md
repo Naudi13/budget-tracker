@@ -55,13 +55,13 @@ Las pruebas nombradas son de `src/api/tests/end-to-end`; los casos `TC-NNN` est�
 
 ### Estado frente a la entrega
 
-La aplicación debe cumplir los tres antes de la entrega. RNF-01 y RNF-02 se corrigen después de la
-medición inicial, para conservar la comparación antes y después.
+RNF-01 y RNF-02 no se cumplían en la medición inicial y se corrigieron después de ella, para conservar
+la comparación ([`metricas/comparacion.md`](./metricas/comparacion.md)).
 
-| ID | Medición al 2026-11-09 | Estado | Acción |
-|---|---|---|---|
-| RNF-01 | 522 de 523 métodos cumplen. Supera el límite `MovementRules.Validate` (17). | No cumple | Extract Method y nueva medición |
-| RNF-02 | La API y nginx no tienen límite de intentos. | No cumple | Limitar los intentos en `POST /sessions` y agregar la prueba |
-| RNF-03 | BCrypt con costo 12 y sal por hash; las pruebas pasan. | Cumple | Ninguna |
+| ID | Antes (tag `metricas-antes`) | Después | Estado | Evidencia |
+|---|---|---|---|---|
+| RNF-01 | 522 de 523 métodos; `MovementRules.Validate` tenía 17 | 532 de 532 métodos; máximo 10 | Cumple | Extract Method en `MovementRules.Validate`; el job `complexity` del CI lo verifica en cada pull request |
+| RNF-02 | Seis intentos fallidos respondían `401` | Los intentos 1 a 5 responden `401` y el 6 responde `429` | Cumple | `SignInAttempts` en `identity`; prueba `FiveFailures_thenEvenTheRightPassword_isTooManyRequests` y prueba en vivo con `medir.py --base-url` |
+| RNF-03 | BCrypt con costo 12 y sal por hash | Sin cambios | Cumple | `ActivationThenSignIn_storesOnlyAHash_andNeverLogsThePassword` y `PasswordHasherTests` |
 
 Las métricas de mantenibilidad y evolución, con sus fichas, se documentan aparte.
