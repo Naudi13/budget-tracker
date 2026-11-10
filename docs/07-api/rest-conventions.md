@@ -48,7 +48,7 @@ transaction gets `404`.
 
 Every non-2xx response uses this shape. `error` is a stable machine code —
 `VALIDATION_ERROR`, `BUSINESS_RULE_VIOLATED`, `CONFLICT`, `NOT_FOUND`,
-`UNAUTHORIZED`, `FORBIDDEN`, `INTERNAL_ERROR` — and never changes once published; `message`
+`UNAUTHORIZED`, `FORBIDDEN`, `TOO_MANY_REQUESTS`, `INTERNAL_ERROR` — and never changes once published; `message`
 is for humans; `details` is present only for 400 and 422.
 
 ## Authentication

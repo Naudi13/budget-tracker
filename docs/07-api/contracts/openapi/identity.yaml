@@ -228,6 +228,8 @@ paths:
       description: >
         Implements HU-01. Returns a bearer token that every other endpoint expects.
         An account still pending, or inactive, is refused like a wrong password.
+        After 5 failed sign-ins with one email within 15 minutes, that email gets
+        429 until the oldest of those failures is 15 minutes old (RNF-02).
       security: []
       requestBody:
         required: true
@@ -246,6 +248,8 @@ paths:
           $ref: './common.yaml#/components/responses/BadRequest'
         '401':
           $ref: './common.yaml#/components/responses/Unauthorized'
+        '429':
+          $ref: './common.yaml#/components/responses/TooManyRequests'
         '500':
           $ref: './common.yaml#/components/responses/InternalError'
 

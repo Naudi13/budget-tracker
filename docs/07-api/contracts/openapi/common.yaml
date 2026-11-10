@@ -71,6 +71,14 @@ components:
       content:
         application/json:
           schema: { $ref: '#/components/schemas/Error' }
+    TooManyRequests:
+      description: Too many failed sign-ins with one email (RNF-02); `Retry-After` says, in seconds, when to try again
+      headers:
+        Retry-After:
+          schema: { type: integer, minimum: 1 }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
     Forbidden:
       description: The credentials are valid, but the role may not call this endpoint
       content:

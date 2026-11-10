@@ -7,6 +7,7 @@ export type ApiErrorCode =
   | 'CONFLICT'
   | 'NOT_FOUND'
   | 'UNAUTHORIZED'
+  | 'TOO_MANY_REQUESTS'
   | 'INTERNAL_ERROR'
   | 'NETWORK_ERROR';
 
@@ -29,6 +30,7 @@ const KNOWN_CODES: readonly string[] = [
   'CONFLICT',
   'NOT_FOUND',
   'UNAUTHORIZED',
+  'TOO_MANY_REQUESTS',
   'INTERNAL_ERROR',
 ];
 
@@ -99,6 +101,8 @@ function fallbackCode(status: number): ApiErrorCode {
       return 'CONFLICT';
     case 422:
       return 'BUSINESS_RULE_VIOLATED';
+    case 429:
+      return 'TOO_MANY_REQUESTS';
     default:
       return 'INTERNAL_ERROR';
   }

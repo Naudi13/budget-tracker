@@ -7,10 +7,11 @@ namespace BudTack.Identity.Internal.Application;
 /// <summary>
 /// HU-01, sign-in: a valid email and password get a bearer token. An unknown
 /// email, a pending or inactive account and a wrong password fail the same way and take the same time, so a
-/// caller cannot learn which emails have an account.
+/// caller cannot learn which emails have an account. After too many failures with
+/// one email, that email is refused before any check (RNF-02).
 /// </summary>
 internal sealed partial class SignIn(
-    IUsersRepository users, PasswordHasher hasher, TokenService tokens, ILogger<SignIn> logger)
+    IUsersRepository users, PasswordHasher hasher, TokenService tokens, SignInAttempts attempts, ILogger<SignIn> logger)
 {
     // Verified against when there is no hash to check, so every failure costs one hash.
     private readonly Lazy<string> _decoy = new(() => hasher.Hash(Guid.NewGuid().ToString()));
@@ -18,15 +19,22 @@ internal sealed partial class SignIn(
     public async Task<Session> HandleAsync(Credentials request, CancellationToken cancellationToken)
     {
         var (email, password) = AccountRules.Validate(request);
+        if (attempts.RetryAfter(email) is { } wait)
+        {
+            LogBlocked(logger);
+            throw new TooManySignInAttemptsException(wait);
+        }
 
         var user = await users.FindByEmailAsync(email, cancellationToken).ConfigureAwait(false);
         var matches = PasswordHasher.Verify(password, user?.PasswordHash ?? _decoy.Value);
         if (user is not { IsActive: true, PasswordHash: not null } || !matches)
         {
+            attempts.Failed(email);
             LogRefused(logger);
             throw new InvalidCredentialsException();
         }
 
+        attempts.Succeeded(email);
         LogSignedIn(logger, user.Id);
         return new Session(tokens.Issue(user.Id, user.Role), "Bearer", (int)tokens.Lifetime.TotalSeconds, user.Role);
     }
@@ -36,4 +44,7 @@ internal sealed partial class SignIn(
 
     [LoggerMessage(Level = LogLevel.Warning, Message = "A sign-in was refused: wrong email or password")]
     private static partial void LogRefused(ILogger logger);
+
+    [LoggerMessage(Level = LogLevel.Warning, Message = "A sign-in was refused: too many failed attempts for one email")]
+    private static partial void LogBlocked(ILogger logger);
 }

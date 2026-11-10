@@ -36,10 +36,12 @@ public static class IdentityModule
             provider.GetRequiredService<IUsersRepository>(),
             provider.GetRequiredService<AccountLinks>(),
             provider.GetRequiredService<ILogger<CreateUser>>()));
+        services.AddSingleton(provider => new SignInAttempts(provider.GetRequiredService<TimeProvider>()));
         services.AddScoped(provider => new SignIn(
             provider.GetRequiredService<IUsersRepository>(),
             provider.GetRequiredService<PasswordHasher>(),
             provider.GetRequiredService<TokenService>(),
+            provider.GetRequiredService<SignInAttempts>(),
             provider.GetRequiredService<ILogger<SignIn>>()));
         services.AddScoped(provider => new ListUsers(provider.GetRequiredService<IUsersRepository>()));
         services.AddScoped(provider => new ManageAccount(

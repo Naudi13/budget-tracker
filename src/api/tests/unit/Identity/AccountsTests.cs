@@ -30,7 +30,7 @@ public sealed class AccountsTests
 
     private static CancellationToken Ct => TestContext.Current.CancellationToken;
 
-    private SignIn SignIn => new(_users, _hasher, _sessions, NullLogger<SignIn>.Instance);
+    private SignIn SignIn => new(_users, _hasher, _sessions, new SignInAttempts(_clock), NullLogger<SignIn>.Instance);
 
     private Task<CreatedUser> Create(string email = "owner@example.com", string role = Roles.User) =>
         _create.HandleAsync(Admin, new NewUser("Ana Owner", email, role), Ct);

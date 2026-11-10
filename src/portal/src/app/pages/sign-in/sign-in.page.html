@@ -7,6 +7,9 @@
   @if (failure() === 'credentials') {
     <p class="banner banner-error" role="alert">El correo o la contraseña no son correctos.</p>
   }
+  @if (failure() === 'attempts') {
+    <p class="banner banner-error" role="alert">Demasiados intentos fallidos con este correo. Espera unos minutos e inténtalo de nuevo.</p>
+  }
   @if (failure() === 'unavailable') {
     <div class="banner banner-error" role="alert">
       <span>No pudimos iniciar tu sesión. Inténtalo de nuevo.</span>
